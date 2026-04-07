@@ -13,6 +13,26 @@
         if(s && s!==V){ sessionStorage.setItem('spc_v_m5',V); location.reload(true); }
         else { sessionStorage.setItem('spc_v_m5',V); }
       })();
+    
+        function toggleFullscreen() {
+            var btn = document.querySelector('.fullscreen-btn');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(function(){});
+                btn.textContent = '✕';
+                btn.title = 'Sair da tela cheia';
+            } else {
+                document.exitFullscreen();
+                btn.textContent = '⛶';
+                btn.title = 'Tela cheia';
+            }
+        }
+        document.addEventListener('fullscreenchange', function() {
+            var btn = document.querySelector('.fullscreen-btn');
+            if (!document.fullscreenElement) {
+                btn.textContent = '⛶';
+                btn.title = 'Tela cheia';
+            }
+        });
     </script>
     <title>Módulo 5: Liderando com Clareza | Sem Pontos Cegos</title>
     <style>
@@ -53,7 +73,9 @@
         }
         .top-bar-left { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .top-bar-center { flex: 1; text-align: center; font-size: 13px; opacity: 0.9; }
-        .top-bar-right { font-size: 14px; text-align: right; min-width: 150px; }
+        .top-bar-right { font-size: 14px; text-align: right; min-width: 150px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+        .fullscreen-btn { background: none; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 6px; color: white; cursor: pointer; padding: 4px 8px; font-size: 16px; line-height: 1; transition: background 0.2s; flex-shrink: 0; }
+        .fullscreen-btn:hover { background: rgba(255,255,255,0.15); }
         #progressBar { width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 4px auto 0; overflow: hidden; }
         #progressFill { height: 100%; background: var(--neon-green); width: 0%; transition: width 0.3s ease; border-radius: 2px; }
         #screenCounter { font-size: 13px; }
@@ -289,7 +311,7 @@
 
     <!-- Top Bar -->
     <div id="top-bar">
-        <div class="top-bar-left" onclick="goHome()">
+        <div class="top-bar-left" onclick="goHome()" style="cursor:pointer;">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.16 114.38" height="28" style="flex-shrink:0;">
                 <path fill="#4DF600" d="M80.95,49.16c13.59,12.49,27.32,24.83,41.01,37.21,1.71-2.52,3.25-5.17,4.59-7.93-13.23-12.52-26.84-24.66-40.54-36.67-11.31-9.92-21.92-9.62-33.1.41-13.3,11.93-26.23,24.3-39.81,35.89,1.34,2.82,2.89,5.52,4.62,8.09,13.73-12.39,27.46-24.78,41.13-37.24,7.59-6.92,14.41-6.83,22.12.25Z"/>
                 <path fill="#4DF600" d="M56.92,20.51c8.24-4.87,16.3-5.35,24.64-.48,12.87,7.52,25.76,15,38.67,22.46,4.05,2.34,8.15,4.59,12.57,7.06-.09-3.94-.55-7.79-1.33-11.52-.69-.56-31.47-18.24-45.95-26.61-9.9-5.72-20.15-6.3-30.13-.8-14.57,8.03-46.01,26.35-47,27.22-.8,3.73-1.27,7.59-1.37,11.53.28-.12.54-.24.79-.38,16.39-9.47,32.83-18.86,49.13-28.49Z"/>
@@ -301,7 +323,7 @@
             <div id="screenCounter">Tela 1 de 14</div>
             <div id="progressBar"><div id="progressFill"></div></div>
         </div>
-        <div class="top-bar-right">Módulo 5: Liderando com Clareza</div>
+        <div class="top-bar-right"><span>Módulo 5: Liderando com Clareza</span><button class="fullscreen-btn" onclick="toggleFullscreen()" title="Tela cheia">&#x26F6;</button></div>
     </div>
 
     <!-- Screens Container -->
@@ -888,10 +910,10 @@
                 <h3>Próximo passo: Avaliação Final</h3>
                 <p>Aplique tudo que aprendeu nos cinco módulos em três cenários reais de liderança. Nota de aprovação: 70% (11/15).</p>
             </div>
-            <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 8px;">
-                <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">✅ Módulo concluído!</p>
-                <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
-            </div>
+                <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 16px;">
+                    <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">&#x2705; Módulo concluído!</p>
+                    <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
+                </div>
         </div>
 
     </div><!-- end screens-container -->
@@ -994,7 +1016,7 @@
             showScreen(currentScreen);
         } else {
             try { localStorage.setItem('spc_m5_complete', 'true'); } catch(e) {}
-            // In Hotmart version: stay on last screen, message already visible
+            try { localStorage.setItem('spc_m5_complete', 'true'); } catch(e) {}
         }
     }
 

@@ -84,7 +84,24 @@
             font-size: 14px;
             text-align: right;
             min-width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
         }
+        .fullscreen-btn {
+            background: none;
+            border: 1.5px solid rgba(255,255,255,0.4);
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 16px;
+            line-height: 1;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .fullscreen-btn:hover { background: rgba(255,255,255,0.15); }
 
         #progressBar {
             width: 200px;
@@ -1875,7 +1892,7 @@
                 <div id="screenCounter">Tela 0 de 17</div>
                 <div id="progressBar"><div id="progressFill"></div></div>
             </div>
-            <div class="top-bar-right">Módulo 2: Armadilhas de Decisão</div>
+            <div class="top-bar-right"><span>Módulo 2: Armadilhas de Decisão</span><button class="fullscreen-btn" onclick="toggleFullscreen()" title="Tela cheia">&#x26F6;</button></div>
         </div>
 
         <!-- Screens Container -->
@@ -2683,8 +2700,8 @@
                         <p>No Módulo 3, viramos o olhar sobre nós mesmos e os outros — os pontos cegos que afetam como nos percebemos e como percebemos quem está ao nosso redor.</p>
                     </div>
                 </div>
-                <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 40px;" id="m2-complete-msg">
-                    <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">✅ Módulo concluído!</p>
+                                <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 16px;">
+                    <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">&#x2705; Módulo concluído!</p>
                     <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
                 </div>
             </div>
@@ -3529,6 +3546,26 @@ function showPlanningVizAndComplete() {
             loadProgress();
             showScreen(currentScreen);
         });
-    </script>
+    
+        function toggleFullscreen() {
+            var btn = document.querySelector('.fullscreen-btn');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(function(){});
+                btn.textContent = '✕';
+                btn.title = 'Sair da tela cheia';
+            } else {
+                document.exitFullscreen();
+                btn.textContent = '⛶';
+                btn.title = 'Tela cheia';
+            }
+        }
+        document.addEventListener('fullscreenchange', function() {
+            var btn = document.querySelector('.fullscreen-btn');
+            if (!document.fullscreenElement) {
+                btn.textContent = '⛶';
+                btn.title = 'Tela cheia';
+            }
+        });
+        </script>
 </body>
 </html>

@@ -52,7 +52,9 @@
         }
         .top-bar-left { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .top-bar-center { flex: 1; text-align: center; font-size: 13px; opacity: 0.9; }
-        .top-bar-right { font-size: 14px; text-align: right; min-width: 150px; }
+        .top-bar-right { font-size: 14px; text-align: right; min-width: 150px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+        .fullscreen-btn { background: none; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 6px; color: white; cursor: pointer; padding: 4px 8px; font-size: 16px; line-height: 1; transition: background 0.2s; flex-shrink: 0; }
+        .fullscreen-btn:hover { background: rgba(255,255,255,0.15); }
         #progressBar { width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 4px auto 0; overflow: hidden; }
         #progressFill { height: 100%; background: var(--neon-green); width: 0%; transition: width 0.3s ease; border-radius: 2px; }
 
@@ -230,7 +232,7 @@
             <div id="progressLabel">Questão 0 de 15</div>
             <div id="progressBar"><div id="progressFill"></div></div>
         </div>
-        <div class="top-bar-right">Avaliação Final</div>
+        <div class="top-bar-right"><span>Avaliação Final</span><button class="fullscreen-btn" onclick="toggleFullscreen()" title="Tela cheia">&#x26F6;</button></div>
     </div>
 
     <!-- Screens Container -->
@@ -1078,6 +1080,26 @@
 
     // ── Init ──────────────────────────────────────────────────────────────────
     showScreen(0);
-</script>
+
+        function toggleFullscreen() {
+            var btn = document.querySelector('.fullscreen-btn');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(function(){});
+                btn.textContent = '✕';
+                btn.title = 'Sair da tela cheia';
+            } else {
+                document.exitFullscreen();
+                btn.textContent = '⛶';
+                btn.title = 'Tela cheia';
+            }
+        }
+        document.addEventListener('fullscreenchange', function() {
+            var btn = document.querySelector('.fullscreen-btn');
+            if (!document.fullscreenElement) {
+                btn.textContent = '⛶';
+                btn.title = 'Tela cheia';
+            }
+        });
+    </script>
 </body>
 </html>
