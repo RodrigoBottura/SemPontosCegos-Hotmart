@@ -98,7 +98,24 @@
             font-size: 14px;
             text-align: right;
             min-width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
         }
+        .fullscreen-btn {
+            background: none;
+            border: 1.5px solid rgba(255,255,255,0.4);
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 16px;
+            line-height: 1;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .fullscreen-btn:hover { background: rgba(255,255,255,0.15); }
 
         /* Main Content Area */
         .content-wrapper {
@@ -2074,7 +2091,10 @@
                     <div class="progress-bar" id="progressBar"></div>
                 </div>
             </div>
-            <div class="top-bar-right" id="moduleName">Módulo 1: O Filtro Invisível</div>
+            <div class="top-bar-right">
+                <span id="moduleName">Módulo 1: O Filtro Invisível</span>
+                <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Tela cheia">⛶</button>
+            </div>
         </div>
 
         <!-- Content Area -->
@@ -2724,8 +2744,9 @@
                     <h3>O que vem a seguir:</h3>
                     <p><strong>Módulo 2:</strong> Armadilhas de Decisão — Vieses que Distorcem o Julgamento</p>
                 </div>
-                <div style="text-align: center;">
-                    <button class="btn btn-primary" id="next-module-btn" onclick="goToNextModule()">Continuar para o Módulo 2 →</button>
+                <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 16px;">
+                    <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">✅ Módulo concluído!</p>
+                    <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
                 </div>
             </div>
         </div>
@@ -3605,8 +3626,28 @@
         }
 
         // Navigation to Next Module
+        function toggleFullscreen() {
+            const btn = document.querySelector('.fullscreen-btn');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+                btn.textContent = '✕';
+                btn.title = 'Sair da tela cheia';
+            } else {
+                document.exitFullscreen();
+                btn.textContent = '⛶';
+                btn.title = 'Tela cheia';
+            }
+        }
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.querySelector('.fullscreen-btn');
+            if (!document.fullscreenElement) {
+                btn.textContent = '⛶';
+                btn.title = 'Tela cheia';
+            }
+        });
+
         function goToNextModule() {
-            window.location.href = 'modulo-02.html';
+            // Hotmart version: no navigation between modules
         }
 
         // Local Storage
