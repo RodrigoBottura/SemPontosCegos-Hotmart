@@ -1,0 +1,3534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+      (function(){
+        var V='spc-m2-20260316a';
+        var s=sessionStorage.getItem('spc_v_m2');
+        if(s && s!==V){ sessionStorage.setItem('spc_v_m2',V); location.reload(true); }
+        else { sessionStorage.setItem('spc_v_m2',V); }
+      })();
+    </script>
+    <title>Módulo 2: Armadilhas de Decisão | Sem Pontos Cegos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --deep-green: #002610;
+            --neon-green: #4DF600;
+            --accent-blue: #030FF5;
+            --white: #ffffff;
+            --light-grey: #f5f5f5;
+            --mid-grey: #6c757d;
+            --dark-green-light: #003A18;
+            --shadow: 0 4px 20px rgba(0,74,34,0.15);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--light-grey);
+            color: var(--mid-grey);
+            line-height: 1.6;
+            overflow: hidden; /* prevents body scroll — same as M1 which always worked */
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            max-height: 100vh;
+            max-height: 100dvh;
+            overflow: hidden; /* KEY: caps container at viewport height so nav can't be pushed off-screen */
+            background: var(--light-grey);
+        }
+
+        /* Top Bar */
+        #top-bar {
+            background-color: var(--deep-green);
+            color: var(--white);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .top-bar-left {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .top-bar-center {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .top-bar-right {
+            font-size: 14px;
+            text-align: right;
+            min-width: 150px;
+        }
+
+        #progressBar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin: 4px auto 0;
+            overflow: hidden;
+        }
+
+        #progressFill {
+            height: 100%;
+            background: var(--neon-green);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        #screenCounter {
+            font-size: 13px;
+        }
+
+        /* Content Area */
+        #screens-container {
+            flex: 1;
+            min-height: 0; /* critical iOS Safari */
+            overflow: hidden; /* container itself does NOT scroll — each active screen scrolls independently */
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        /* Each active screen is its own scroll context — switching screens always starts at top (fresh context) */
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overflow-anchor: none;
+            padding: 40px 60px 120px; /* 120px bottom clears fixed #bottom-nav */
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Bottom Navigation */
+        #bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--deep-green);
+            padding: 20px 24px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom)); /* iPhone home indicator */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .btn-primary {
+            background-color: var(--neon-green);
+            color: var(--deep-green);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #5dff1f;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--white);
+            border: 2px solid var(--neon-green);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: rgba(77, 246, 0, 0.1);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Welcome Banner */
+        .banner {
+            background: linear-gradient(135deg, var(--deep-green) 0%, var(--dark-green-light) 100%);
+            color: white; /* explicit white — prevents inheriting grey from body on dark background */
+            padding: 60px 40px;
+            border-radius: 8px;
+            color: var(--white);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--neon-green);
+            animation: slideRight 2s ease-in-out infinite;
+        }
+
+        @keyframes slideRight {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .banner h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: white; /* override global h1 { color: var(--deep-green) } at line ~1362 */
+        }
+
+        .banner .subtitle {
+            font-size: 20px;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .banner .hook {
+            font-size: 18px;
+            color: rgba(255,255,255,0.9);
+            margin-top: 24px;
+            line-height: 1.7;
+            font-style: italic;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .time-badge {
+            display: inline-block;
+            background: var(--neon-green);
+            color: var(--deep-green);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* Objective Cards */
+        .objectives-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 900px;
+            margin: 20px auto;
+        }
+
+        .objective-card {
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .objective-card:hover {
+            border-color: var(--deep-green);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,74,34,0.25);
+        }
+
+        .objective-card-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .objective-card h3 {
+            color: var(--deep-green);
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .objective-card p {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* Experience Card */
+        .experience-card {
+            background: #fffbf0;
+            border: 1px solid #f0e5d8;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 700px;
+            margin: 20px auto;
+        }
+
+        .experience-card h2 {
+            color: var(--deep-green);
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .experience-scenario {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--neon-green);
+            font-size: 15px;
+            color: #2d2d2d;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .experience-prompt {
+            font-size: 14px;
+            color: var(--deep-green);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* Gallery Grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 700px;
+            margin: 20px auto;
+        }
+
+        .gallery-card {
+            background: white;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            cursor: default;
+            transition: all 0.4s ease;
+        }
+
+        .gallery-card.locked {
+            opacity: 0.45;
+            filter: grayscale(0.8);
+        }
+
+        .gallery-card.unlocked {
+            border-color: var(--neon-green);
+            background: #f0fff4;
+            opacity: 1;
+            filter: none;
+        }
+
+        .gallery-card.unlocked::after {
+            content: '✓';
+            display: block;
+            color: var(--deep-green);
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 6px;
+        }
+
+        .gallery-card-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .gallery-card-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--deep-green);
+        }
+
+        .gallery-card-lock {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+
+        /* Bias Layout */
+        .bias-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            height: auto;
+        }
+
+        .scenario-panel {
+            background: #fffbf0;
+            border-left: 4px solid var(--neon-green);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .scenario-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .scenario-text {
+            font-size: 15px;
+            color: #2d2d2d;
+            line-height: 1.8;
+            font-style: italic;
+        }
+
+        .definition-panel {
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bias-name-header {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--deep-green);
+            margin-bottom: 12px;
+        }
+
+        .bias-definition-text {
+            font-size: 16px;
+            color: #2d2d2d;
+            line-height: 1.7;
+            margin-bottom: 16px;
+            border-left: 3px solid var(--neon-green);
+            padding-left: 12px;
+        }
+
+        .bias-meta {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.7;
+            flex-grow: 1;
+        }
+
+        .bias-meta-row {
+            margin-bottom: 10px;
+        }
+
+        .bias-meta-label {
+            font-weight: 700;
+            color: var(--deep-green);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .bias-antidote {
+            background: #f0fff4;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--deep-green);
+        }
+
+        .understood-btn {
+            background: var(--deep-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+
+        .understood-btn:hover:not(:disabled) {
+            background: #002610;
+            transform: translateY(-1px);
+        }
+
+        .understood-btn:disabled {
+            background: #27ae60;
+            cursor: default;
+        }
+
+        /* Framing */
+        .framing-demo {
+            display: flex;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .framing-panel-a, .framing-panel-b {
+            border-radius: 10px;
+            padding: 20px;
+            flex: 1;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .framing-panel-a {
+            background: #fff0f0;
+            border: 2px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .framing-panel-b {
+            background: #f0fff4;
+            border: 2px solid #27ae60;
+            color: #1a6b3a;
+        }
+
+        .framing-toggle-btn {
+            background: #030FF5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 16px 0;
+        }
+
+        .framing-toggle-btn:hover {
+            background: #0208c0;
+        }
+
+        /* Dual Bias */
+        .dual-bias {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bias-section {
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid var(--neon-green);
+        }
+
+        .bias-section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--deep-green);
+            margin-bottom: 12px;
+        }
+
+        /* Expandable Trio */
+        .trio-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .trio-card {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+
+        .trio-card.expanded {
+            border-color: var(--deep-green);
+        }
+
+        .trio-card-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trio-card-icon {
+            font-size: 24px;
+        }
+
+        .trio-card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--deep-green);
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .trio-card-hint {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .trio-card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            padding: 0 16px;
+        }
+
+        .trio-card.expanded .trio-card-content {
+            max-height: 400px;
+            padding: 0 16px 16px;
+        }
+
+        .trio-card-def {
+            font-size: 14px;
+            color: #2d2d2d;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .trio-card-scenario {
+            font-size: 13px;
+            color: #555;
+            font-style: italic;
+            border-left: 3px solid var(--neon-green);
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+
+        .trio-card-antidote {
+            font-size: 13px;
+            color: var(--deep-green);
+            background: #f0fff4;
+            border-radius: 6px;
+            padding: 8px 10px;
+        }
+
+        /* Detective Screen */
+        .case-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .case-tab {
+            background: #eee;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .case-tab.active {
+            background: var(--deep-green);
+            color: white;
+        }
+
+        .case-tab.done {
+            background: #27ae60;
+            color: white;
+        }
+
+        .case-content {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 8px 8px 8px;
+            padding: 20px;
+            display: none;
+        }
+
+        .case-content.active {
+            display: block;
+        }
+
+        .case-vignette {
+            font-size: 15px;
+            color: #2d2d2d;
+            line-height: 1.8;
+            margin-bottom: 16px;
+            font-style: italic;
+            background: #fffbf0;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--neon-green);
+        }
+
+        .case-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .check-btn {
+            background: var(--deep-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .correct-fb {
+            color: #27ae60;
+            font-size: 14px;
+        }
+
+        .incorrect-fb {
+            color: #e74c3c;
+            font-size: 14px;
+        }
+
+        /* ── Screen 11: Detective Game – Enhanced Layout ── */
+        #screen-11 { padding: 32px 48px 40px !important; }
+
+        .detective-intro {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--deep-green);
+            color: white;
+            border-radius: 12px;
+            padding: 16px 22px;
+            margin-bottom: 24px;
+        }
+        .detective-badge { font-size: 30px; line-height: 1; }
+        .detective-title { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+        .detective-sub   { font-size: 13px; opacity: 0.75; }
+        .detective-steps { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+        .d-step {
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.25);
+            transition: all 0.3s;
+        }
+        .d-step.done { background: var(--neon-green); color: var(--deep-green); border-color: var(--neon-green); }
+
+        #screen-11 .case-tabs { gap: 4px; margin-bottom: 0 !important; }
+        #screen-11 .case-tab {
+            flex: 1;
+            font-size: 13px; font-weight: 600;
+            padding: 10px 12px;
+            border-radius: 8px 8px 0 0;
+            background: #dde4db; color: #4a6a4a;
+            text-align: center;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            transition: all 0.2s;
+        }
+        #screen-11 .case-tab.active { background: var(--deep-green); color: white; }
+        #screen-11 .case-tab.done   { background: #2ecc71; color: white; }
+
+        #screen-11 .case-content {
+            border: 2px solid var(--deep-green);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            padding: 24px 24px 20px;
+        }
+
+        .case-meta {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 14px; padding-bottom: 14px;
+            border-bottom: 1px solid #eee;
+        }
+        .case-num-badge {
+            background: var(--deep-green); color: white;
+            font-size: 10px; font-weight: 800; letter-spacing: 1px;
+            padding: 3px 10px; border-radius: 4px; text-transform: uppercase;
+        }
+        .case-label-text {
+            font-size: 13px; color: #888; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.4px;
+        }
+
+        #screen-11 .case-vignette {
+            font-size: 15px; line-height: 1.85; font-style: normal; color: #2d2d2d;
+            padding: 16px 18px 16px 20px;
+            border-left: 5px solid var(--neon-green);
+            background: #f7fdf7;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 18px;
+        }
+
+        .case-action-row {
+            display: flex; gap: 10px; align-items: stretch;
+            margin-bottom: 12px;
+        }
+        .case-action-row .case-select {
+            flex: 1; margin-bottom: 0;
+            padding: 12px 14px; font-size: 15px;
+            border: 2px solid #ccc; border-radius: 8px; cursor: pointer;
+        }
+        .case-action-row .case-select:focus { border-color: var(--deep-green); outline: none; }
+        .case-action-row .check-btn {
+            padding: 0 22px; font-size: 15px;
+            white-space: nowrap; font-weight: 700;
+            border-radius: 8px; min-height: 48px;
+            background: var(--deep-green); color: white;
+            border: none; cursor: pointer; transition: background 0.2s;
+        }
+        .case-action-row .check-btn:hover    { background: #005f2a; }
+        .case-action-row .check-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        #screen-11 .correct-fb {
+            display: block; font-size: 14px; line-height: 1.6;
+            padding: 12px 16px; border-radius: 8px;
+            background: #f0fff4; border-left: 4px solid #27ae60; color: #1a6b3a;
+        }
+        #screen-11 .incorrect-fb {
+            display: block; font-size: 14px;
+            padding: 12px 16px; border-radius: 8px;
+            background: #fff5f5; border-left: 4px solid #e74c3c; color: #8b1f1f;
+        }
+
+        #detective-success {
+            background: linear-gradient(135deg, #f0fff4, #e8f8ee);
+            border: 2px solid #27ae60; border-radius: 16px;
+            padding: 28px 24px; margin-top: 24px; text-align: center;
+            box-shadow: 0 4px 16px rgba(39,174,96,0.15);
+        }
+
+        /* Tree */
+        .tree-progress {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .tree-situation {
+            background: #fffbf0;
+            border-left: 4px solid var(--neon-green);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            font-size: 15px;
+            color: #2d2d2d;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .tree-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tree-choice {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 14px 18px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            color: #2d2d2d;
+            transition: all 0.2s;
+            line-height: 1.6;
+        }
+
+        .tree-choice:hover {
+            border-color: var(--deep-green);
+            background: #f0fff4;
+        }
+
+        .tree-feedback {
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .tree-feedback.biased {
+            background: #fff0f0;
+            border: 2px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .tree-feedback.clear {
+            background: #f0fff4;
+            border: 2px solid #27ae60;
+            color: #1a6b3a;
+        }
+
+        .tree-result-card {
+            border-radius: 12px;
+            padding: 24px;
+            text-align: left;
+            color: #2d2d2d;
+        }
+
+        .result-clear {
+            background: #f0fff4;
+            border: 2px solid #27ae60;
+            color: #1a4a2a;
+        }
+
+        .result-partial {
+            background: #fffbf0;
+            border: 2px solid #c09000;
+            color: #3d2f00;
+        }
+
+        .result-biased {
+            background: #fff0f0;
+            border: 2px solid #e74c3c;
+            color: #3d0000;
+        }
+
+        .tree-result-card h3 {
+            text-align: center;
+        }
+        .tree-result-card p.tree-result-body {
+            text-align: left;
+            color: inherit;
+        }
+        .tree-result-card ul {
+            text-align: left;
+            padding-left: 20px;
+            margin: 12px 0;
+        }
+        .tree-result-card ul li {
+            text-align: left;
+            margin-bottom: 6px;
+        }
+        .tree-result-restart-btn {
+            display: inline-block;
+            background: #ffffff;
+            color: #2d2d2d !important;
+            border: 2px solid #888;
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        .tree-result-restart-btn:hover {
+            background: #f0f0f0;
+            border-color: #555;
+        }
+
+        /* Matching */
+        .matching-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .match-item {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #2d2d2d;
+            line-height: 1.5;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .match-item:hover:not(.matched) {
+            border-color: var(--deep-green);
+            background: #f0fff4;
+        }
+
+        .match-item.selected {
+            border-color: #030FF5;
+            background: #f0f0ff;
+        }
+
+        .match-item.matched {
+            border-color: #27ae60;
+            background: #f0fff4;
+            color: #1a6b3a;
+            cursor: default;
+        }
+
+        .match-item.wrong {
+            border-color: #e74c3c;
+            background: #fff0f0;
+            animation: shake 0.4s ease;
+        }
+
+        .match-name {
+            font-weight: 700;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        /* Data Ambiguity */
+        .data-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .metric-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--deep-green);
+        }
+
+        /* Metric card status-aware value colours */
+        .metric-card.card-warn .metric-value { color: #c0392b; }
+        .metric-card.card-neutral .metric-value { color: #2980b9; }
+        .metric-card.card-ok .metric-value { color: #1a7a40; }
+
+        .metric-status {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .metric-status.ok {
+            color: #27ae60;
+        }
+
+        .metric-status.warn {
+            color: #e67e22;
+        }
+
+        .metric-status.neutral {
+            color: #3498db;
+        }
+
+        .data-choice-btns {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .data-choice-btn {
+            background: var(--deep-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .data-choice-btn:disabled {
+            background: #27ae60;
+            opacity: 0.7;
+            cursor: default;
+        }
+
+        .debrief-choices {
+            display: flex;
+            gap: 12px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+
+        .debrief-round {
+            flex: 1;
+            min-width: 140px;
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Timeline */
+        .timeline-phases {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .timeline-phase {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .phase-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--deep-green);
+            margin-bottom: 8px;
+        }
+
+        .phase-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .timeline-slider {
+            flex: 1;
+            accent-color: var(--deep-green);
+        }
+
+        .phase-val {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--deep-green);
+            min-width: 60px;
+        }
+
+        .timeline-total-box {
+            background: var(--deep-green);
+            color: white;
+            border-radius: 10px;
+            padding: 16px 24px;
+            text-align: center;
+            margin: 16px 0;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .comp-col {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            border: 2px solid #eee;
+        }
+
+        .comp-col.external {
+            border-color: var(--neon-green);
+        }
+
+        /* Screen 15: Planning split layout */
+        .planning-split {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 24px;
+            align-items: start;
+        }
+        .planning-left {
+            background: linear-gradient(135deg, var(--deep-green) 0%, #1a6b3a 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 24px;
+            position: sticky;
+            top: 0;
+        }
+        .planning-left h3 {
+            color: var(--neon-green);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+        .planning-left .phase-label   { color: rgba(255,255,255,0.9); }
+        .planning-left .timeline-phase { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); }
+        .planning-left .timeline-slider { accent-color: var(--neon-green); }
+        .planning-left .phase-val      { color: var(--neon-green); }
+        .planning-left .timeline-total-box {
+            background: rgba(0,0,0,0.25);
+            border: 2px solid var(--neon-green);
+            margin-bottom: 16px;
+        }
+        .planning-right {
+            background: white;
+            border-radius: 12px;
+            padding: 28px;
+            border: 1px solid #ddd;
+            min-height: 280px;
+        }
+        .planning-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 240px;
+            text-align: center;
+            color: #aaa;
+        }
+        .planning-placeholder .ph-icon { font-size: 48px; margin-bottom: 12px; }
+        .planning-placeholder p { font-size: 15px; line-height: 1.6; max-width: 260px; color: #aaa; }
+        .planning-context-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--neon-green); margin-bottom: 8px;
+        }
+        .planning-context-text {
+            font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.85);
+            margin-bottom: 20px; padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+        #screen-15 .btn-primary {
+            width: 100%; margin-top: 0;
+            font-size: 16px; font-weight: 700;
+            padding: 14px 0;
+        }
+
+        /* Quiz */
+        .quiz-progress {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .quiz-question {
+            font-size: 15px;
+            color: #2d2d2d;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            background: #f8f8f8;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-option {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 16px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            color: #2d2d2d;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover:not(:disabled) {
+            border-color: var(--deep-green);
+            background: #f0fff4;
+        }
+
+        .quiz-option.correct {
+            border-color: #27ae60;
+            background: #f0fff4;
+            color: #1a6b3a;
+        }
+
+        .quiz-option.incorrect {
+            border-color: #e74c3c;
+            background: #fff0f0;
+            color: #c0392b;
+        }
+
+        .quiz-explanation {
+            font-size: 14px;
+            line-height: 1.7;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .correct-exp {
+            background: #f0fff4;
+            color: #1a6b3a;
+            border-left: 3px solid #27ae60;
+        }
+
+        .incorrect-exp {
+            background: #fff0f0;
+            color: #c0392b;
+            border-left: 3px solid #e74c3c;
+        }
+
+        .quiz-result {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .quiz-score {
+            font-size: 64px;
+            font-weight: 900;
+            color: var(--deep-green);
+            line-height: 1;
+        }
+
+        .quiz-score span {
+            font-size: 32px;
+            color: #888;
+        }
+
+        /* Reflection */
+        .reflection-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .reflection-card {
+            background: #fffbf0;
+            border: 1px solid #f0e5d8;
+            border-radius: 12px;
+            padding: 32px;
+        }
+
+        .summary-layout {
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 12px;
+            padding: 32px;
+        }
+
+        .bias-badges {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .bias-badge {
+            background: var(--deep-green);
+            color: white;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .bias-badge span {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        h1 { font-size: 32px; font-weight: 700; color: var(--deep-green); }
+        h2 { font-size: 24px; font-weight: 700; color: var(--deep-green); margin-bottom: 16px; }
+        h3 { font-size: 18px; font-weight: 700; color: var(--deep-green); margin-bottom: 12px; }
+        p { font-size: 15px; color: #555; line-height: 1.7; margin-bottom: 12px; }
+    /* M2-04 Newspaper metaphor */
+.newspaper-viz { background: #fffbf0; border: 1px solid #e8dcc8; border-radius: 8px; padding: 16px; margin: 16px 0; }
+.newspaper-label { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.newspaper-container { display: flex; gap: 12px; }
+.news-prominent { flex: 2; background: white; border-radius: 6px; padding: 12px; border-left: 4px solid #e74c3c; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.news-fade { flex: 1; background: #f5f5f5; border-radius: 6px; padding: 12px; border-left: 4px solid #ccc; opacity: 0.5; }
+.news-tag { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #e74c3c; margin-bottom: 6px; }
+.news-tag.faded { color: #999; }
+.news-headline { font-size: 13px; font-weight: 700; color: #2d2d2d; margin-bottom: 4px; }
+.news-headline.faded { color: #888; }
+.news-sub { font-size: 11px; color: #666; }
+.news-sub.faded { color: #aaa; }
+.newspaper-caption { font-size: 12px; color: #777; font-style: italic; margin-top: 10px; text-align: center; }
+
+/* M2-05 Dual filter */
+.dual-filter-viz { background: #f8faff; border: 1px solid #c8d8f0; border-radius: 8px; padding: 16px; margin: 16px 0; }
+.dual-filter-label { font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.filter-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.filter-tab { padding: 8px 16px; border: 2px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+.filter-tab.active { background: var(--deep-green); color: white; border-color: var(--deep-green); }
+.filter-subtitle { font-size: 12px; font-style: italic; color: #666; margin-bottom: 10px; }
+.filter-data-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 4px; margin-bottom: 4px; }
+.filter-data-row.positive { background: #e8f5e9; }
+.filter-data-row.negative { background: #fdecea; }
+.filter-data-row.neutral { background: #f5f5f5; }
+.filter-data-row.hidden-conf { background: #f0f0f0; opacity: 0.4; }
+.fdr-label { font-size: 12px; color: #333; }
+.fdr-value { font-size: 12px; font-weight: 700; color: #1a1a1a; }
+.fdr-greyed { color: #aaa !important; }
+.filter-note { font-size: 12px; border-radius: 4px; padding: 8px 10px; margin-top: 8px; font-weight: 600; }
+.conf-note { background: #fff3e0; color: #b85c00; }
+.desaf-note { background: #e8f5e9; color: #1a6b3a; }
+
+/* M2-06 Anchor animation */
+.anchor-animation-container { display: flex; align-items: center; gap: 20px; background: #f0f4ff; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.anchor-emoji { font-size: 48px; animation: anchorDrop 2s ease-in-out infinite alternate; display: inline-block; }
+@keyframes anchorDrop { from { transform: translateY(-8px); } to { transform: translateY(8px); } }
+.anchor-numbers { display: flex; flex-direction: column; gap: 4px; }
+.anchor-num { font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 4px; }
+.anchor-start { background: #e74c3c; color: white; }
+.anchor-mid { background: #f39c12; color: white; }
+.anchor-end { background: #27ae60; color: white; }
+.anchor-market-note { font-size: 12px; color: #555; margin-top: 8px; padding: 8px; background: #fff3cd; border-radius: 4px; border-left: 3px solid #f39c12; }
+
+/* M2-08 Risk dial */
+.risk-dial-section { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 20px; margin: 16px 0; }
+.risk-dial-title { font-size: 14px; font-weight: 700; color: var(--deep-green); margin-bottom: 16px; }
+.risk-dial-container { max-width: 500px; margin: 0 auto; }
+.risk-spectrum-labels { display: flex; justify-content: space-between; font-size: 11px; color: #666; margin-bottom: 8px; }
+.risk-dial-input { width: 100%; height: 6px; -webkit-appearance: none; appearance: none; border-radius: 3px; background: linear-gradient(to right, #4DF600, #27ae60, #004A22); outline: none; cursor: pointer; margin-bottom: 16px; }
+.risk-dial-input::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: white; border: 3px solid var(--deep-green); box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; }
+.risk-dial-output { background: white; border-radius: 8px; padding: 14px; min-height: 60px; border-left: 4px solid var(--deep-green); font-size: 13px; color: #333; line-height: 1.6; }
+
+/* M2-13 Timer */
+.match-timer-bar { display: flex; align-items: center; gap: 10px; background: #f0f4ff; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; }
+.match-timer-label { font-size: 13px; font-weight: 700; color: #555; }
+.match-timer-display { font-size: 22px; font-weight: 800; color: var(--deep-green); font-variant-numeric: tabular-nums; min-width: 60px; }
+.match-timer-note { font-size: 11px; color: #888; font-style: italic; }
+
+/* M2-12 Split tree layout */
+.tree-split-layout { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; height: 100%; align-items: start; }
+.tree-left-panel { background: linear-gradient(135deg, var(--deep-green) 0%, #1a6b3a 100%); color: white; border-radius: 12px; padding: 24px; position: sticky; top: 0; }
+.tree-left-panel h2 { color: var(--neon-green); }
+.tree-left-panel p { color: rgba(255,255,255,0.85); }
+.tree-scenario-box { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 16px; margin-top: 16px; }
+.tree-scenario-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neon-green); margin-bottom: 8px; }
+.tree-scenario-box p { font-size: 14px; line-height: 1.7; }
+.tree-path-indicator { margin-top: 20px; }
+.tree-path-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.6); margin-bottom: 10px; }
+.tree-path-steps { display: flex; align-items: center; gap: 8px; }
+.tree-path-step { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; border: 2px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); transition: all 0.3s; }
+.tree-path-step.active { background: var(--neon-green); color: var(--deep-green); border-color: var(--neon-green); }
+.tree-path-step.biased { background: #e74c3c; color: white; border-color: #e74c3c; }
+.tree-path-step.clear { background: var(--neon-green); color: var(--deep-green); border-color: var(--neon-green); }
+.tree-path-arrow { color: rgba(255,255,255,0.3); font-size: 16px; }
+.tree-right-panel { background: white; border-radius: 12px; padding: 24px; min-height: 300px; }
+
+/* Gallery completion flash */
+@keyframes galleryFlash {
+    0% { background: white; }
+    25% { background: rgba(77,246,0,0.2); }
+    50% { background: white; }
+    75% { background: rgba(77,246,0,0.3); }
+    100% { background: white; }
+}
+.gallery-flash { animation: galleryFlash 2s ease; }
+
+/* Gallery group-of-3 completion */
+@keyframes groupPulse {
+    0%   { transform: scale(1); box-shadow: none; }
+    30%  { transform: scale(1.06); box-shadow: 0 0 18px rgba(77,246,0,0.55); }
+    60%  { transform: scale(1.02); box-shadow: 0 0 10px rgba(77,246,0,0.3); }
+    100% { transform: scale(1); box-shadow: none; }
+}
+.gallery-card.group-pulse { animation: groupPulse 0.8s ease forwards; }
+
+        /* M2-10 Ostrich animation */
+.ostrich-animation { background: #f0f8f0; border-radius: 8px; padding: 12px 16px; margin-top: 16px; text-align: center; }
+.ostrich-ground { display: flex; align-items: flex-end; justify-content: center; gap: 0; height: 60px; }
+.ostrich-body { font-size: 36px; animation: ostrichBob 1s ease-in-out infinite alternate; display: inline-block; }
+.ostrich-head { font-size: 20px; animation: ostrichHide 1.5s ease-in-out infinite; display: inline-block; transform-origin: top center; }
+@keyframes ostrichBob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+@keyframes ostrichHide { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 50% { transform: translateY(20px) rotate(45deg); opacity: 0.3; } 100% { transform: translateY(0) rotate(0deg); opacity: 1; } }
+.ostrich-caption { font-size: 12px; color: #666; font-style: italic; margin-top: 8px; }
+
+        /* Next button visual gating */
+        #nextBtn { transition: opacity 0.2s ease; }
+        /* Screen 10: Planning Fallacy Visual */
+        .planning-viz {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 16px 0;
+            box-shadow: 0 2px 12px rgba(0,74,34,0.08);
+        }
+        .planning-viz-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+        .planning-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .planning-row-label {
+            width: 80px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            flex-shrink: 0;
+        }
+        .planning-bar-track {
+            flex: 1;
+            height: 28px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .planning-bar {
+            height: 100%;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            transition: width 1s ease;
+        }
+        .planning-bar.planned { background: #2ecc71; width: 35%; }
+        .planning-bar.actual { background: #e74c3c; width: 85%; }
+        .planning-bar.planned-cost { background: #3498db; width: 40%; }
+        .planning-bar.actual-cost { background: #e67e22; width: 90%; }
+        .planning-arrow { font-size: 18px; color: #e74c3c; font-weight: 700; }
+        .planning-viz-footer {
+            font-size: 13px;
+            color: #888;
+            margin-top: 12px;
+            text-align: center;
+            font-style: italic;
+        }
+        /* Screen 9: Card Deck Stack */
+        .trio-recap-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--deep-green);
+            color: white;
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            font-weight: 700;
+        }
+        .trio-recap-header span { opacity: 0.75; font-weight: 400; font-size: 13px; margin-left: 4px; }
+        .trio-recap-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+        }
+        .trio-recap-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 12px rgba(0,74,34,0.08);
+            border-left: 5px solid var(--neon-green);
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+        }
+        .trio-recap-icon { font-size: 30px; flex-shrink: 0; line-height: 1.2; }
+        .trio-recap-title { font-size: 16px; font-weight: 700; color: var(--deep-green); margin-bottom: 6px; }
+        .trio-recap-def { font-size: 14px; color: #2d2d2d; line-height: 1.7; margin-bottom: 8px; }
+        .trio-recap-scenario {
+            font-size: 13px; color: #555; font-style: italic;
+            border-left: 3px solid var(--neon-green);
+            padding-left: 10px; margin-bottom: 8px;
+        }
+        .trio-recap-antidote {
+            font-size: 13px; color: var(--deep-green);
+            background: #f0fff4; padding: 7px 12px; border-radius: 6px;
+        }
+        .trio-recap-understood {
+            display: block; margin: 20px auto 0;
+            background: var(--neon-green); color: var(--deep-green);
+            border: none; border-radius: 10px;
+            padding: 13px 36px; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .trio-recap-understood:hover { opacity: 0.88; }
+        .deck-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+        }
+        .deck-counter {
+            font-size: 14px;
+            color: #888;
+            font-weight: 600;
+        }
+        .deck-dot-row {
+            display: flex;
+            gap: 6px;
+        }
+        .deck-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: background 0.2s;
+        }
+        .deck-dot.seen { background: var(--neon-green); }
+        .deck-next-btn {
+            background: var(--deep-green);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .deck-next-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+        .deck-understood-btn {
+            display: block;
+            margin: 16px auto 0;
+            background: var(--neon-green);
+            color: var(--deep-green);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 36px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            opacity: 0.45;
+            transition: opacity 0.3s;
+        }
+        .deck-understood-btn.ready { opacity: 1; cursor: pointer; }
+        /* Screen 13 — matching game */
+        #screen-13 {
+            padding: 24px 28px 40px !important;
+        }
+        #screen-13 .match-timer-bar {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            background: var(--deep-green) !important;
+            border-radius: 12px !important;
+            padding: 10px 20px !important;
+            margin: 0 0 14px 0 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        #screen-13 .match-timer-label { color: white !important; font-size: 14px !important; font-weight: 600 !important; }
+        #screen-13 .match-timer-display { color: var(--neon-green) !important; font-size: 22px !important; font-weight: 700 !important; font-family: monospace !important; }
+        #screen-13 .match-timer-note { color: rgba(255,255,255,0.6) !important; font-size: 12px !important; }
+        #screen-13 .matching-cols {
+            display: grid !important;
+            grid-template-columns: 1fr 2fr !important;
+            gap: 14px !important;
+            align-items: start !important;
+            width: 100% !important;
+        }
+        #screen-13 .match-item {
+            font-size: 14px !important;
+            padding: 10px 14px !important;
+            border-radius: 10px !important;
+            margin-bottom: 7px !important;
+            border: 2px solid #e0e0e0 !important;
+            transition: all 0.18s ease !important;
+            cursor: pointer !important;
+            background: white !important;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.07) !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+            line-height: 1.45 !important;
+        }
+        #screen-13 .match-item:hover:not(.matched) {
+            border-color: var(--deep-green) !important;
+            background: #f0fff4 !important;
+            transform: translateY(-1px) !important;
+        }
+        #screen-13 .match-item.selected {
+            border-color: var(--accent-blue) !important;
+            background: #eef1ff !important;
+        }
+        #screen-13 .match-item.matched {
+            border-color: #27ae60 !important;
+            background: #f0fff4 !important;
+            color: #1a6b3a !important;
+            cursor: default !important;
+            font-weight: 600 !important;
+        }
+        #screen-13 .match-item.wrong {
+            border-color: #e74c3c !important;
+            background: #fff0f0 !important;
+        }
+        #screen-13 .match-name { font-weight: 700 !important; }
+        /* Screen 12 accessibility overrides */
+        /* ── Screen 12: Decision Tree – Accessibility ── */
+        #screen-12 { font-size: 17px; padding: 32px 40px 120px !important; }
+        @media (max-width: 768px) { #screen-12 { padding: 20px 18px 120px !important; } }
+
+        /* Left panel readability */
+        #screen-12 .tree-left-panel h2   { font-size: 22px !important; margin-bottom: 10px !important; }
+        #screen-12 .tree-left-panel > p  { font-size: 16px !important; line-height: 1.7 !important; }
+        #screen-12 .tree-scenario-box p  { font-size: 16px !important; line-height: 1.8 !important; }
+        #screen-12 .tree-path-label      { font-size: 12px !important; letter-spacing: 0.5px !important; }
+        #screen-12 .tree-path-step       { width: 36px !important; height: 36px !important; font-size: 15px !important; }
+        #screen-12 .tree-path-arrow      { font-size: 18px !important; }
+
+        /* Decision step progress indicator */
+        #screen-12 .tree-progress {
+            font-size: 16px !important; font-weight: 700 !important;
+            color: var(--deep-green) !important;
+            background: #f0fff4; border-left: 4px solid var(--neon-green);
+            padding: 10px 16px !important; border-radius: 0 8px 8px 0;
+            margin-bottom: 18px !important;
+            text-align: left !important;
+        }
+
+        /* Situation text */
+        #screen-12 .tree-situation {
+            font-size: 17px !important; line-height: 1.85 !important;
+            padding: 20px 22px !important; margin-bottom: 22px !important;
+            background: #fffbf0 !important;
+            border-left: 5px solid var(--neon-green) !important;
+        }
+
+        /* Choice buttons – bigger touch targets */
+        #screen-12 .tree-choices { gap: 14px !important; }
+        #screen-12 .tree-choice {
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+            padding: 18px 22px !important;
+            min-height: 60px !important;
+            border: 2px solid #ccc !important;
+            border-radius: 10px !important;
+            text-align: left !important;
+        }
+        #screen-12 .tree-choice:hover {
+            border-color: var(--deep-green) !important;
+            background: #f0fff4 !important;
+            transform: translateX(3px);
+            box-shadow: -3px 0 0 var(--neon-green);
+        }
+        #screen-12 .tree-choice:focus {
+            outline: 3px solid var(--neon-green) !important;
+            outline-offset: 2px !important;
+        }
+
+        /* Feedback messages */
+        #screen-12 .tree-feedback {
+            font-size: 16px !important; line-height: 1.75 !important;
+            padding: 18px 20px !important; border-radius: 10px !important;
+        }
+        #screen-12 .tree-feedback strong { font-size: 17px !important; }
+
+        /* Next decision button (inside tree-container) */
+        #screen-12 .btn-primary {
+            font-size: 17px !important;
+            padding: 16px 32px !important;
+            min-height: 56px !important;
+            border-radius: 10px !important;
+            margin-top: 20px !important;
+        }
+        #screen-12 .btn-secondary {
+            font-size: 16px !important;
+            padding: 14px 28px !important;
+            min-height: 52px !important;
+            border-radius: 10px !important;
+        }
+
+        /* Result card */
+        #screen-12 .tree-result-card {
+            padding: 32px 28px !important;
+            border-radius: 14px !important;
+        }
+        #screen-12 .tree-result-card h3 {
+            font-size: 22px !important; margin-bottom: 10px !important; text-align: center !important;
+        }
+        #screen-12 .tree-result-card p {
+            font-size: 16px !important; line-height: 1.8 !important; text-align: left !important; color: inherit !important;
+        }
+        #screen-12 .tree-result-card ul {
+            font-size: 15px !important; line-height: 1.7 !important;
+            margin: 14px 0 !important; padding-left: 22px !important;
+            text-align: left !important;
+        }
+        #screen-12 .tree-result-card ul li {
+            text-align: left !important; margin-bottom: 6px !important;
+        }
+
+        /* Legacy aliases */
+        #screen-12 .tree-result-title { font-size: 22px !important; text-align: center !important; }
+        #screen-12 .tree-result-body  { font-size: 16px !important; line-height: 1.8 !important; text-align: left !important; }
+        #screen-12 .tree-bias-badge, #screen-12 .bias-badge {
+            font-size: 15px !important; padding: 8px 16px !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .screen { padding: 30px 40px; }
+            .objectives-grid { grid-template-columns: 1fr; }
+            .trio-cards { grid-template-columns: 1fr 1fr; }
+            .trio-recap-column { grid-template-columns: 1fr 1fr; }
+            .bias-layout { grid-template-columns: 1fr; height: auto; }
+            /* Screens 12, 15, 17: reduce column ratio on tablet */
+            .tree-split-layout { grid-template-columns: 1fr 1.2fr; }
+            .planning-split { grid-template-columns: 1fr 1fr; }
+            .reflection-layout { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .screen.active { padding: 20px 18px 120px; } /* tighter sides on mobile, keep 120px bottom for nav */
+            .banner { padding: 36px 20px; }
+            .banner h1 { font-size: 26px; }
+            .banner .subtitle { font-size: 18px; }
+            .banner .hook { font-size: 14px; }
+            #top-bar { padding: 10px 14px; }
+            .top-bar-left { font-size: 13px; gap: 8px; }
+            .top-bar-left svg { height: 22px; }
+            .top-bar-center { font-size: 11px; }
+            .top-bar-right { font-size: 11px; min-width: auto; }
+            #progressBar { width: 120px; }
+            #bottom-nav { padding: 12px 14px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+            .btn { padding: 10px 14px; font-size: 13px; }
+            .objectives-grid { grid-template-columns: 1fr; }
+            .gallery-grid { grid-template-columns: 1fr 1fr; }
+            .bias-layout { grid-template-columns: 1fr; height: auto; gap: 16px; }
+            .framing-demo { flex-direction: column; }
+            .trio-cards { grid-template-columns: 1fr; }
+            .trio-recap-column { grid-template-columns: 1fr; }
+            .experience-card { padding: 20px; }
+            .definition-panel, .scenario-panel { padding: 18px; }
+            .bias-name-header { font-size: 18px; }
+            .bias-definition-text { font-size: 14px; }
+            .bias-meta { font-size: 13px; }
+
+            /* Screen 12 – Decision Tree: stack panels vertically */
+            .tree-split-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+                gap: 16px;
+            }
+            .tree-left-panel { position: static; } /* disable sticky so it scrolls with content */
+
+            /* Screen 15 – Planning Timeline: stack panels vertically */
+            .planning-split {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .planning-left { position: static; } /* disable sticky on mobile */
+            .planning-right { min-height: auto; }
+
+            /* Screen 17 – Reflection & Summary: stack panels vertically */
+            .reflection-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .reflection-card, .summary-layout { padding: 20px; }
+            .bias-badges { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        }
+        </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div id="top-bar">
+            <div class="top-bar-left" onclick="currentScreen = 0; showScreen(0);">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.16 114.38" height="28" style="flex-shrink:0;">
+                    <path fill="#4DF600" d="M80.95,49.16c13.59,12.49,27.32,24.83,41.01,37.21,1.71-2.52,3.25-5.17,4.59-7.93-13.23-12.52-26.84-24.66-40.54-36.67-11.31-9.92-21.92-9.62-33.1.41-13.3,11.93-26.23,24.3-39.81,35.89,1.34,2.82,2.89,5.52,4.62,8.09,13.73-12.39,27.46-24.78,41.13-37.24,7.59-6.92,14.41-6.83,22.12.25Z"/>
+                    <path fill="#4DF600" d="M56.92,20.51c8.24-4.87,16.3-5.35,24.64-.48,12.87,7.52,25.76,15,38.67,22.46,4.05,2.34,8.15,4.59,12.57,7.06-.09-3.94-.55-7.79-1.33-11.52-.69-.56-31.47-18.24-45.95-26.61-9.9-5.72-20.15-6.3-30.13-.8-14.57,8.03-46.01,26.35-47,27.22-.8,3.73-1.27,7.59-1.37,11.53.28-.12.54-.24.79-.38,16.39-9.47,32.83-18.86,49.13-28.49Z"/>
+                </svg>
+                Sem Pontos Cegos
+            </div>
+            <div class="top-bar-center">
+                <div id="screenCounter">Tela 0 de 17</div>
+                <div id="progressBar"><div id="progressFill"></div></div>
+            </div>
+            <div class="top-bar-right">Módulo 2: Armadilhas de Decisão</div>
+        </div>
+
+        <!-- Screens Container -->
+        <div id="screens-container">
+
+            <!-- Screen 0: Welcome -->
+            <div class="screen active" id="screen-0">
+                <div class="banner">
+                    <h1>Módulo 2: Armadilhas de Decisão</h1>
+                    <div class="subtitle">Vieses que Distorcem o Julgamento</div>
+                    <div class="hook">Nove armadilhas invisíveis. A maioria dos líderes caiu em pelo menos três delas essa semana.</div>
+                    <div class="time-badge">⏱️ 40–45 minutos</div>
+                </div>
+                <div style="text-align: center; margin-top: 40px;">
+                    <button class="btn btn-primary" onclick="goNext()">Iniciar Módulo →</button>
+                </div>
+            </div>
+
+            <!-- Screen 1: Objectives -->
+            <div class="screen" id="screen-1">
+                <h1 style="text-align: center; margin-bottom: 32px;">Ao final deste módulo, você será capaz de:</h1>
+                <div class="objectives-grid">
+                    <div class="objective-card">
+                        <div class="objective-card-icon">🔎</div>
+                        <h3>Identificar e Definir</h3>
+                        <p>Os 9 vieses que mais impactam a tomada de decisão em contextos de liderança.</p>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-card-icon">👁️</div>
+                        <h3>Reconhecer Padrões</h3>
+                        <p>Como cada viés se manifesta em cenários reais de liderança organizacional.</p>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-card-icon">🧠</div>
+                        <h3>Explicar Contextos</h3>
+                        <p>As condições em que cada viés é mais provável de aparecer e se intensificar.</p>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-card-icon">🖾</div>
+                        <h3>Distinguir Diferenças</h3>
+                        <p>Entre vieses relacionados — como ancoragem e enquadramento — e seus efeitos únicos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 2: Experience -->
+            <div class="screen" id="screen-2">
+                <div class="experience-card">
+                    <h2>Da Sua Experiência</h2>
+                    <div class="experience-scenario">
+                        Você está avaliando duas propostas de projeto. Uma vem de um time com quem você trabalha há anos; a outra, de um time novo. Todos os outros fatores são iguais.
+                    </div>
+                    <div class="experience-prompt">Qual você escolhe — e por quê? Registre sua resposta instintiva antes de continuar.</div>
+                    <button class="btn btn-primary" onclick="completeScreen2()" style="margin-top: 20px;">✓ Já refleti — continuar →</button>
+                    <p style="font-size: 12px; color: #999; margin-top: 10px; font-style: italic;">Clique no botão acima para liberar a navegação</p>
+                </div>
+            </div>
+
+            <!-- Screen 3: Bias Gallery -->
+            <div class="screen" id="screen-3">
+                <h1 style="text-align: center; margin-bottom: 12px;">Galeria de Armadilhas</h1>
+                <p style="text-align: center; margin-bottom: 24px; color: #666;">Você está prestes a explorar 9 vieses de decisão. Os cards se iluminam conforme você os completa.</p>
+                <div class="gallery-grid" id="gallery-grid">
+                    <div class="gallery-card locked" data-group="0" id="gallery-card-0"><div class="gallery-card-icon">📰</div><div class="gallery-card-name">Disponibilidade</div><div class="gallery-card-lock">🔒 Em breve</div></div>
+                    <div class="gallery-card locked" data-group="0" id="gallery-card-1"><div class="gallery-card-icon">🔍</div><div class="gallery-card-name">Confirmação</div><div class="gallery-card-lock">🔒 Em breve</div></div>
+                    <div class="gallery-card locked" data-group="0" id="gallery-card-2"><div class="gallery-card-icon">⚓</div><div class="gallery-card-name">Ancoragem</div><div class="gallery-card-lock">🔒 Em breve</div></div>
+                    <div class="gallery-card locked" data-group="1" id="gallery-card-3"><div class="gallery-card-icon">🖼️</div><div class="gallery-card-name">Enquadramento</div><div class="gallery-card-lock">🔒 Em breve</div></div>
+                    <div class="gallery-card locked" data-group="1" id="gallery-card-4"><div class="gallery-card-icon">📉</div><div class="gallery-card-name">Aversão ao Risco</div><div class="gallery-card-lock">🔒 Em breve</div></div>
+                    <div class="gallery-card locked" data-group="1" id="gallery-card-5"><div class="gallery-card-icon">🌫️</div><div class="gallery-card-name">Aversão à Ambiguidade</div><div class="gallery-card-lock">🔒 Em breve</div></div>
+                    <div class="gallery-card locked" data-group="2" id="gallery-card-6"><div class="gallery-card-icon">📅</div><div class="gallery-card-name">Falácia do Planejamento</div><div class="gallery-card-lock">🔒 Em breve</div></div>
+                    <div class="gallery-card locked" data-group="2" id="gallery-card-7"><div class="gallery-card-icon">🧱</div><div class="gallery-card-name">Status Quo</div><div class="gallery-card-lock">🔒 Em breve</div></div>
+                    <div class="gallery-card locked" data-group="2" id="gallery-card-8"><div class="gallery-card-icon">🐦</div><div class="gallery-card-name">Efeito Avestruz</div><div class="gallery-card-lock">🔒 Em breve</div></div>
+                </div>
+            </div>
+
+            <!-- Screen 4: Viés de Disponibilidade -->
+            <div class="screen" id="screen-4">
+                <div class="bias-layout">
+                    <div class="scenario-panel">
+                        <div class="scenario-label">Cenário</div>
+                        <div class="scenario-text">Um gestor de projetos ignora um risco de segurança porque "nunca aconteceu nada assim aqui." Dois meses depois, um incidente ocorre — e o custo é 10× o da prevenção.</div>
+                    </div>
+                    <div class="definition-panel">
+                        <div class="bias-name-header">📰 Viés de Disponibilidade</div>
+                        <div class="bias-definition-text">Julgamos a probabilidade de um evento pela facilidade com que exemplos vêm à mente.</div>
+                        <div class="bias-meta">
+                            <div class="bias-meta-row">
+                                <span class="bias-meta-label">Na prática:</span>
+                                Eventos recentes ou emocionalmente marcantes são supervalorizados. Riscos raros sem exemplos vívidos recentes são ignorados.
+                            </div>
+                            <div class="bias-meta-row">
+                                <span class="bias-meta-label">Contexto:</span>
+                                Avaliações de risco, alocação de orçamento de segurança, análise de cenários.
+                            </div>
+                            <div class="newspaper-viz">
+    <div class="newspaper-label">💡 Como o viés funciona:</div>
+    <div class="newspaper-container">
+        <div class="news-prominent">
+            <div class="news-tag">EVENTOS RECENTES</div>
+            <div class="news-headline">⚡ Incêndio na Fábrica do Concorrente</div>
+            <div class="news-sub">Cobre 80% da atenção mental do gestor</div>
+        </div>
+        <div class="news-fade">
+            <div class="news-tag faded">EVENTOS RAROS (SEM EXEMPLO RECENTE)</div>
+            <div class="news-headline faded">⚙️ Falha sistêmica de segurança</div>
+            <div class="news-sub faded">Invisível — sem manchete recente</div>
+        </div>
+    </div>
+    <div class="newspaper-caption">Eventos vívidos recentes dominam a estimativa de risco — eventos raros sem histórico recente ficam invisíveis.</div>
+</div>
+<div class="bias-antidote">💊 Antídoto: Buscar dados históricos sistemáticos antes de estimar probabilidades.</div>
+                        </div>
+                        <button class="understood-btn" onclick="markBiasComplete(4)">✓ Entendi — próximo viés</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 5: Viés de Confirmação -->
+            <div class="screen" id="screen-5">
+                <div class="bias-layout">
+                    <div class="scenario-panel">
+                        <div class="scenario-label">Cenário</div>
+                        <div class="scenario-text">Um CEO decide expandir para novo mercado, então contrata consultoria. A pesquisa mostra dados mistos; o CEO apresenta ao board apenas os dados positivos — convicto de estar sendo "seletivo com o que importa".</div>
+                    </div>
+                    <div class="definition-panel">
+                        <div class="bias-name-header">🔍 Viés de Confirmação</div>
+                        <div class="bias-definition-text">Buscamos, interpretamos e lembramos seletivamente informações que confirmam nossas crenças existentes.</div>
+                        <div class="bias-meta">
+                            <div class="bias-meta-row">
+                                <span class="bias-meta-label">Na prática:</span>
+                                Afeta estratégia, decisões de talentos e avaliações de desempenho. Quanto mais experiente o líder, mais arraigado.
+                            </div>
+<div class="dual-filter-viz">
+    <div class="dual-filter-label">🔍 Visualização: Os mesmos dados, dois filtros</div>
+    <div class="filter-tabs">
+        <button class="filter-tab active" id="filter-tab-conf" onclick="setFilter('confirmador')">📗 Filtro Confirmador</button>
+        <button class="filter-tab" id="filter-tab-desaf" onclick="setFilter('desafiador')">📕 Filtro Desafiador</button>
+    </div>
+    <div class="filter-panel" id="filter-confirmador">
+        <div class="filter-subtitle">CEO foca aqui — confirma a expansão</div>
+        <div class="filter-data-row positive"><span class="fdr-label">Crescimento do segmento</span><span class="fdr-value">+18% a.a.</span></div>
+        <div class="filter-data-row positive"><span class="fdr-label">Interesse de distribuidores locais</span><span class="fdr-value">Alto</span></div>
+        <div class="filter-data-row positive"><span class="fdr-label">Concorrentes diretos no mercado</span><span class="fdr-value">2 (fraco posicionamento)</span></div>
+        <div class="filter-data-row hidden-conf"><span class="fdr-label fdr-greyed">Margem esperada no novo mercado</span><span class="fdr-value fdr-greyed">8% (vs. 22% atual)</span></div>
+        <div class="filter-data-row hidden-conf"><span class="fdr-label fdr-greyed">Tempo médio de breakeven em expansões similares</span><span class="fdr-value fdr-greyed">4,3 anos</span></div>
+        <div class="filter-data-row hidden-conf"><span class="fdr-label fdr-greyed">Risco regulatório</span><span class="fdr-value fdr-greyed">Elevado (3 pendências)</span></div>
+        <div class="filter-note conf-note">⚠️ O CEO viu apenas os 3 primeiros pontos. Os 3 restantes estavam no mesmo relatório.</div>
+    </div>
+    <div class="filter-panel" id="filter-desafiador" style="display:none">
+        <div class="filter-subtitle">Análise completa — desafia a expansão</div>
+        <div class="filter-data-row neutral"><span class="fdr-label">Crescimento do segmento</span><span class="fdr-value">+18% a.a.</span></div>
+        <div class="filter-data-row neutral"><span class="fdr-label">Interesse de distribuidores locais</span><span class="fdr-value">Alto</span></div>
+        <div class="filter-data-row neutral"><span class="fdr-label">Concorrentes diretos no mercado</span><span class="fdr-value">2 (fraco posicionamento)</span></div>
+        <div class="filter-data-row negative"><span class="fdr-label">Margem esperada no novo mercado</span><span class="fdr-value">8% (vs. 22% atual)</span></div>
+        <div class="filter-data-row negative"><span class="fdr-label">Tempo médio de breakeven em expansões similares</span><span class="fdr-value">4,3 anos</span></div>
+        <div class="filter-data-row negative"><span class="fdr-label">Risco regulatório</span><span class="fdr-value">Elevado (3 pendências)</span></div>
+        <div class="filter-note desaf-note">✓ O quadro completo muda a decisão — mas só é visível sem o filtro confirmatório.</div>
+    </div>
+</div>
+
+                            <div class="bias-meta-row">
+                                <span class="bias-meta-label">Contexto:</span>
+                                Análise de mercado, due diligence, avaliações de desempenho.
+                            </div>
+                            <div class="bias-antidote">💊 Antídoto: Designar um "advogado do diabo" formal em decisões estratégicas.</div>
+                        </div>
+                        <button class="understood-btn" onclick="markBiasComplete(5)">✓ Entendi — próximo viés</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 6: Ancoragem -->
+            <div class="screen" id="screen-6">
+                <div class="bias-layout">
+                    <div class="scenario-panel">
+    <div class="scenario-label">Cenário</div>
+    <div class="anchor-animation-container">
+        <div class="anchor-emoji" id="anchor-anim">⚓</div>
+        <div class="anchor-numbers">
+            <span class="anchor-num anchor-start">R$ 3.200</span>
+            <span class="anchor-num anchor-mid">R$ 2.800</span>
+            <span class="anchor-num anchor-end">R$ 2.650</span>
+        </div>
+    </div>
+    <div class="scenario-text">Uma negociação salarial começa com proposta 40% abaixo do mercado. Apesar da contraproposta bem fundamentada, o acordo final fica ancorado próximo ao número inicial — e o colaborador aceita sentindo que "ganhou".</div>
+    <div class="anchor-market-note">💡 Valor de mercado real: <strong>R$ 4.200</strong> — nunca discutido.</div>
+</div>
+
+                        <div class="scenario-text">Uma negociação salarial começa com proposta 40% abaixo do mercado. Apesar da contraproposta bem fundamentada, o acordo final fica ancorado próximo ao número inicial — e o colaborador aceita sentindo que "ganhou".</div>
+                    </div>
+                    <div class="definition-panel">
+                        <div class="bias-name-header">⚓ Ancoragem</div>
+                        <div class="bias-definition-text">Dependemos excessivamente da primeira informação encontrada — a "âncora" — ao tomar decisões subsequentes.</div>
+                        <div class="bias-meta">
+                            <div class="bias-meta-row">
+                                <span class="bias-meta-label">Na prática:</span>
+                                Aprovações de orçamento, revisões salariais, estimativas de prazo, negociações.
+                            </div>
+                            <div class="bias-meta-row">
+                                <span class="bias-meta-label">Contexto:</span>
+                                Especialmente poderoso quando a âncora vem de uma fonte percebida como legítima.
+                            </div>
+                            <div class="bias-antidote">💊 Antídoto: Definir seus próprios critérios e valores de referência antes de entrar em qualquer negociação.</div>
+                        </div>
+                        <button class="understood-btn" onclick="markBiasComplete(6)">✓ Entendi — próximo viés</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 7: Enquadramento -->
+            <div class="screen" id="screen-7">
+                <h1 style="text-align: center; margin-bottom: 24px;">🖼️ Efeito de Enquadramento</h1>
+                <p style="text-align: center; margin-bottom: 16px;">Os dados são idênticos. Apenas o enquadramento mudou. Qual impacta mais sua percepção?</p>
+                <div class="framing-demo" id="framing-demo">
+                    <div class="framing-panel-a" id="framing-a">
+                        <strong>❌ Enquadramento Negativo</strong><br><br>
+                        "Este plano de reestruturação vai eliminar 600 empregos."
+                    </div>
+                    <div class="framing-panel-b" id="framing-b" style="display: none;">
+                        <strong>✅ Enquadramento Positivo</strong><br><br>
+                        "Este plano de reestruturação vai salvar 400 empregos."
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <button class="framing-toggle-btn" onclick="toggleFraming()">Alternar Enquadramento</button>
+                    <button class="understood-btn" id="framing-understood-btn" style="display: none; margin: 0 auto; margin-top: 20px;" onclick="framingUnderstood()">✓ Entendi — próximo viés</button>
+                </div>
+                <div style="background: white; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-top: 24px;">
+                    <div class="bias-name-header" style="margin-bottom: 16px;">Definição</div>
+                    <div class="bias-definition-text">Decisões são moldadas por como as opções são apresentadas — não apenas pelo seu conteúdo objetivo.</div>
+                    <div class="bias-meta">
+                        <div class="bias-meta-row">
+                            <span class="bias-meta-label">Na prática:</span>
+                            Estratégia de comunicação, aprovações de orçamento, gestão da mudança.
+                        </div>
+                        <div class="bias-meta-row">
+                            <span class="bias-meta-label">Contexto:</span>
+                            Especialmente poderoso em comunicação de resultados negativos ou mudanças organizacionais.
+                        </div>
+                        <div class="bias-antidote">💊 Antídoto: Reformule qualquer proposta importante no oposto antes de decidir.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 8: Risk Aversion & Dual Bias -->
+            <div class="screen" id="screen-8">
+                <div class="dual-bias">
+                    <div class="bias-section">
+                        <div class="bias-section-title">📉 Aversão ao Risco</div>
+<div class="risk-dial-section">
+    <div class="risk-dial-title">🎛️ Onde você se posiciona? (escolha antes de avançar)</div>
+    <div class="risk-dial-container">
+        <div class="risk-spectrum-labels">
+            <span>Avesso ao Risco</span>
+            <span>Neutro</span>
+            <span>Tolerante ao Risco</span>
+        </div>
+        <input type="range" class="risk-dial-input" id="risk-dial" min="0" max="100" value="50" oninput="updateRiskDial(this.value)">
+        <div class="risk-dial-track">
+            <div class="risk-dial-fill" id="risk-dial-fill"></div>
+        </div>
+        <div class="risk-dial-output" id="risk-dial-output">
+            <p>👆 Mova o controle para ver como sua posição afeta decisões reais.</p>
+        </div>
+    </div>
+</div>
+
+
+                        <div style="margin-bottom: 16px;">
+                            <strong>Cenário B — Crescimento:</strong><br>
+                            Rota A: crescimento garantido de 12%. Rota B: 50% de chance de 28% OU 50% de crescimento zero. O valor esperado da Rota B é 14% — maior do que os 12% garantidos da Rota A. Mesmo assim, a maioria dos líderes escolhe a Rota A.
+                        </div>
+                        <div class="bias-definition-text">Preferência por resultados certos sobre alternativas com valor esperado superior, quando há incerteza no resultado.</div>
+                        <div class="bias-meta">
+                            <span class="bias-meta-label">Contexto:</span> Decisões de investimento, aprovação de projetos inovadores, estratégia de crescimento.
+                        </div>
+                    </div>
+                    <div class="bias-section">
+                        <div class="bias-section-title">⚠️ Viés de Risco Zero</div>
+                        <div style="margin-bottom: 16px;">
+                            <strong>Cenário:</strong><br>
+                            Gestor de segurança aprova R$800k para eliminar completamente um risco de probabilidade 2%, enquanto ignora um risco de probabilidade 30% que custaria R$200k para reduzir em 90%.
+                        </div>
+                        <div class="bias-definition-text">Escolher eliminar completamente um risco pequeno em vez de reduzir significativamente um risco maior.</div>
+                        <div class="bias-meta">
+                            <span class="bias-meta-label">Contexto:</span> Alocação de recursos para segurança, compliance, gestão de riscos.
+                        </div>
+                    </div>
+                </div>
+                <button class="understood-btn" id="btn-understood-8" onclick="riskDialUnderstood()" style="margin: 24px auto; display: block; opacity: 0.5; cursor: not-allowed;">✓ Entendi — próximo viés (ajuste o dial primeiro)</button>
+            </div>
+
+            <!-- Screen 9: Three Expandable Cards -->
+            <div class="screen" id="screen-9">
+                <div class="trio-recap-header">
+                    🔁 <div><strong>Pausa — Três Vieses de Inação</strong> <span>· Revisão antes de continuar</span></div>
+                </div>
+                <div class="trio-recap-column">
+                    <div class="trio-recap-card">
+                        <div class="trio-recap-icon">❓</div>
+                        <div>
+                            <div class="trio-recap-title">Aversão à Ambiguidade</div>
+                            <div class="trio-recap-def">Evitamos decisões quando as probabilidades são desconhecidas — mesmo quando a incerteza é inevitável.</div>
+                            <div class="trio-recap-scenario">Líder adia indefinidamente a decisão de expansão internacional: "Ainda há muitas incertezas no mercado" — enquanto concorrentes avançam.</div>
+                            <div class="trio-recap-antidote">💊 Tome decisões explicitamente com incerteza. Documente o que não sabe e defina triggers de revisão.</div>
+                        </div>
+                    </div>
+                    <div class="trio-recap-card">
+                        <div class="trio-recap-icon">🦤</div>
+                        <div>
+                            <div class="trio-recap-title">Efeito Avestruz</div>
+                            <div class="trio-recap-def">Evitamos ativamente informações negativas — especialmente quando decisões já foram tomadas e revertê-las seria custoso.</div>
+                            <div class="trio-recap-scenario">Um líder de produto para de ler os relatórios de NPS em queda: "Só notícias ruins nos travam." Três meses depois, o churn é irreversível.</div>
+                            <div class="trio-recap-antidote">💊 Crie rituais obrigatórios de revisão de dados negativos — especialmente quando você menos quer ver os números.</div>
+                        </div>
+                    </div>
+                    <div class="trio-recap-card">
+                        <div class="trio-recap-icon">🧱</div>
+                        <div>
+                            <div class="trio-recap-title">Viés do Status Quo</div>
+                            <div class="trio-recap-def">Preferimos o estado atual das coisas — mesmo quando alternativas objetivamente melhores estão disponíveis.</div>
+                            <div class="trio-recap-scenario">Uma diretora mantém um processo de onboarding desatualizado por 3 anos. "Sempre funcionou assim." A rotatividade no 1º ano é 40% maior que a média do setor.</div>
+                            <div class="trio-recap-antidote">💊 Questione processos periodicamente: "Se começássemos do zero hoje, faríamos isso da mesma forma?"</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="trio-recap-understood" id="btn-understood-9" onclick="deckUnderstood09()">✓ Entendi os três — continuar →</button>
+            </div>
+
+            <!-- Screen 10: Falácia do Planejamento -->
+            <div class="screen" id="screen-10">
+                <div class="bias-layout">
+                    <div class="scenario-panel">
+                        <div class="scenario-label">Cenário Real</div>
+                        <div class="scenario-text">Uma startup aprova o desenvolvimento de um novo produto: prazo de 8 meses, orçamento de R$1,8M. A equipe era experiente — já havia atrasado nos últimos dois projetos. Entrega real: <strong>22 meses e R$5,3M</strong>. O CEO disse: "Desta vez seria diferente."</div>
+                        <div class="planning-viz" id="planning-viz-10" style="display:none;">
+                            <div class="planning-viz-title">📊 Planejado × Realidade</div>
+                            <div class="planning-row">
+                                <div class="planning-row-label">⏱ Prazo</div>
+                                <div class="planning-bar-track">
+                                    <div class="planning-bar planned" id="bar-time-plan">8 meses</div>
+                                </div>
+                            </div>
+                            <div class="planning-row">
+                                <div class="planning-row-label" style="color:#e74c3c;">⏱ Real</div>
+                                <div class="planning-bar-track">
+                                    <div class="planning-bar actual" id="bar-time-real">22 meses</div>
+                                </div>
+                            </div>
+                            <div class="planning-row" style="margin-top:8px;">
+                                <div class="planning-row-label">💰 Custo</div>
+                                <div class="planning-bar-track">
+                                    <div class="planning-bar planned-cost" id="bar-cost-plan">R$1,8M</div>
+                                </div>
+                            </div>
+                            <div class="planning-row">
+                                <div class="planning-row-label" style="color:#e67e22;">💰 Real</div>
+                                <div class="planning-bar-track">
+                                    <div class="planning-bar actual-cost" id="bar-cost-real">R$5,3M</div>
+                                </div>
+                            </div>
+                            <div class="planning-viz-footer">O padrão repete-se mesmo com histórico de atrasos</div>
+                        </div>
+                    </div>
+                    <div class="definition-panel">
+                        <div class="bias-name-header">📅 Falácia do Planejamento</div>
+                        <div class="bias-definition-text">Subestimamos sistematicamente o tempo, custo e risco de projetos futuros — mesmo com histórico claro de atrasos e estouros de orçamento.</div>
+                        <div class="bias-meta">
+                            <div class="bias-meta-row">
+                                <span class="bias-meta-label">Na prática:</span>
+                                Afeta toda organização: lançamentos de produto, projetos de TI, expansões. O otimismo é sistemático, não acidental.
+                            </div>
+                            <div class="bias-meta-row">
+                                <span class="bias-meta-label">Causa raiz:</span>
+                                Focamos no plano ideal ("visão interna") e ignoramos dados históricos de projetos similares ("visão externa").
+                            </div>
+                            <div class="bias-antidote">💊 Antídoto: Use a <strong>visão externa</strong> — pesquise projetos comparáveis e use a média histórica como base de planejamento.</div>
+                        </div>
+                        <button class="understood-btn" onclick="showPlanningVizAndComplete()">✓ Ver comparativo e avançar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 11: Detective -->
+            <div class="screen" id="screen-11">
+
+                <!-- Detective intro banner -->
+                <div class="detective-intro">
+                    <div class="detective-badge">🔍</div>
+                    <div>
+                        <div class="detective-title">Detetive de Vieses</div>
+                        <div class="detective-sub">Identifique o viés cognitivo em cada situação real de liderança</div>
+                    </div>
+                    <div class="detective-steps">
+                        <div class="d-step" id="d-step-0">1</div>
+                        <div class="d-step" id="d-step-1">2</div>
+                        <div class="d-step" id="d-step-2">3</div>
+                        <div class="d-step" id="d-step-3">4</div>
+                    </div>
+                </div>
+
+                <!-- Case tabs -->
+                <div class="case-tabs">
+                    <button class="case-tab active" onclick="selectTab(0)">📁 Caso 1 · Meridian</button>
+                    <button class="case-tab" onclick="selectTab(1)">📁 Caso 2 · Nordeste</button>
+                    <button class="case-tab" onclick="selectTab(2)">📁 Caso 3 · Construção</button>
+                    <button class="case-tab" onclick="selectTab(3)">📁 Caso 4 · Atlântico</button>
+                </div>
+
+                <!-- Case 1 -->
+                <div class="case-content active">
+                    <div class="case-meta">
+                        <span class="case-num-badge">Caso 1</span>
+                        <span class="case-label-text">Meridian · Produto Digital</span>
+                    </div>
+                    <div class="case-vignette">Uma diretora ignora os dados de queda no número de usuários ativos do seu projeto favorito — um app que ela desenvolveu pessoalmente por dois anos. Quando a equipe apresenta o relatório mensal, ela diz: "Esses números são sazonais. Já vimos isso antes." Os dados mostram queda consistente há 4 meses.</div>
+                    <div class="case-action-row">
+                        <select class="case-select" id="detective-select-0">
+                            <option value="">— Selecionar viés —</option>
+                            <option value="disponibilidade">Viés de Disponibilidade</option>
+                            <option value="confirmacao">Viés de Confirmação</option>
+                            <option value="ancoragem">Ancoragem</option>
+                            <option value="enquadramento">Efeito de Enquadramento</option>
+                            <option value="aversao-risco">Aversão ao Risco</option>
+                            <option value="aversao-ambiguidade">Aversão à Ambiguidade</option>
+                            <option value="planejamento">Falácia do Planejamento</option>
+                            <option value="status-quo">Viés do Status Quo</option>
+                            <option value="efeito-avestruz">Efeito Avestruz</option>
+                        </select>
+                        <button class="check-btn" onclick="checkDetective(0)">Verificar →</button>
+                    </div>
+                    <div id="detective-feedback-0"></div>
+                </div>
+
+                <!-- Case 2 -->
+                <div class="case-content">
+                    <div class="case-meta">
+                        <span class="case-num-badge">Caso 2</span>
+                        <span class="case-label-text">Nordeste · Expansão Varejo</span>
+                    </div>
+                    <div class="case-vignette">Em uma reunião de planejamento, o gestor de uma rede de varejo propõe expandir para o Nordeste. A equipe discorda, mas ninguém fala abertamente. O gestor interpreta o silêncio como concordância e avança com a decisão. A expansão falha em 8 meses.</div>
+                    <div class="case-action-row">
+                        <select class="case-select" id="detective-select-1">
+                            <option value="">— Selecionar viés —</option>
+                            <option value="disponibilidade">Viés de Disponibilidade</option>
+                            <option value="confirmacao">Viés de Confirmação</option>
+                            <option value="ancoragem">Ancoragem</option>
+                            <option value="enquadramento">Efeito de Enquadramento</option>
+                            <option value="aversao-risco">Aversão ao Risco</option>
+                            <option value="aversao-ambiguidade">Aversão à Ambiguidade</option>
+                            <option value="planejamento">Falácia do Planejamento</option>
+                            <option value="status-quo">Viés do Status Quo</option>
+                            <option value="efeito-avestruz">Efeito Avestruz</option>
+                        </select>
+                        <button class="check-btn" onclick="checkDetective(1)">Verificar →</button>
+                    </div>
+                    <div id="detective-feedback-1"></div>
+                </div>
+
+                <!-- Case 3 -->
+                <div class="case-content">
+                    <div class="case-meta">
+                        <span class="case-num-badge">Caso 3</span>
+                        <span class="case-label-text">Construção · Negociação</span>
+                    </div>
+                    <div class="case-vignette">O chefe de compras de uma construtora recebe uma cotação inicial de R$850k de um fornecedor (valor inflado). Após negociação, fecha em R$720k e celebra "economizar R$130k". O valor de mercado para o mesmo serviço é R$580k.</div>
+                    <div class="case-action-row">
+                        <select class="case-select" id="detective-select-2">
+                            <option value="">— Selecionar viés —</option>
+                            <option value="disponibilidade">Viés de Disponibilidade</option>
+                            <option value="confirmacao">Viés de Confirmação</option>
+                            <option value="ancoragem">Ancoragem</option>
+                            <option value="enquadramento">Efeito de Enquadramento</option>
+                            <option value="aversao-risco">Aversão ao Risco</option>
+                            <option value="aversao-ambiguidade">Aversão à Ambiguidade</option>
+                            <option value="planejamento">Falácia do Planejamento</option>
+                            <option value="status-quo">Viés do Status Quo</option>
+                            <option value="efeito-avestruz">Efeito Avestruz</option>
+                        </select>
+                        <button class="check-btn" onclick="checkDetective(2)">Verificar →</button>
+                    </div>
+                    <div id="detective-feedback-2"></div>
+                </div>
+
+                <!-- Case 4 -->
+                <div class="case-content">
+                    <div class="case-meta">
+                        <span class="case-num-badge">Caso 4</span>
+                        <span class="case-label-text">Atlântico · Estratégia Internacional</span>
+                    </div>
+                    <div class="case-vignette">Um CEO continua investindo em uma estratégia de internacionalização que já gerou R$12M em prejuízo ao longo de 3 anos. Quando o board questiona, ele responde: "Investimos demais para parar agora." O modelo de negócio está estruturalmente comprometido.</div>
+                    <div class="case-action-row">
+                        <select class="case-select" id="detective-select-3">
+                            <option value="">— Selecionar viés —</option>
+                            <option value="disponibilidade">Viés de Disponibilidade</option>
+                            <option value="confirmacao">Viés de Confirmação</option>
+                            <option value="ancoragem">Ancoragem</option>
+                            <option value="enquadramento">Efeito de Enquadramento</option>
+                            <option value="aversao-risco">Aversão ao Risco</option>
+                            <option value="aversao-ambiguidade">Aversão à Ambiguidade</option>
+                            <option value="planejamento">Falácia do Planejamento</option>
+                            <option value="status-quo">Viés do Status Quo</option>
+                            <option value="efeito-avestruz">Efeito Avestruz</option>
+                        </select>
+                        <button class="check-btn" onclick="checkDetective(3)">Verificar →</button>
+                    </div>
+                    <div id="detective-feedback-3"></div>
+                </div>
+
+                <!-- Success message -->
+                <div id="detective-success" style="display:none;">
+                    <div style="font-size: 36px; margin-bottom: 10px;">🎉</div>
+                    <p style="font-size: 20px; color: #1a6b3a; font-weight: 700; margin-bottom: 6px;">Todos os casos resolvidos!</p>
+                    <p style="font-size: 15px; color: #2d7a4a;">Você tem o olhar treinado de um detetive de vieses cognitivos.</p>
+                </div>
+            </div>
+
+            <!-- Screen 12: Decision Tree -->
+            <div class="screen" id="screen-12">
+<div class="tree-split-layout">
+    <div class="tree-left-panel">
+        <h2 style="color: var(--neon-green); margin-bottom: 12px; font-size: 22px;">🌳 Árvore de Decisão</h2>
+        <p style="font-size: 17px; color: rgba(255,255,255,0.88); margin-bottom: 20px; line-height: 1.6;">Três decisões. Cada uma pode refletir — ou evitar — uma armadilha. Veja onde seu caminho leva.</p>
+        <div class="tree-scenario-box">
+            <div class="tree-scenario-label">📋 Cenário</div>
+            <p style="font-size: 17px; line-height: 1.7;">Você é Diretor(a) de Operações de uma empresa de manufatura. Seu time apresentou dois caminhos para reduzir custos em 20%. Você tem 48h para decidir e apresentar ao board.</p>
+        </div>
+        <div class="tree-path-indicator" id="tree-path-indicator">
+            <div class="tree-path-label">Seu caminho:</div>
+            <div class="tree-path-steps" id="tree-path-steps">
+                <span class="tree-path-step inactive">1</span>
+                <span class="tree-path-arrow">→</span>
+                <span class="tree-path-step inactive">2</span>
+                <span class="tree-path-arrow">→</span>
+                <span class="tree-path-step inactive">3</span>
+            </div>
+        </div>
+    </div>
+    <div class="tree-right-panel">
+        <div id="tree-container"></div>
+        <div id="tree-result" style="display: none; margin-top: 20px;"></div>
+    </div>
+</div>
+            </div>
+
+            <!-- Screen 13: Matching Game -->
+            <div class="screen" id="screen-13">
+               <div class="match-timer-bar">
+    <span class="match-timer-label">⏱ Tempo:</span>
+    <span class="match-timer-display" id="match-timer-display">00:00</span>
+    <span class="match-timer-note">(apenas para consciência de ritmo)</span>
+</div>
+                <p style="text-align: center; margin-bottom: 24px; font-size: 16px; color: #555;">Selecione um viés e depois sua definição. <strong id="match-count-13">0</strong>/7 pares corretos.</p>
+                
+                <div class="matching-cols">
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Vieses</div>
+                        <div id="matching-names"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Definições</div>
+                        <div id="matching-defs"></div>
+                    </div>
+                </div>
+
+                <div id="matching-success-13" style="display: none; background: linear-gradient(135deg, #f0fff4, #e8f8ee); border: 2px solid #27ae60; border-radius: 16px; padding: 28px 24px; margin-top: 24px; text-align: center; box-shadow: 0 4px 16px rgba(39,174,96,0.15);">
+                    <div style="font-size: 36px; margin-bottom: 10px;">🎯</div>
+                    <p style="font-size: 20px; color: #1a6b3a; font-weight: 700; margin-bottom: 6px;">Perfeito! Todos os pares corretos.</p>
+                    <p style="font-size: 15px; color: #2d7a4a;">Você consegue distinguir todos os vieses do módulo.</p>
+                </div>
+            </div>
+
+            <!-- Screen 14: Data Ambiguity -->
+            <div class="screen" id="screen-14">
+                <h1 style="text-align: center; margin-bottom: 12px;">📊 Decisão com Dados Incompletos</h1>
+                <p style="text-align: center; margin-bottom: 24px;">Você vai receber dados em 3 etapas. Em cada etapa, tome uma decisão. Veja como sua confiança muda.</p>
+                
+                <div style="background: #fffbf0; border-radius: 12px; padding: 16px; margin-bottom: 24px; border-left: 4px solid var(--neon-green);">
+                    <strong>Cenário:</strong> Sua empresa está avaliando se continua ou encerra o Programa Ágil — uma iniciativa de transformação digital iniciada há 18 meses com investimento de R$4,2M.
+                </div>
+
+                <!-- Round 1 -->
+                <div id="data-round-1">
+                    <div style="font-size: 13px; color: #888; margin-bottom: 12px; text-align: center;">🔴 Dados Limitados (2 indicadores)</div>
+                    <div class="data-metrics">
+                        <div class="metric-card card-warn">
+                            <div class="metric-label">Custo acumulado</div>
+                            <div class="metric-value">R$4,2M</div>
+                            <div class="metric-status warn">⚠️ acima do orçamento (meta: R$3,8M)</div>
+                        </div>
+                        <div class="metric-card card-warn">
+                            <div class="metric-label">Prazo</div>
+                            <div class="metric-value">18 meses</div>
+                            <div class="metric-status warn">⚠️ atrasado (meta: 12 meses)</div>
+                        </div>
+                    </div>
+                    <div class="data-choice-btns">
+                        <button class="data-choice-btn" onclick="makeDataChoice(0)">Continuar o programa</button>
+                        <button class="data-choice-btn" onclick="makeDataChoice(1)">Encerrar o programa</button>
+                        <button class="data-choice-btn" onclick="makeDataChoice(2)">Solicitar mais dados</button>
+                    </div>
+                </div>
+
+                <!-- Round 2 -->
+                <div id="data-round-2" style="display: none;">
+                    <div style="font-size: 13px; color: #888; margin-bottom: 12px; text-align: center;">🟡 Dados Parciais (4 indicadores)</div>
+                    <div class="data-metrics">
+                        <div class="metric-card card-warn">
+                            <div class="metric-label">Custo acumulado</div>
+                            <div class="metric-value">R$4,2M</div>
+                            <div class="metric-status warn">⚠️ acima do orçamento</div>
+                        </div>
+                        <div class="metric-card card-warn">
+                            <div class="metric-label">Prazo</div>
+                            <div class="metric-value">18 meses</div>
+                            <div class="metric-status warn">⚠️ atrasado</div>
+                        </div>
+                        <div class="metric-card card-neutral">
+                            <div class="metric-label">Adoção pelas equipes</div>
+                            <div class="metric-value">67%</div>
+                            <div class="metric-status neutral">🟡 próximo à meta (70%)</div>
+                        </div>
+                        <div class="metric-card card-ok">
+                            <div class="metric-label">Produtividade (equipes adotantes)</div>
+                            <div class="metric-value">+23%</div>
+                            <div class="metric-status ok">✅ acima da meta</div>
+                        </div>
+                    </div>
+                    <div class="data-choice-btns">
+                        <button class="data-choice-btn" onclick="makeDataChoice(0)">Continuar o programa</button>
+                        <button class="data-choice-btn" onclick="makeDataChoice(1)">Encerrar o programa</button>
+                        <button class="data-choice-btn" onclick="makeDataChoice(2)">Solicitar mais dados</button>
+                    </div>
+                </div>
+
+                <!-- Round 3 -->
+                <div id="data-round-3" style="display: none;">
+                    <div style="font-size: 13px; color: #888; margin-bottom: 12px; text-align: center;">🟢 Dados Completos (6 indicadores)</div>
+                    <div class="data-metrics">
+                        <div class="metric-card card-warn">
+                            <div class="metric-label">Custo acumulado</div>
+                            <div class="metric-value">R$4,2M</div>
+                            <div class="metric-status warn">⚠️ acima do orçamento</div>
+                        </div>
+                        <div class="metric-card card-warn">
+                            <div class="metric-label">Prazo</div>
+                            <div class="metric-value">18 meses</div>
+                            <div class="metric-status warn">⚠️ atrasado</div>
+                        </div>
+                        <div class="metric-card card-neutral">
+                            <div class="metric-label">Adoção</div>
+                            <div class="metric-value">67% → 85% em 3m</div>
+                            <div class="metric-status neutral">🟡 trajetória positiva</div>
+                        </div>
+                        <div class="metric-card card-ok">
+                            <div class="metric-label">Produtividade</div>
+                            <div class="metric-value">+23%</div>
+                            <div class="metric-status ok">✅ sustentável</div>
+                        </div>
+                        <div class="metric-card card-ok">
+                            <div class="metric-label">ROI projetado (24m)</div>
+                            <div class="metric-value">340%</div>
+                            <div class="metric-status ok">✅ acima da meta</div>
+                        </div>
+                        <div class="metric-card card-ok">
+                            <div class="metric-label">Benchmark do setor</div>
+                            <div class="metric-value">22 meses</div>
+                            <div class="metric-status ok">✅ dentro do padrão</div>
+                        </div>
+                    </div>
+                    <div class="data-choice-btns">
+                        <button class="data-choice-btn" onclick="makeDataChoice(0)">Continuar o programa</button>
+                        <button class="data-choice-btn" onclick="makeDataChoice(1)">Encerrar o programa</button>
+                    </div>
+                </div>
+
+                <div id="data-debrief" style="display: none; background: white; border: 1px solid #ddd; border-radius: 12px; padding: 24px; margin-top: 24px;">
+                    <h3>Análise de Sua Jornada de Decisão</h3>
+                    <div id="data-debrief-content"></div>
+                    <p style="margin-top: 20px; font-size: 14px; color: #555; line-height: 1.7;">
+                        <strong>Insight:</strong> Dados incompletos ativam o Viés de Disponibilidade e a Aversão à Ambiguidade — julgamos com o que temos, frequentemente mais depressa do que deveríamos.
+                    </p>
+                    <button class="understood-btn" onclick="closeDataDebrief()">Fechar debrief →</button>
+                </div>
+
+                <div id="data-completed-msg" style="display: none; background: #f0fff4; border: 2px solid #27ae60; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center;">
+                    <p style="font-size: 16px; color: #1a6b3a; font-weight: 700;">✓ Você completou a atividade de dados.</p>
+                </div>
+            </div>
+
+            <!-- Screen 15: Timeline -->
+            <div class="screen" id="screen-15">
+                <div class="planning-split">
+
+                    <!-- Left: project context + sliders -->
+                    <div class="planning-left">
+                        <div class="planning-context-label">📋 Projeto</div>
+                        <p class="planning-context-text">Implantação de novo sistema de CRM para empresa de varejo com 450 usuários em 12 filiais. Inclui migração de dados de sistema legado, treinamento de equipes, integração com ERP existente e customizações para relatórios de gestão.</p>
+
+                        <h3>Estime cada fase:</h3>
+                        <div class="timeline-phases">
+                            <div class="timeline-phase">
+                                <div class="phase-label">Levantamento e Análise</div>
+                                <div class="phase-slider-row">
+                                    <input type="range" class="timeline-slider" id="slider-levantamento" min="2" max="24" value="4" oninput="updateTimelineTotal()">
+                                    <span class="phase-val"><span id="val-levantamento">4</span> sem</span>
+                                </div>
+                            </div>
+                            <div class="timeline-phase">
+                                <div class="phase-label">Desenvolvimento e Customização</div>
+                                <div class="phase-slider-row">
+                                    <input type="range" class="timeline-slider" id="slider-desenvolvimento" min="4" max="52" value="8" oninput="updateTimelineTotal()">
+                                    <span class="phase-val"><span id="val-desenvolvimento">8</span> sem</span>
+                                </div>
+                            </div>
+                            <div class="timeline-phase">
+                                <div class="phase-label">Testes e Ajustes</div>
+                                <div class="phase-slider-row">
+                                    <input type="range" class="timeline-slider" id="slider-testes" min="2" max="20" value="3" oninput="updateTimelineTotal()">
+                                    <span class="phase-val"><span id="val-testes">3</span> sem</span>
+                                </div>
+                            </div>
+                            <div class="timeline-phase">
+                                <div class="phase-label">Treinamento e Lançamento</div>
+                                <div class="phase-slider-row">
+                                    <input type="range" class="timeline-slider" id="slider-lancamento" min="2" max="16" value="4" oninput="updateTimelineTotal()">
+                                    <span class="phase-val"><span id="val-lancamento">4</span> sem</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-total-box">
+                            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 4px;">Sua estimativa total:</div>
+                            <div style="font-size: 28px; font-weight: 700;"><span id="timeline-total">19</span> semanas (~<span id="timeline-months">4.4</span> meses)</div>
+                        </div>
+
+                        <button class="btn btn-primary" id="timeline-submit-btn" disabled onclick="submitTimeline()">Enviar minha estimativa →</button>
+                    </div>
+
+                    <!-- Right: placeholder → comparison -->
+                    <div class="planning-right">
+                        <div class="planning-placeholder" id="planning-placeholder">
+                            <div class="ph-icon">📊</div>
+                            <p>Mova os sliders para estimar cada fase e clique em <em>Enviar</em> para ver a comparação com projetos reais.</p>
+                        </div>
+
+                        <div id="timeline-comparison" style="display:none;">
+                            <h3 style="margin-bottom: 16px; color: var(--deep-green);">📊 Visão Externa</h3>
+                            <p style="margin-bottom: 16px; color: #555; font-size: 15px;">Baseado em 847 projetos de CRM similares documentados no Brasil (2018-2024):</p>
+
+                            <div class="comparison-grid">
+                                <div class="comp-col">
+                                    <strong>Sua estimativa:</strong>
+                                    <div style="font-size: 24px; font-weight: 700; color: var(--deep-green); margin-top: 8px;"><span id="user-total-display">0</span> semanas</div>
+                                </div>
+                                <div class="comp-col external">
+                                    <strong>Média real de projetos similares:</strong>
+                                    <div style="font-size: 24px; font-weight: 700; color: var(--deep-green); margin-top: 8px;">42 semanas (~10 meses)</div>
+                                </div>
+                            </div>
+
+                            <div style="background: #fffbf0; border-radius: 10px; padding: 16px; margin-top: 20px; border-left: 4px solid var(--neon-green);">
+                                <strong>Sua diferença:</strong> <span id="timeline-diff">0</span> em relação à realidade<br><br>
+                                <p style="font-size: 14px; margin-top: 8px; color: #555;">A maioria das equipes subestima em 40–60%. Isso não é incompetência — é a Falácia do Planejamento operando de forma sistemática e previsível.</p>
+                            </div>
+
+                            <button class="understood-btn" onclick="acknowledgeTimeline()" style="margin-top: 20px; width: 100%;">Entendi — continuar →</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Screen 16: Knowledge Check -->
+            <div class="screen" id="screen-16">
+                <h1 style="text-align: center; margin-bottom: 24px;">✅ Verificação de Conhecimento</h1>
+                <div id="quiz16-container"></div>
+            </div>
+
+            <!-- Screen 17: Final Reflection & Summary -->
+            <div class="screen" id="screen-17">
+                <div class="reflection-layout">
+                    <div class="reflection-card">
+                        <h2>✍️ Para o Seu Diário</h2>
+                        <p>Qual dos 9 vieses deste módulo se sente mais presente no seu contexto de liderança atual? Em que tipo de decisão você o reconhece?</p>
+                        <p style="margin-top: 20px; font-size: 13px; color: #888;">Use a Seção 2 do seu diário para explorar isso antes de continuar.</p>
+                        <a href="assets/diario-de-aprendizagem.pdf" target="_blank" style="display: inline-block; margin-top: 12px; background: #006A36; color: white; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">📓 Abrir Diário de Aprendizagem</a>
+                    </div>
+                    <div class="summary-layout">
+                        <h2>📚 O que você explorou neste módulo</h2>
+                        <div class="bias-badges">
+                            <div class="bias-badge"><span>📰</span> Disponibilidade</div>
+                            <div class="bias-badge"><span>🔍</span> Confirmação</div>
+                            <div class="bias-badge"><span>⚓</span> Ancoragem</div>
+                            <div class="bias-badge"><span>🖼️</span> Enquadramento</div>
+                            <div class="bias-badge"><span>📉</span> Aversão ao Risco</div>
+                            <div class="bias-badge"><span>🌫️</span> Ambiguidade</div>
+                            <div class="bias-badge"><span>📅</span> Planejamento</div>
+                            <div class="bias-badge"><span>🧱</span> Status Quo</div>
+                            <div class="bias-badge"><span>🐦</span> Avestruz</div>
+                        </div>
+                        <h3 style="margin-top: 24px;">Insight-chave</h3>
+                        <p>Vieses de decisão não são falhas de caráter — são o resultado previsível de um cérebro que opera com informação limitada sob pressão.</p>
+                        <h3 style="margin-top: 24px;">Próximo passo</h3>
+                        <p>No Módulo 3, viramos o olhar sobre nós mesmos e os outros — os pontos cegos que afetam como nos percebemos e como percebemos quem está ao nosso redor.</p>
+                    </div>
+                </div>
+                <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 40px;" id="m2-complete-msg">
+                    <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">✅ Módulo concluído!</p>
+                    <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div id="bottom-nav">
+            <button class="btn btn-secondary" id="backBtn" onclick="goBack()">← Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="goNext()">Próximo →</button>
+        </div>
+
+    <script>
+        // State Variables
+        const totalScreens = 18;
+        let currentScreen = 0;
+        let screenRequirements = {
+            0: true, 1: true, 2: false, 3: true,
+            4: false, 5: false, 6: false, 7: false, 8: false, 9: true, 10: false,
+            11: false, 12: false, 13: false, 14: false, 15: false,
+            16: false, 17: true
+        };
+
+        let biasCompleted = {4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false};
+        let expandedCards09 = {0: false, 1: false, 2: false};
+        let framingToggled = false;
+        let framingState = 0;
+        let detectiveAnswers = {0: false, 1: false, 2: false, 3: false};
+        let activeTab11 = 0;
+        let treeChoices = [];
+        let selectedBiasItem = null;
+        let matchedCount13 = 0;
+let matchTimer13 = null;
+let matchSeconds13 = 0;
+
+        let dataChoices = [];
+        let slidersInteracted = false;
+        let timelineSubmitted = false;
+        let quiz16Answered = {};
+        let quiz16CurrentQ = 0;
+
+        // Core Navigation
+        function showScreen(index) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const screen = document.getElementById('screen-' + index);
+            if (screen) screen.classList.add('active');
+            /* No scrollTop reset needed — each .screen.active is its own scroll context,
+               so switching screens always starts fresh at the top automatically. */
+            
+            if (index === 3) updateGallery();
+            // screen-9 is now a static trio-recap layout — no JS init needed
+            if (index === 12) initDecisionTree();
+            if (index === 13) initMatchingGame();
+            if (index === 14) initDataActivity();
+            if (index === 15) initTimeline();
+            if (index === 16) showQuestion16(0);
+            
+            updateTopBar();
+            updateBottomNav();
+            updateNextButton();
+            saveProgress();
+        }
+
+        function updateTopBar() {
+            document.getElementById('screenCounter').textContent = `Tela ${currentScreen} de ${totalScreens - 1}`;
+            const progressPercent = (currentScreen / (totalScreens - 1)) * 100;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+        }
+
+        function updateBottomNav() {
+            const backBtn = document.getElementById('backBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            backBtn.style.visibility = currentScreen === 0 ? 'hidden' : 'visible';
+            if (currentScreen === totalScreens - 1) {
+                nextBtn.textContent = '✓ Módulo Completo';
+            } else {
+                nextBtn.textContent = 'Próximo →';
+            }
+        }
+
+        function updateNextButton() {
+            const nextBtn = document.getElementById('nextBtn');
+            const allowed = screenRequirements[currentScreen];
+            nextBtn.style.opacity = allowed ? '1' : '0.45';
+            nextBtn.style.cursor = allowed ? 'pointer' : 'not-allowed';
+            nextBtn.title = allowed ? '' : 'Complete a atividade desta tela para continuar';
+        }
+
+        function goNext() {
+            if (currentScreen < totalScreens - 1 && screenRequirements[currentScreen]) {
+                currentScreen++;
+                showScreen(currentScreen);
+            }
+        }
+
+        function goBack() {
+            if (currentScreen > 0) {
+                currentScreen--;
+                showScreen(currentScreen);
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem('spc_m2_progress', currentScreen);
+        }
+
+        function loadProgress() {
+            const VERSION = 'v2.1';
+            const savedVersion = localStorage.getItem('spc_m2_version');
+            if (savedVersion !== VERSION) {
+                localStorage.removeItem('spc_m2_progress');
+                localStorage.setItem('spc_m2_version', VERSION);
+                currentScreen = 0;
+                return;
+            }
+            const saved = localStorage.getItem('spc_m2_progress');
+            if (saved) currentScreen = Math.min(parseInt(saved), totalScreens - 1);
+        }
+
+        // Screen 2 completion
+        function completeScreen2() {
+            screenRequirements[2] = true;
+            const btn = document.querySelector('#screen-2 .btn-primary');
+            if (btn) { btn.textContent = '✓ Reflexão registrada'; btn.disabled = true; }
+            const hint = document.querySelector('#screen-2 p[style*="italic"]');
+            if (hint) hint.style.display = 'none';
+            setTimeout(() => goNext(), 400);
+        }
+
+        // Gallery & Bias cards
+        function markBiasComplete(screenIndex) {
+            biasCompleted[screenIndex] = true;
+            screenRequirements[screenIndex] = true;
+            updateGallery();
+            updateNextButton();
+        }
+
+        // gallery-card groups: group 0 → cards [0,1,2] | group 1 → cards [3,4,5] | group 2 → cards [6,7,8]
+        const galleryGroupsDone = {0: false, 1: false, 2: false};
+
+        function updateGallery() {
+            // Correct mapping: screen → gallery card index
+            const mapping = {4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 10: 6};
+            // Screen 9 deck covers: Aversão à Ambiguidade (5), Status Quo (7), Efeito Avestruz (8)
+            const screen9Cards = {9: [5, 7, 8]};
+
+            Object.entries(biasCompleted).forEach(([screenIdx, done]) => {
+                const idx = parseInt(screenIdx);
+                if (done) {
+                    if (screen9Cards[idx]) {
+                        screen9Cards[idx].forEach(ci => {
+                            const card = document.getElementById('gallery-card-' + ci);
+                            if (card) { card.classList.remove('locked'); card.classList.add('unlocked'); }
+                        });
+                    } else if (mapping[idx] !== undefined) {
+                        const ci = mapping[idx];
+                        const card = document.getElementById('gallery-card-' + ci);
+                        if (card) { card.classList.remove('locked'); card.classList.add('unlocked'); }
+                    }
+                }
+            });
+
+            // Check group-of-3 completion → pulse the full group together
+            const groups = [[0,1,2], [3,4,5], [6,7,8]];
+            groups.forEach((groupCards, gIdx) => {
+                if (galleryGroupsDone[gIdx]) return; // already celebrated
+                const allGroupUnlocked = groupCards.every(ci => {
+                    const c = document.getElementById('gallery-card-' + ci);
+                    return c && c.classList.contains('unlocked');
+                });
+                if (allGroupUnlocked) {
+                    galleryGroupsDone[gIdx] = true;
+                    groupCards.forEach((ci, i) => {
+                        const c = document.getElementById('gallery-card-' + ci);
+                        if (c) {
+                            setTimeout(() => {
+                                c.classList.add('group-pulse');
+                                setTimeout(() => c.classList.remove('group-pulse'), 900);
+                            }, i * 120); // stagger by 120ms so they cascade nicely
+                        }
+                    });
+                }
+            });
+
+            // Check if all 9 completed → flash whole gallery
+            const allDone = Object.values(biasCompleted).every(v => v);
+            const grid = document.querySelector('.gallery-grid');
+            if (allDone && grid && !grid.classList.contains('gallery-flash')) {
+                grid.classList.add('gallery-flash');
+                setTimeout(() => grid.classList.remove('gallery-flash'), 2000);
+            }
+        }
+
+        // Screen 7: Framing
+        function toggleFraming() {
+            framingState = framingState === 0 ? 1 : 0;
+            framingToggled = true;
+            const panelA = document.getElementById('framing-a');
+            const panelB = document.getElementById('framing-b');
+            panelA.style.display = framingState === 0 ? 'block' : 'none';
+            panelB.style.display = framingState === 1 ? 'block' : 'none';
+            document.getElementById('framing-understood-btn').style.display = 'inline-block';
+        }
+
+        function framingUnderstood() {
+            if (framingToggled) {
+                screenRequirements[7] = true;
+                updateNextButton();
+                document.getElementById('framing-understood-btn').textContent = '✓ Entendido';
+                document.getElementById('framing-understood-btn').disabled = true;
+            }
+        }
+
+        // Screen 9: Deck Cards
+        let currentCard09 = 0;
+        const cards09Data = [
+            {
+                icon: '🌫️',
+                title: 'Aversão à Ambiguidade',
+                def: 'Evitamos decisões quando as probabilidades são desconhecidas — mesmo quando a incerteza é inevitável.',
+                scenario: 'Líder adia indefinidamente a decisão de expansão internacional: "Ainda há muitas incertezas no mercado" — enquanto concorrentes avançam.',
+                antidote: 'Tome decisões explicitamente com incerteza. Documente o que não sabe e defina triggers de revisão.'
+            },
+            {
+                icon: '🦅',
+                title: 'Efeito Avestruz',
+                def: 'Evitamos ativamente informações negativas — especialmente quando decisões já foram tomadas e revertê-las seria custoso.',
+                scenario: 'Um líder de produto para de ler os relatórios semanais de NPS em queda: "Só notícias ruins nos travam." Três meses depois, o churn é irreversível.',
+                antidote: 'Crie rituais obrigatórios de revisão de dados negativos — especialmente quando você menos quer ver os números.'
+            },
+            {
+                icon: '🧱',
+                title: 'Viés do Status Quo',
+                def: 'Preferimos o estado atual das coisas — mesmo quando alternativas objetivamente melhores estão disponíveis.',
+                scenario: 'Uma diretora mantém um processo de onboarding desatualizado por 3 anos. "Sempre funcionou assim." A rotatividade no 1º ano é 40% maior que a média do setor.',
+                antidote: 'Questione processos periodicamente: "Se começássemos do zero hoje, faríamos isso da mesma forma?"'
+            }
+        ];
+
+        function renderDeckCard09(index) {
+            const c = cards09Data[index];
+            document.getElementById('deck-front-9').innerHTML = `
+                <div class="deck-card-icon">${c.icon}</div>
+                <div class="deck-card-title">${c.title}</div>
+                <div class="deck-card-body">
+                    <div class="deck-section"><strong>Definição:</strong> ${c.def}</div>
+                    <div class="deck-section"><strong>Cenário:</strong> ${c.scenario}</div>
+                    <div class="deck-antidote">💊 <strong>Antídoto:</strong> ${c.antidote}</div>
+                </div>
+            `;
+            document.getElementById('deck-counter-9').textContent = 'Card ' + (index + 1) + ' de 3';
+            for (let i = 0; i < 3; i++) {
+                const dot = document.getElementById('dot9-' + i);
+                if (dot) dot.classList.toggle('seen', i <= index);
+            }
+            const nextBtn = document.getElementById('deck-next-9');
+            if (index >= 2) {
+                nextBtn.textContent = '✓ Todos vistos';
+                nextBtn.style.opacity = '0.5';
+                nextBtn.style.cursor = 'default';
+                const undBtn = document.getElementById('btn-understood-9');
+                if (undBtn) undBtn.classList.add('ready');
+            } else {
+                nextBtn.textContent = 'Próximo →';
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
+            }
+        }
+
+        function advanceDeck09() {
+            if (currentCard09 < 2) {
+                currentCard09++;
+                renderDeckCard09(currentCard09);
+            }
+        }
+
+        function deckUnderstood09() {
+            markBiasComplete(9);
+            const btn = document.getElementById('btn-understood-9');
+            if (btn) { btn.textContent = '✓ Entendido!'; btn.style.opacity = '0.5'; btn.style.cursor = 'default'; }
+        }
+
+
+        // Screen 11:
+
+        // Screen 11: Detective
+        const detectiveCorrect = ['efeito-avestruz', 'confirmacao', 'ancoragem', 'status-quo'];
+        const detectiveExplanations = [
+            'A diretora evita ativamente os dados negativos sobre seu projeto favorito, descartando-os como "sazonais" — Efeito Avestruz clássico: enterrar a cabeça para não ver o problema.',
+            'O gestor interpretou o silêncio como concordância — filtrou a realidade para confirmar sua decisão prévia. Viés de Confirmação.',
+            'O número inicial de R$850k funcionou como âncora. Toda a negociação girou em torno dele — não do valor real de mercado (R$580k). Economizar R$130k era ilusão.',
+            'O CEO continua a estratégia fracassada porque "investimos demais para parar" — o custo já gasto (irrecuperável) mantém o status quo mesmo com evidências claras de falha.'
+        ];
+
+        function selectTab(index) {
+            activeTab11 = index;
+            document.querySelectorAll('.case-tab').forEach((t, i) => {
+                t.classList.toggle('active', i === index);
+            });
+            document.querySelectorAll('.case-content').forEach((c, i) => {
+                c.classList.toggle('active', i === index);
+            });
+        }
+
+        function checkDetective(caseIndex) {
+            const select = document.getElementById('detective-select-' + caseIndex);
+            const feedback = document.getElementById('detective-feedback-' + caseIndex);
+            const chosen = select.value;
+            if (!chosen) return;
+
+            if (chosen === detectiveCorrect[caseIndex]) {
+                detectiveAnswers[caseIndex] = true;
+                feedback.innerHTML = '<span class="correct-fb">✓ Correto! ' + detectiveExplanations[caseIndex] + '</span>';
+                select.disabled = true;
+                // disable verify button for this case
+                const btns = document.querySelectorAll('#screen-11 .check-btn');
+                if (btns[caseIndex]) btns[caseIndex].disabled = true;
+                document.querySelectorAll('.case-tab')[caseIndex].classList.add('done');
+                // mark progress dot
+                const dot = document.getElementById('d-step-' + caseIndex);
+                if (dot) dot.classList.add('done');
+
+                if (Object.values(detectiveAnswers).every(v => v)) {
+                    screenRequirements[11] = true;
+                    updateNextButton();
+                    document.getElementById('detective-success').style.display = 'block';
+                }
+            } else {
+                feedback.innerHTML = '<span class="incorrect-fb">✗ Não é esse. Releia a vinheta com atenção e tente novamente.</span>';
+            }
+        }
+
+        // Screen 12: Decision Tree
+        const treeNodes = [
+            {
+                situation: "A última vez que sua empresa tentou reduzir custos, usou terceirização — e deu errado. A Opção A também envolve terceirização (de um processo diferente).",
+                choiceA: { label: "Rejeito a Opção A automaticamente. Terceirização já nos prejudicou.", biased: true, bias: "Viés de Disponibilidade", note: "Você usou um exemplo recente para descartar uma análise independente." },
+                choiceB: { label: "Avalio a Opção A pelos seus próprios méritos, com dados atuais.", biased: false, note: "Cada caso merece análise independente." }
+            },
+            {
+                situation: "Os dados chegam mistos. Sua intuição aponta para a Opção B, mas um relatório externo destaca riscos significativos nessa mesma opção.",
+                choiceA: { label: "Foco nos dados que confirmam a Opção B — o relatório externo pode estar desatualizado.", biased: true, bias: "Viés de Confirmação", note: "Você filtrou as evidências para confirmar sua intuição prévia." },
+                choiceB: { label: "Peço ao time analisar os riscos do relatório externo sem minha presença na sala.", biased: false, note: "Você removeu a pressão para confirmar sua visão." }
+            },
+            {
+                situation: "Ambas as opções têm riscos similares. A Opção B tem ROI esperado 35% maior, mas com maior incerteza nos resultados possíveis.",
+                choiceA: { label: "Escolho a Opção A. Resultado garantido é sempre melhor quando o board está de olho.", biased: true, bias: "Aversão ao Risco", note: "Você sacrificou 35% de ROI esperado para evitar incerteza nos resultados." },
+                choiceB: { label: "Apresento ao board com análise clara de risco-retorno de ambas as opções.", biased: false, note: "Você colocou a escolha no nível certo da organização." }
+            }
+        ];
+
+        function initDecisionTree() {
+            treeChoices = [];
+            showTreeNode(0);
+            document.getElementById('tree-result').style.display = 'none';
+        }
+
+        function showTreeNode(nodeIndex) {
+            const container = document.getElementById('tree-container');
+            if (nodeIndex >= treeNodes.length) {
+                showTreeResult();
+                return;
+            }
+            const node = treeNodes[nodeIndex];
+            container.innerHTML = `
+                <div class="tree-progress">Decisão ${nodeIndex + 1} de 3</div>
+                <div class="tree-situation">${node.situation}</div>
+                <div class="tree-choices">
+                    <button class="tree-choice" onclick="makeTreeChoice(${nodeIndex}, 'A')">${node.choiceA.label}</button>
+                    <button class="tree-choice" onclick="makeTreeChoice(${nodeIndex}, 'B')">${node.choiceB.label}</button>
+                </div>`;
+        }
+
+        function makeTreeChoice(nodeIndex, choice) {
+            const node = treeNodes[nodeIndex];
+            const chosen = choice === 'A' ? node.choiceA : node.choiceB;
+            treeChoices.push({nodeIndex, choice, ...chosen});
+            
+            // Update path steps
+            const steps = document.querySelectorAll('.tree-path-step');
+            if (steps[nodeIndex]) {
+                steps[nodeIndex].classList.remove('inactive');
+                steps[nodeIndex].classList.add(chosen.biased ? 'biased' : 'clear');
+                steps[nodeIndex].classList.add('active');
+            }
+            
+            const container = document.getElementById('tree-container');
+            container.innerHTML = `
+                <div class="tree-feedback ${chosen.biased ? 'biased' : 'clear'}">
+                    <strong>${chosen.biased ? '⚠️ ' + chosen.bias : '✓ Decisão deliberada'}</strong><br>
+                    ${chosen.note}
+                </div>
+                <button class="btn btn-primary" onclick="showTreeNode(${nodeIndex + 1})" style="margin-top:16px;">
+                    ${nodeIndex < 2 ? 'Próxima decisão →' : 'Ver resultado →'}
+                </button>`;
+        }
+
+        function showTreeResult() {
+            const biasedCount = treeChoices.filter(c => c.biased).length;
+            let resultTitle, resultText, resultClass, resultSubtext;
+            if (biasedCount === 0) {
+                resultTitle = '🎯 Caminho Claro';
+                resultText = 'Você ativou o Sistema 2 nas três decisões — questionou a âncora, buscou dados desafiadores e apresentou a análise de risco ao board. Isso é liderança deliberada.';
+                resultSubtext = 'Líderes que consistentemente ativam o Sistema 2 tomam melhores decisões sob pressão.';
+                resultClass = 'result-clear';
+            } else if (biasedCount === 1) {
+                resultTitle = '⚠️ Caminho Parcial';
+                resultText = 'Você evitou 2 das 3 armadilhas — bom resultado. Uma armadilha operou. Reveja qual e observe se ela aparece em suas decisões reais.';
+                resultSubtext = '';
+                resultClass = 'result-partial';
+            } else if (biasedCount === 2) {
+                resultTitle = '⚠️ Caminho Parcial';
+                resultText = 'Você evitou 1 armadilha, mas 2 vieses operaram. Identifique os padrões abaixo e observe-os em suas próximas decisões.';
+                resultSubtext = '';
+                resultClass = 'result-partial';
+            } else {
+                resultTitle = '🔴 Caminho de Viés';
+                resultText = 'Os três vieses operaram sem intervenção — como acontece com frequência sob pressão real. Reinicie a árvore e tente tomar as decisões do Sistema 2.';
+                resultSubtext = 'Reconhecer o padrão já é o primeiro passo.';
+                resultClass = 'result-biased';
+            }
+
+            const biasedList = treeChoices
+                .filter(c => c.biased)
+                .map(c => `<li><strong>${c.bias}:</strong> ${c.note}</li>`)
+                .join('');
+
+            const clearList = treeChoices
+                .filter(c => !c.biased)
+                .map(c => `<li>✓ ${c.note}</li>`)
+                .join('');
+
+            document.getElementById('tree-result').style.display = 'block';
+            document.getElementById('tree-result').innerHTML = `
+                <div class="tree-result-card ${resultClass}">
+                    <h3 class="tree-result-title">${resultTitle}</h3>
+                    <p class="tree-result-body">${resultText}</p>
+                    ${resultSubtext ? `<p style="font-size:14px;font-style:italic;margin-top:8px;opacity:0.9;">${resultSubtext}</p>` : ''}
+                    ${biasedList ? `<div style="margin-top:14px;"><strong style="font-size:14px;">Vieses que operaram:</strong><ul>${biasedList}</ul></div>` : ''}
+                    ${clearList && biasedCount > 0 ? `<div style="margin-top:10px;"><strong style="font-size:14px;">Decisões deliberadas:</strong><ul>${clearList}</ul></div>` : ''}
+                    <div style="text-align:center;"><button class="tree-result-restart-btn" onclick="initDecisionTree()">↺ Reiniciar</button></div>
+                </div>`;
+
+            screenRequirements[12] = true;
+            updateNextButton();
+        }
+
+        // Screen 13: Matching
+        const matchingPairs = [
+            { id: 'disp', name: 'Disponibilidade', def: 'Julgamos probabilidades pela facilidade com que exemplos vêm à mente' },
+            { id: 'conf', name: 'Confirmação', def: 'Buscamos informações que confirmam nossas crenças e ignoramos as que contradizem' },
+            { id: 'anc', name: 'Ancoragem', def: 'A primeira informação que recebemos influencia desproporcionalmente nossas decisões' },
+            { id: 'enq', name: 'Enquadramento', def: 'A forma de apresentar uma informação muda a decisão — não o conteúdo em si' },
+            { id: 'plan', name: 'Falácia do Planejamento', def: 'Subestimamos sistematicamente o tempo, custo e risco de projetos futuros' },
+            { id: 'sq', name: 'Status Quo', def: 'Preferimos o estado atual mesmo quando alternativas melhores estão disponíveis' },
+            { id: 'avest', name: 'Efeito Avestruz', def: 'Evitamos ativamente informações negativas — especialmente quando elas ameaçam decisões já tomadas' }
+        ];
+
+        function initMatchingGame() {
+            selectedBiasItem = null;
+            matchedCount13 = 0;
+            // Start timer
+            matchSeconds13 = 0;
+            clearInterval(matchTimer13);
+            document.getElementById('match-timer-display').textContent = '00:00';
+            matchTimer13 = setInterval(() => {
+                matchSeconds13++;
+                const m = Math.floor(matchSeconds13 / 60).toString().padStart(2, '0');
+                const s = (matchSeconds13 % 60).toString().padStart(2, '0');
+                document.getElementById('match-timer-display').textContent = m + ':' + s;
+            }, 1000);
+            
+            const shuffledNames = [...matchingPairs].sort(() => Math.random() - 0.5);
+            const shuffledDefs = [...matchingPairs].sort(() => Math.random() - 0.5);
+            
+            const namesCol = document.getElementById('matching-names');
+            const defsCol = document.getElementById('matching-defs');
+            namesCol.innerHTML = '';
+            defsCol.innerHTML = '';
+            
+            shuffledNames.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'match-item match-name';
+                div.dataset.id = p.id;
+                div.textContent = p.name;
+                div.onclick = () => selectMatchName(div);
+                namesCol.appendChild(div);
+            });
+            
+            shuffledDefs.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'match-item match-def';
+                div.dataset.id = p.id;
+                div.textContent = p.def;
+                div.onclick = () => selectMatchDef(div);
+                defsCol.appendChild(div);
+            });
+        }
+
+        function selectMatchName(el) {
+            if (el.classList.contains('matched')) return;
+            document.querySelectorAll('.match-name.selected').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedBiasItem = el;
+        }
+
+        function selectMatchDef(el) {
+            if (!selectedBiasItem || el.classList.contains('matched')) return;
+            
+            if (selectedBiasItem.dataset.id === el.dataset.id) {
+                selectedBiasItem.classList.remove('selected');
+                selectedBiasItem.classList.add('matched');
+                el.classList.add('matched');
+                selectedBiasItem = null;
+                matchedCount13++;
+                document.getElementById('match-count-13').textContent = matchedCount13;
+                
+                if (matchedCount13 === 7) {
+                    clearInterval(matchTimer13);
+                screenRequirements[13] = true;
+                    updateNextButton();
+                    document.getElementById('matching-success-13').style.display = 'block';
+                }
+            } else {
+                selectedBiasItem.classList.add('wrong');
+                el.classList.add('wrong');
+                setTimeout(() => {
+                    selectedBiasItem.classList.remove('wrong', 'selected');
+                    el.classList.remove('wrong');
+                    selectedBiasItem = null;
+                }, 600);
+            }
+        }
+
+        // Screen 14: Data
+        function initDataActivity() {
+            dataChoices = [];
+            // Reset all rounds to initial state
+            for (let r = 1; r <= 3; r++) {
+                const el = document.getElementById('data-round-' + r);
+                if (el) {
+                    el.style.display = r === 1 ? 'block' : 'none';
+                    el.querySelectorAll('.data-choice-btn').forEach(b => { b.disabled = false; });
+                }
+            }
+            const debrief = document.getElementById('data-debrief');
+            const done = document.getElementById('data-completed-msg');
+            if (debrief) debrief.style.display = 'none';
+            if (done) done.style.display = 'none';
+        }
+
+        function makeDataChoice(choice) {
+            const round = dataChoices.length + 1;
+            // Guard: ignore if this round already answered
+            if (dataChoices.length >= round) return;
+
+            // Immediately disable all buttons in current round to prevent double-click
+            document.querySelectorAll('#data-round-' + round + ' .data-choice-btn').forEach(b => b.disabled = true);
+
+            dataChoices.push(choice);
+
+            if (round < 3) {
+                setTimeout(() => {
+                    document.getElementById('data-round-' + round).style.display = 'none';
+                    document.getElementById('data-round-' + (round + 1)).style.display = 'block';
+                }, 300);
+            } else {
+                setTimeout(() => {
+                    document.getElementById('data-round-3').style.display = 'none';
+                    showDataDebrief();
+                }, 300);
+            }
+        }
+
+        function showDataDebrief() {
+            document.getElementById('data-debrief').style.display = 'block';
+            const labels = ['Continuar o programa', 'Encerrar o programa', 'Solicitar mais dados'];
+            const icons = ['▶️', '⏹️', '🔍'];
+            let html = '<div class="debrief-choices">';
+            dataChoices.forEach((c, i) => {
+                const dataLevel = ['🔴 Limitados', '🟡 Parciais', '🟢 Completos'][i];
+                html += `<div class="debrief-round"><span style="color:#888;font-size:13px;">${dataLevel}</span><br><strong>Sua escolha:</strong> ${labels[c]}</div>`;
+            });
+            html += '</div>';
+            document.getElementById('data-debrief-content').innerHTML = html;
+        }
+
+        function closeDataDebrief() {
+            screenRequirements[14] = true;
+            updateNextButton();
+            document.getElementById('data-debrief').style.display = 'none';
+            document.getElementById('data-completed-msg').style.display = 'block';
+        }
+
+        // Screen 15: Timeline
+        function initTimeline() {
+            slidersInteracted = false;
+            timelineSubmitted = false;
+            // Reset sliders to default values
+            const defaults = { levantamento: 4, desenvolvimento: 8, testes: 3, lancamento: 4 };
+            Object.entries(defaults).forEach(([p, v]) => {
+                const el = document.getElementById('slider-' + p);
+                if (el) { el.value = v; el.disabled = false; }
+                const valEl = document.getElementById('val-' + p);
+                if (valEl) valEl.textContent = v;
+            });
+            document.getElementById('timeline-total').textContent = '19';
+            document.getElementById('timeline-months').textContent = '4.4';
+            const submitBtn = document.getElementById('timeline-submit-btn');
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Enviar minha estimativa →'; }
+            // Show placeholder, hide comparison
+            const placeholder = document.getElementById('planning-placeholder');
+            if (placeholder) placeholder.style.display = 'flex';
+            const comparison = document.getElementById('timeline-comparison');
+            if (comparison) comparison.style.display = 'none';
+        }
+
+        function updateTimelineTotal() {
+            const phases = ['levantamento', 'desenvolvimento', 'testes', 'lancamento'];
+            let total = 0;
+            phases.forEach(p => {
+                const val = parseInt(document.getElementById('slider-' + p).value);
+                document.getElementById('val-' + p).textContent = val;
+                total += val;
+            });
+            document.getElementById('timeline-total').textContent = total;
+            document.getElementById('timeline-months').textContent = (total / 4.3).toFixed(1);
+            slidersInteracted = true;
+            document.getElementById('timeline-submit-btn').disabled = false;
+        }
+
+        function submitTimeline() {
+            if (!slidersInteracted) return;
+            timelineSubmitted = true;
+
+            document.querySelectorAll('.timeline-slider').forEach(s => s.disabled = true);
+            document.getElementById('timeline-submit-btn').disabled = true;
+            document.getElementById('timeline-submit-btn').textContent = '✓ Estimativa enviada';
+
+            const userTotal = parseInt(document.getElementById('timeline-total').textContent);
+            const externalTotal = 42;
+            const diff = Math.round((externalTotal - userTotal) / userTotal * 100);
+
+            document.getElementById('timeline-diff').textContent = diff > 0 ? '+' + diff + '%' : diff + '%';
+            document.getElementById('user-total-display').textContent = userTotal;
+
+            // Swap placeholder for comparison
+            const placeholder = document.getElementById('planning-placeholder');
+            if (placeholder) placeholder.style.display = 'none';
+            document.getElementById('timeline-comparison').style.display = 'block';
+        }
+
+        function acknowledgeTimeline() {
+            screenRequirements[15] = true;
+            updateNextButton();
+        }
+
+        // Screen 16: Quiz
+        const quiz16 = [
+            { q: "Uma empresa de logística nunca sofreu um cyberataque. Seu TI solicita R$500k para segurança. O CEO rejeita: 'Nunca aconteceu. É exagero.' Seis meses depois, um ransomware paralisa as operações por 11 dias. Qual viés influenciou o CEO?", options: ["Ancoragem","Viés de Disponibilidade","Falácia do Planejamento","Viés do Status Quo"], correct: 1, explanation: "Sem exemplos recentes de ataque, o CEO subestimou a probabilidade — Viés de Disponibilidade clássico." },
+            { q: "Uma gestora de RH acredita que 'extrovertidos são melhores líderes'. Ao avaliar candidatos, ela inconscientemente dá notas mais altas em liderança para candidatos extrovertidos — mesmo com dados de desempenho equivalentes. Qual viés está presente?", options: ["Efeito Halo","Efeito de Enquadramento","Viés de Confirmação","Aversão à Ambiguidade"], correct: 2, explanation: "Ela busca e interpreta dados que confirmam sua crença sobre extroversão — Viés de Confirmação." },
+            { q: "Em uma negociação, o fornecedor abre com R$2,4M. Após 3 rodadas, fecham em R$1,9M. O comprador celebra. O valor de mercado era R$1,4M. O que aconteceu?", options: ["Aversão ao Risco","Ancoragem","Efeito Avestruz","Viés do Status Quo"], correct: 1, explanation: "O primeiro número (R$2,4M) funcionou como âncora — toda a negociação girou em torno dele, não do valor real de mercado." },
+            { q: "A mesma vacina é descrita como: 'Reduz risco de morte em 85%' ou 'Falha em prevenir morte em 15% dos casos'. A adesão é maior com a primeira descrição. Qual princípio explica isso?", options: ["Falácia do Planejamento","Viés do Status Quo","Aversão ao Risco","Efeito de Enquadramento"], correct: 3, explanation: "Os dados são idênticos — só o enquadramento mudou. Perdas e ganhos são processados de forma assimétrica pelo cérebro." },
+            { q: "Uma equipe estima 3 meses para uma feature. O histórico mostra 5-8 meses para as últimas 4. A equipe diz: 'Dessa vez o escopo é menor.' Qual viés está presente?", options: ["Disponibilidade","Confirmação","Efeito Avestruz","Falácia do Planejamento"], correct: 3, explanation: "A equipe subestima o prazo ignorando o padrão histórico — Falácia do Planejamento." },
+            { q: "Um banco mantém um processo de crédito com 40% de falsos negativos há 4 anos. Três relatórios identificaram o problema. O diretor continua o processo e parou de ler os relatórios. Quais dois vieses estão operando?", options: ["Disponibilidade + Ancoragem","Confirmação + Enquadramento","Status Quo + Efeito Avestruz","Falácia do Planejamento + Aversão ao Risco"], correct: 2, explanation: "O Status Quo mantém o processo problemático. O Efeito Avestruz elimina o feedback negativo dos relatórios — os dois se reforçam." }
+        ];
+
+        function showQuestion16(index) {
+            quiz16CurrentQ = index;
+            const q = quiz16[index];
+            const container = document.getElementById('quiz16-container');
+            container.innerHTML = `
+                <div class="quiz-progress">Questão ${index + 1} de 6</div>
+                <div class="quiz-question">${q.q}</div>
+                <div class="quiz-options">
+                    ${q.options.map((opt, i) => `<button class="quiz-option" onclick="answerQ16(${index}, ${i})">${String.fromCharCode(65+i)}) ${opt}</button>`).join('')}
+                </div>
+                <div class="quiz-explanation" id="q16-explanation" style="display:none"></div>
+                <button class="btn btn-primary" id="q16-next-btn" style="display:none; margin-top:16px;" onclick="nextQ16(${index})">
+                    ${index < 5 ? 'Próxima questão →' : 'Ver resultado →'}
+                </button>`;
+        }
+
+        function answerQ16(qIndex, chosen) {
+            if (quiz16Answered[qIndex] !== undefined) return;
+            quiz16Answered[qIndex] = chosen;
+            
+            const q = quiz16[qIndex];
+            const buttons = document.querySelectorAll('.quiz-option');
+            buttons.forEach((btn, i) => {
+                btn.disabled = true;
+                if (i === q.correct) btn.classList.add('correct');
+                else if (i === chosen && chosen !== q.correct) btn.classList.add('incorrect');
+            });
+            
+            const expEl = document.getElementById('q16-explanation');
+            expEl.style.display = 'block';
+            expEl.innerHTML = (chosen === q.correct ? '✓ Correto! ' : '✗ Não era essa. ') + q.explanation;
+            expEl.className = 'quiz-explanation ' + (chosen === q.correct ? 'correct-exp' : 'incorrect-exp');
+            
+            document.getElementById('q16-next-btn').style.display = 'inline-block';
+        }
+
+        function nextQ16(currentIndex) {
+            if (currentIndex < 5) {
+                showQuestion16(currentIndex + 1);
+            } else {
+                const answeredArr = Object.values(quiz16Answered);
+                const score = answeredArr.filter((ans, i) => ans === quiz16[i].correct).length;
+                const pct = Math.round(score / 6 * 100);
+                const container = document.getElementById('quiz16-container');
+
+                // Score colour
+                const scoreColor = score >= 5 ? '#1a7a40' : score >= 3 ? '#b07d00' : '#c0392b';
+
+                // Feedback headline
+                let headline, subtext;
+                if (score === 6) {
+                    headline = '🏆 Perfeito — 6 de 6!';
+                    subtext = 'Você identificou todos os vieses com precisão. Isso é raro e demonstra atenção real aos padrões cognitivos de liderança.';
+                } else if (score >= 4) {
+                    headline = `✅ Bom desempenho — ${score} de 6`;
+                    subtext = 'Você domina a maioria dos vieses deste módulo. Revise os itens abaixo para fechar as lacunas antes de avançar.';
+                } else if (score >= 2) {
+                    headline = `⚠️ Em desenvolvimento — ${score} de 6`;
+                    subtext = 'Alguns vieses ainda se confundem. Use a revisão abaixo como guia e considere reler os cards antes de continuar para o Módulo 3.';
+                } else {
+                    headline = `📖 Revisão necessária — ${score} de 6`;
+                    subtext = 'Os vieses de decisão são sutis e levam tempo para se fixar. Leia as explicações abaixo com atenção e volte aos cards de vieses (Telas 4–10) antes de prosseguir.';
+                }
+
+                // Build per-question review
+                let reviewHtml = '';
+                quiz16.forEach((q, i) => {
+                    const userAns = quiz16Answered[i];
+                    const correct = userAns === q.correct;
+                    const borderColor = correct ? '#27ae60' : '#e74c3c';
+                    const bgColor = correct ? '#f0fff4' : '#fff5f5';
+                    const icon = correct ? '✅' : '❌';
+                    const chosenLabel = q.options[userAns] || '—';
+                    const correctLabel = q.options[q.correct];
+                    reviewHtml += `
+                        <div style="border-left:4px solid ${borderColor};background:${bgColor};border-radius:8px;padding:12px 14px;margin-bottom:10px;">
+                            <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:4px;">${icon} Questão ${i + 1}: ${q.q.substring(0, 80)}${q.q.length > 80 ? '…' : ''}</div>
+                            ${!correct ? `<div style="font-size:12px;color:#c0392b;margin-bottom:3px;">Sua resposta: <strong>${chosenLabel}</strong> &nbsp;→&nbsp; Correto: <strong>${correctLabel}</strong></div>` : `<div style="font-size:12px;color:#1a7a40;margin-bottom:3px;">Resposta: <strong>${correctLabel}</strong></div>`}
+                            <div style="font-size:12px;color:#555;line-height:1.6;">${q.explanation}</div>
+                        </div>`;
+                });
+
+                container.innerHTML = `
+                    <div class="quiz-result" style="padding:20px 0;">
+                        <div class="quiz-score" style="color:${scoreColor};">${score}<span>/6</span></div>
+                        <div style="font-size:14px;color:${scoreColor};font-weight:700;margin-top:4px;">${pct}% de acerto</div>
+                        <h3 style="margin-top:14px;font-size:18px;color:#2d2d2d;">${headline}</h3>
+                        <p style="font-size:14px;color:#555;line-height:1.7;max-width:520px;margin:8px auto 0;">${subtext}</p>
+                    </div>
+                    <div style="max-width:660px;margin:0 auto;">
+                        <h4 style="font-size:15px;color:#333;margin-bottom:12px;border-bottom:2px solid #eee;padding-bottom:8px;">📋 Revisão questão a questão</h4>
+                        ${reviewHtml}
+                    </div>
+                    ${score < 4 ? `<div style="background:#fffbf0;border:1px solid #f0c040;border-radius:10px;padding:14px;margin-top:16px;max-width:660px;margin-left:auto;margin-right:auto;font-size:13px;color:#7a5c00;line-height:1.7;">
+                        💡 <strong>Dica:</strong> Volte às Telas 4–10 usando o botão "← Anterior" para reler os cards de vieses. A repetição espaciada consolida o reconhecimento desses padrões.
+                    </div>` : ''}`;
+
+                screenRequirements[16] = true;
+                updateNextButton();
+            }
+        }
+
+        // Screen 5: Dual filter
+function setFilter(type) {
+    document.getElementById('filter-confirmador').style.display = type === 'confirmador' ? 'block' : 'none';
+    document.getElementById('filter-desafiador').style.display = type === 'desafiador' ? 'block' : 'none';
+    document.getElementById('filter-tab-conf').classList.toggle('active', type === 'confirmador');
+    document.getElementById('filter-tab-desaf').classList.toggle('active', type === 'desafiador');
+}
+
+// Screen 8: Risk dial
+let riskDialMoved = false;
+function updateRiskDial(val) {
+    riskDialMoved = true;
+    const num = parseInt(val);
+    const output = document.getElementById('risk-dial-output');
+    let text = '';
+    if (num < 25) {
+        text = '<strong>🟢 Perfil: Muito Avesso ao Risco</strong><br>Você provavelmente escolheria a Rota A (crescimento certo de 12%) em praticamente todo cenário — mesmo quando o retorno esperado da alternativa é maior. Risco: isso pode limitar retornos e inibir inovação a longo prazo.';
+    } else if (num < 45) {
+        text = '<strong>🟡 Perfil: Moderadamente Avesso</strong><br>Você prefere certeza, mas consegue aceitar alguma incerteza nos resultados se o ganho potencial for claro. Vigilância: Viés de Risco Zero pode operar em orçamentos de segurança e compliance.';
+    } else if (num < 55) {
+        text = '<strong>⚖️ Perfil: Neutro ao Risco</strong><br>Você avalia valor esperado racionalmente. Atenção: sob pressão e fadiga de decisão, a aversão ao risco tende a aumentar — mesmo em perfis neutros.';
+    } else if (num < 75) {
+        text = '<strong>🟠 Perfil: Moderadamente Tolerante</strong><br>Você consegue aceitar incerteza nos resultados quando o retorno esperado justifica. Vigilância: sob pressão de resultados, você pode subestimar riscos sistemicamente.';
+    } else {
+        text = '<strong>🔴 Perfil: Tolerante ao Risco</strong><br>Você aceita alta incerteza nos resultados em troca de maior retorno esperado. Vigilância: em contextos regulados ou com stakeholders avessos ao risco, seu perfil pode gerar conflito ou ser visto como irresponsável.';
+    }
+    output.innerHTML = text;
+    // Mark screen as completable once dial is moved
+    if (!screenRequirements[8]) {
+        screenRequirements[8] = true;
+        updateNextButton();
+        const btn8 = document.getElementById('btn-understood-8');
+        if (btn8) { btn8.disabled = false; btn8.style.opacity = '1'; btn8.style.cursor = 'pointer'; btn8.textContent = '✓ Entendi — próximo viés'; }
+    }
+}
+
+function riskDialUnderstood() {
+    markBiasComplete(8);
+    document.getElementById('btn-understood-8').textContent = '✓ Entendido';
+    document.getElementById('btn-understood-8').disabled = true;
+}
+
+function showPlanningVizAndComplete() {
+            const viz = document.getElementById('planning-viz-10');
+            if (viz) {
+                viz.style.display = 'block';
+                // Animate bars
+                setTimeout(() => {
+                    const bp = document.getElementById('bar-time-plan');
+                    const br = document.getElementById('bar-time-real');
+                    const bcp = document.getElementById('bar-cost-plan');
+                    const bcr = document.getElementById('bar-cost-real');
+                    if (bp) bp.style.width = '35%';
+                    if (br) br.style.width = '85%';
+                    if (bcp) bcp.style.width = '40%';
+                    if (bcr) bcr.style.width = '90%';
+                }, 100);
+            }
+            markBiasComplete(10);
+            const btns = document.querySelectorAll('#screen-10 .understood-btn');
+            btns.forEach(b => { b.textContent = '✓ Entendido!'; b.disabled = true; b.style.opacity = '0.5'; });
+        }
+        
+
+        function trioUnderstood() {
+            const openedCount = Object.values(expandedCards09).filter(v => v).length;
+            if (openedCount < 3) return; // guard
+            markBiasComplete(9);
+            const btn9 = document.getElementById('btn-understood-9');
+            if (btn9) { btn9.textContent = '✓ Entendido'; btn9.style.opacity = '0.5'; btn9.style.cursor = 'default'; }
+        }
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProgress();
+            showScreen(currentScreen);
+        });
+    </script>
+</body>
+</html>

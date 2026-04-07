@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+      (function(){
+        var V='spc-m4-20260315a';
+        var s=sessionStorage.getItem('spc_v_m4');
+        if(s && s!==V){ sessionStorage.setItem('spc_v_m4',V); location.reload(true); }
+        else { sessionStorage.setItem('spc_v_m4',V); }
+      })();
+    </script>
+    <title>Módulo 4: Pensamento de Grupo | Sem Pontos Cegos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --deep-green: #002610;
+            --accent: #006A36;
+            --neon-green: #4DF600;
+            --white: #ffffff;
+            --light-grey: #f5f5f5;
+            --mid-grey: #6c757d;
+            --shadow: 0 4px 20px rgba(0,74,34,0.15);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--light-grey);
+            color: var(--mid-grey);
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            max-height: 100vh;
+            max-height: 100dvh;
+            overflow: hidden;
+            background: var(--light-grey);
+        }
+
+        /* Top Bar */
+        #top-bar {
+            background-color: var(--deep-green);
+            color: var(--white);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        .top-bar-left {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .top-bar-center {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .top-bar-right {
+            font-size: 14px;
+            text-align: right;
+            min-width: 150px;
+        }
+
+        #progressBar {
+            width: 200px; height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px; margin: 4px auto 0; overflow: hidden;
+        }
+
+        #progressFill {
+            height: 100%; background: var(--neon-green);
+            width: 0%; transition: width 0.3s ease; border-radius: 2px;
+        }
+
+        #screenCounter { font-size: 13px; }
+
+        /* Content Area */
+        #screens-container {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 80px;
+        }
+
+        .screen {
+            display: none; min-height: 200px;
+            padding: 40px 60px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .screen.active {
+            display: flex; flex-direction: column; justify-content: flex-start;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Bottom Navigation */
+        #bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--deep-green);
+            padding: 18px 24px;
+            padding-bottom: max(18px, env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn {
+            padding: 12px 24px; border: none; border-radius: 4px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .btn-primary { background-color: var(--neon-green); color: var(--deep-green); }
+        .btn-primary:hover:not(:disabled) { background-color: #5dff1f; transform: translateY(-2px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-secondary {
+            background-color: transparent; color: var(--white);
+            border: 2px solid var(--neon-green);
+        }
+        .btn-secondary:hover:not(:disabled) { background-color: rgba(77,246,0,0.1); }
+        .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Banner */
+        .banner {
+            background: linear-gradient(135deg, var(--deep-green) 0%, #003A18 100%);
+            padding: 60px 40px; border-radius: 8px;
+            color: var(--white); text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .banner::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--neon-green);
+            animation: slideRight 2s ease-in-out infinite;
+        }
+        @keyframes slideRight {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+        .banner h1 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+        .banner .subtitle { font-size: 20px; opacity: 0.95; margin-bottom: 20px; }
+        .banner .hook {
+            font-size: 18px; color: rgba(255,255,255,0.9);
+            margin-top: 24px; line-height: 1.7; font-style: italic;
+            max-width: 680px; margin-left: auto; margin-right: auto;
+        }
+        .time-badge {
+            display: inline-block;
+            background: var(--neon-green);
+            color: var(--deep-green);
+            padding: 6px 16px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; margin-bottom: 20px;
+        }
+
+        /* Section Header */
+        .section-header {
+            font-size: 20px; font-weight: 700;
+            color: var(--accent); margin-bottom: 24px; margin-top: 0;
+        }
+
+        /* Objectives Grid */
+        .objectives-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 20px; max-width: 860px; margin: 20px auto;
+        }
+        .objective-card {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 12px; padding: 24px;
+            box-shadow: var(--shadow); transition: all 0.3s;
+        }
+        .objective-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,106,54,0.2);
+        }
+        .objective-card-icon { font-size: 34px; margin-bottom: 10px; }
+        .objective-card h3 { color: var(--accent); font-size: 14px; margin-bottom: 6px; }
+        .objective-card p { font-size: 13px; color: #555; line-height: 1.6; }
+
+        /* Expandable Pair Cards */
+        .pair-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+        .pair-card {
+            background: white; border: 2px solid #ddd;
+            border-radius: 10px; cursor: pointer;
+            transition: all 0.3s; overflow: hidden;
+        }
+        .pair-card.expanded { border-color: var(--accent); }
+        .pair-card-header {
+            padding: 18px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .pair-card-icon { font-size: 26px; }
+        .pair-card-title {
+            font-size: 14px; font-weight: 700;
+            color: var(--accent); flex: 1; margin-left: 10px;
+        }
+        .pair-card-chevron { font-size: 12px; color: #aaa; transition: transform 0.3s; }
+        .pair-card.expanded .pair-card-chevron { transform: rotate(180deg); }
+        .pair-card-body {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.4s ease; padding: 0 18px;
+        }
+        .pair-card.expanded .pair-card-body { max-height: 500px; padding: 0 18px 18px; }
+        .pair-card-def { font-size: 14px; color: #2d2d2d; line-height: 1.7; margin-bottom: 10px; }
+        .pair-card-scenario {
+            font-size: 13px; color: #555; font-style: italic;
+            border-left: 3px solid var(--accent); padding-left: 10px; margin-bottom: 10px;
+        }
+        .pair-card-context {
+            font-size: 13px; color: #666; margin-bottom: 10px;
+            background: #f9f9f9; border-radius: 6px; padding: 8px 10px;
+        }
+        .pair-card-antidote {
+            font-size: 13px; color: var(--accent);
+            background: #f0fff4; border-radius: 6px; padding: 8px 10px;
+        }
+        .expand-hint {
+            font-size: 12px; color: #999; margin-top: 16px; text-align: center;
+            transition: opacity 0.3s;
+        }
+        .expand-hint.hidden { display: none; }
+
+        /* Mini Card Grid (Screen 4) */
+        .mini-cards-grid {
+            display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 16px;
+        }
+        .mini-card {
+            background: white; border: 2px solid #ddd; border-radius: 10px;
+            cursor: pointer; transition: all 0.3s; overflow: hidden;
+        }
+        .mini-card.expanded { border-color: var(--accent); }
+        .mini-card-header {
+            padding: 14px 18px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .mini-card-title {
+            font-size: 14px; font-weight: 700; color: var(--accent);
+        }
+        .mini-card-subtitle {
+            font-size: 12px; color: #666; margin-top: 2px;
+        }
+        .mini-card-chevron { font-size: 12px; color: #aaa; transition: transform 0.3s; }
+        .mini-card.expanded .mini-card-chevron { transform: rotate(180deg); }
+        .mini-card-body {
+            max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+            padding: 0 18px;
+        }
+        .mini-card.expanded .mini-card-body { max-height: 400px; padding: 0 18px 14px; }
+        .mini-card-content {
+            font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 10px;
+        }
+        .mini-card-antidote {
+            font-size: 13px; color: var(--accent);
+            background: #f0fff4; border-radius: 6px; padding: 8px 10px;
+        }
+
+        /* Pyramid */
+        .pyramid-container {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 12px; padding: 32px 24px;
+            max-width: 700px; margin: 20px auto;
+            text-align: center;
+        }
+        .pyramid-def {
+            font-size: 14px; color: #555; line-height: 1.7;
+            margin-bottom: 24px; font-style: italic;
+        }
+        .pyramid {
+            display: flex; flex-direction: column; gap: 12px;
+            margin-bottom: 24px;
+        }
+        .pyramid-level {
+            background: white; border: 2px solid #ddd;
+            border-radius: 8px; padding: 16px;
+            cursor: pointer; transition: all 0.3s;
+            text-align: left;
+        }
+        .pyramid-level:hover { border-color: var(--accent); }
+        .pyramid-level.active { border-color: var(--accent); background: #f0fff4; }
+        .pyramid-level-label {
+            font-size: 13px; font-weight: 700; color: var(--accent);
+            margin-bottom: 8px;
+        }
+        .pyramid-level-behavior {
+            font-size: 13px; color: #555; line-height: 1.6;
+            max-height: 0; overflow: hidden; transition: max-height 0.3s;
+        }
+        .pyramid-level.active .pyramid-level-behavior {
+            max-height: 200px;
+        }
+        .pyramid-hint {
+            font-size: 12px; color: #999;
+            transition: opacity 0.3s;
+        }
+        .pyramid-hint.hidden { display: none; }
+
+        /* Decision Recommendation Cards */
+        .recommendation-card {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 12px; padding: 24px;
+            margin-bottom: 20px; text-align: center;
+        }
+        .recommendation-prompt {
+            font-size: 16px; font-weight: 600;
+            color: var(--deep-green); margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        .recommendation-context {
+            background: #f9f9f9; border-radius: 8px; padding: 14px;
+            font-size: 13px; color: #555; line-height: 1.7;
+            margin-bottom: 20px; text-align: left;
+        }
+        .recommendation-context strong {
+            color: var(--accent);
+        }
+        .recommendation-buttons {
+            display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+        }
+        .recommendation-btn {
+            padding: 12px 24px; border: none; border-radius: 6px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .recommendation-btn.avancar {
+            background: #4DF600; color: #002610;
+        }
+        .recommendation-btn.avancar:hover { background: #5dff1f; }
+        .recommendation-btn.avancar.selected {
+            background: #4DF600; box-shadow: 0 0 0 3px rgba(77,246,0,0.3);
+        }
+        .recommendation-btn.pausar {
+            background: #FFA500; color: white;
+        }
+        .recommendation-btn.pausar:hover { background: #FFB520; }
+        .recommendation-btn.pausar.selected {
+            background: #FFA500; box-shadow: 0 0 0 3px rgba(255,165,0,0.3);
+        }
+        .recommendation-btn.rejeitar {
+            background: #e74c3c; color: white;
+        }
+        .recommendation-btn.rejeitar:hover { background: #f05039; }
+        .recommendation-btn.rejeitar.selected {
+            background: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,0.3);
+        }
+        .recommendation-confirmation {
+            background: #f0fff4; border-left: 4px solid var(--accent);
+            border-radius: 6px; padding: 12px 14px;
+            font-size: 13px; color: var(--accent); margin-top: 16px;
+            display: none;
+        }
+        .recommendation-confirmation.show { display: block; }
+
+        /* Meeting Transcript */
+        .meeting-transcript {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 12px; padding: 20px;
+            margin-bottom: 20px; font-family: 'Courier New', monospace;
+            font-size: 13px; line-height: 1.8;
+        }
+        .meeting-line {
+            margin-bottom: 10px; padding: 8px;
+            border-left: 3px solid transparent;
+        }
+        .meeting-time {
+            font-weight: 600; color: var(--accent);
+        }
+        .meeting-speaker {
+            font-weight: 700; color: #1a1a1a;
+        }
+        .meeting-text {
+            color: #333; margin-left: 8px;
+        }
+        .meeting-line.silence {
+            border-left-color: #ddd;
+            background: #f9f9f9; color: #999; font-style: italic;
+            text-align: center; padding: 12px;
+        }
+
+        /* Debrief Comparison */
+        .debrief-boxes {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 16px; margin-bottom: 24px;
+        }
+        .debrief-box {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 10px; padding: 16px; text-align: center;
+        }
+        .debrief-label {
+            font-size: 12px; font-weight: 700;
+            color: #999; margin-bottom: 8px; text-transform: uppercase;
+        }
+        .debrief-value {
+            font-size: 18px; font-weight: 700;
+            color: var(--accent); margin-bottom: 4px;
+        }
+        .debrief-emoji {
+            font-size: 28px; display: block;
+        }
+
+        .bias-breakdown {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 12px; padding: 20px;
+        }
+        .bias-breakdown h3 {
+            color: var(--accent); font-size: 16px; margin-bottom: 16px;
+        }
+        .bias-item {
+            margin-bottom: 14px; padding-bottom: 14px;
+            border-bottom: 1px solid #eee;
+        }
+        .bias-item:last-child { border-bottom: none; }
+        .bias-item-title {
+            font-size: 14px; font-weight: 700;
+            color: #1a1a1a; margin-bottom: 4px;
+        }
+        .bias-item-desc {
+            font-size: 13px; color: #666; line-height: 1.6;
+        }
+
+        /* Decision Challenge */
+        .decision-card {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 12px; padding: 24px;
+            margin-bottom: 20px;
+        }
+        .decision-progress {
+            font-size: 12px; color: #999; margin-bottom: 12px;
+        }
+        .decision-scenario {
+            font-size: 15px; font-weight: 600;
+            color: var(--deep-green); margin-bottom: 14px; line-height: 1.6;
+        }
+        .decision-scenario-bullet {
+            font-size: 13px; color: #555; margin-bottom: 8px;
+            padding-left: 16px; position: relative;
+        }
+        .decision-scenario-bullet::before {
+            content: '•'; position: absolute; left: 0;
+            color: var(--accent);
+        }
+        .decision-options {
+            display: flex; flex-direction: column; gap: 10px; margin-top: 14px;
+        }
+        .decision-option {
+            padding: 12px 16px; background: #f9f9f9;
+            border: 2px solid #e8e8e8; border-radius: 6px;
+            cursor: pointer; font-size: 13px; color: #333;
+            transition: all 0.2s; text-align: left;
+        }
+        .decision-option:hover { border-color: var(--accent); background: #f0fff4; }
+        .decision-option.selected {
+            border-color: var(--accent); background: #f0fff4;
+            color: var(--accent); font-weight: 600;
+        }
+
+        /* Confidence Ratings */
+        .confidence-section {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 12px; padding: 20px;
+            margin-bottom: 20px;
+        }
+        .confidence-inline {
+            margin-top: 16px;
+        }
+        .confidence-label {
+            font-size: 13px; font-weight: 600;
+            color: #1a1a1a; margin-bottom: 10px;
+        }
+        .confidence-buttons {
+            display: flex; gap: 8px;
+        }
+        .confidence-btn {
+            padding: 6px 12px; background: #f0f0f0;
+            border: 2px solid #ddd; border-radius: 4px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .confidence-btn:hover { border-color: var(--accent); background: #f0fff4; }
+        .confidence-btn.selected {
+            background: var(--accent); color: white; border-color: var(--accent);
+        }
+
+        .decision-summary {
+            background: #f0fff4; border-left: 4px solid var(--accent);
+            border-radius: 6px; padding: 14px;
+            font-size: 13px; color: #1a1a1a; line-height: 1.6;
+        }
+
+        /* Diary Link Cards */
+        .diary-card {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 12px; padding: 28px;
+            text-align: center; margin-bottom: 20px;
+        }
+        .diary-card h3 {
+            color: var(--accent); font-size: 18px; margin-bottom: 12px;
+        }
+        .diary-card p {
+            font-size: 14px; color: #555; line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        .diary-card .diary-note {
+            font-size: 12px; color: #999; margin-bottom: 18px; font-style: italic;
+        }
+        .diary-cta {
+            display: inline-block;
+            background: var(--accent); color: white;
+            padding: 12px 28px; border-radius: 6px;
+            font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            text-decoration: none;
+        }
+        .diary-cta:hover { background: #005226; }
+
+        /* Case Study Timeline */
+        .timeline {
+            position: relative; padding: 20px 0 20px 40px;
+            margin-bottom: 24px;
+        }
+        .timeline::before {
+            content: ''; position: absolute; left: 12px;
+            top: 0; bottom: 0; width: 2px; background: #ddd;
+        }
+        .timeline-item {
+            position: relative; margin-bottom: 20px; padding-bottom: 16px;
+        }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -32px; top: 4px;
+            width: 12px; height: 12px; background: var(--accent);
+            border-radius: 50%; border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+        .timeline-item-title {
+            font-size: 14px; font-weight: 700;
+            color: var(--accent); margin-bottom: 4px;
+        }
+        .timeline-item-desc {
+            font-size: 13px; color: #555; line-height: 1.6;
+        }
+
+        .bias-cards-row {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 14px; margin-top: 18px;
+        }
+        .bias-card-compact {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 10px; padding: 14px;
+            border-left: 4px solid var(--accent);
+        }
+        .bias-card-compact-title {
+            font-size: 13px; font-weight: 700;
+            color: var(--accent); margin-bottom: 6px;
+        }
+        .bias-card-compact-text {
+            font-size: 12px; color: #555; line-height: 1.6;
+        }
+
+        .case-study-conclusion {
+            background: #f0fff4; border-left: 4px solid var(--accent);
+            border-radius: 6px; padding: 14px;
+            font-size: 13px; color: #1a1a1a; line-height: 1.7;
+            margin-top: 18px;
+        }
+
+        /* Quiz */
+        .quiz-question {
+            background: white;
+            border-radius: 12px; padding: 20px;
+            margin-bottom: 20px;
+        }
+        .quiz-q-num {
+            font-size: 12px; font-weight: 700;
+            color: var(--accent); margin-bottom: 6px;
+        }
+        .quiz-q-text {
+            font-size: 15px; font-weight: 600;
+            color: #1a1a1a; margin-bottom: 14px;
+        }
+        .quiz-options {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .quiz-option {
+            padding: 12px 14px; background: #f9f9f9;
+            border: 2px solid #ddd; border-radius: 6px;
+            cursor: pointer; font-size: 13px; color: #333;
+            transition: all 0.2s;
+        }
+        .quiz-option:hover { border-color: var(--accent); background: #f0fff4; }
+        .quiz-option.selected {
+            border-color: var(--accent); background: var(--accent);
+            color: white; font-weight: 600;
+        }
+        .quiz-option.correct {
+            border-color: #27ae60; background: #d4edda; color: #155724;
+        }
+        .quiz-option.incorrect {
+            border-color: #dc3545; background: #f8d7da; color: #721c24;
+        }
+        .quiz-explanation {
+            background: #f0fff4; border-left: 4px solid var(--accent);
+            border-radius: 6px; padding: 12px 14px;
+            font-size: 13px; color: #1a1a1a; line-height: 1.6;
+            margin-top: 12px; display: none;
+        }
+        .quiz-explanation.show { display: block; }
+
+        /* Summary Screen */
+        .summary-layout {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 24px; margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .summary-layout { grid-template-columns: 1fr; }
+        }
+        .summary-card {
+            background: white; border: 1px solid #e8e8e8;
+            border-radius: 12px; padding: 24px;
+        }
+        .summary-card h3 {
+            color: var(--accent); font-size: 18px; margin-bottom: 14px;
+        }
+        .summary-card ul {
+            list-style: none; padding: 0;
+        }
+        .summary-card li {
+            font-size: 13px; color: #555; line-height: 1.7;
+            margin-bottom: 10px; padding-left: 16px; position: relative;
+        }
+        .summary-card li::before {
+            content: '✓'; position: absolute; left: 0;
+            color: var(--accent); font-weight: 700;
+        }
+        .summary-bridge {
+            background: #f9f9f9; border: 1px solid #e8e8e8;
+            border-radius: 8px; padding: 14px;
+            font-size: 13px; color: #555; line-height: 1.7;
+            margin-bottom: 20px; text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .screen { padding: 30px 20px; }
+            .banner { padding: 40px 24px; }
+            .objectives-grid { grid-template-columns: 1fr; }
+            .pair-cards { grid-template-columns: 1fr; }
+            .debrief-boxes { grid-template-columns: 1fr; }
+            .bias-cards-row { grid-template-columns: 1fr; }
+            .recommendation-buttons { flex-direction: column; }
+            .recommendation-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div id="top-bar">
+            <div class="top-bar-left" onclick="currentScreen=0; showScreen(0);" style="cursor:pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.16 114.38" height="28" style="flex-shrink:0;">
+                    <path fill="#4DF600" d="M80.95,49.16c13.59,12.49,27.32,24.83,41.01,37.21,1.71-2.52,3.25-5.17,4.59-7.93-13.23-12.52-26.84-24.66-40.54-36.67-11.31-9.92-21.92-9.62-33.1.41-13.3,11.93-26.23,24.3-39.81,35.89,1.34,2.82,2.89,5.52,4.62,8.09,13.73-12.39,27.46-24.78,41.13-37.24,7.59-6.92,14.41-6.83,22.12.25Z"/>
+                    <path fill="#4DF600" d="M56.92,20.51c8.24-4.87,16.3-5.35,24.64-.48,12.87,7.52,25.76,15,38.67,22.46,4.05,2.34,8.15,4.59,12.57,7.06-.09-3.94-.55-7.79-1.33-11.52-.69-.56-31.47-18.24-45.95-26.61-9.9-5.72-20.15-6.3-30.13-.8-14.57,8.03-46.01,26.35-47,27.22-.8,3.73-1.27,7.59-1.37,11.53.28-.12.54-.24.79-.38,16.39-9.47,32.83-18.86,49.13-28.49Z"/>
+                    <path fill="#4DF600" d="M81.84,70.14c-6.01-8.23-19.13-8.13-24.57.09-7.27,10.97-14.02,22.3-21.15,33.89,2.58,1.64,5.28,3.1,8.09,4.36,1.2-1.51,14.61-23.59,19.71-31.88,3.28-5.34,8.32-5.41,11.49-.17,5.3,8.75,18.72,30.78,19.74,32.23,2.83-1.24,5.55-2.69,8.15-4.32-1.85-3.03-3.69-6.06-5.56-9.05-5.24-8.42-10.06-17.16-15.89-25.15Z"/>
+                </svg>
+                Sem Pontos Cegos
+            </div>
+            <div class="top-bar-center">
+                <div id="screenCounter">Tela 1 de 15</div>
+                <div id="progressBar">
+                    <div id="progressFill"></div>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div>Módulo 4: Pensamento de Grupo</div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div id="screens-container">
+            <!-- Screen 0: Welcome Banner -->
+            <div class="screen active">
+                <div class="banner">
+                    <h1>Módulo 4: Pensamento de Grupo</h1>
+                    <div class="subtitle">Vieses Sociais e Organizacionais</div>
+                    <div class="time-badge">⏱️ 35–40 minutos</div>
+                    <div class="hook">"Sua equipe não é a soma dos seus indivíduos. É um sistema — e sistemas têm vieses próprios."</div>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 28px; align-self: center;" onclick="goNext()">
+                    Iniciar Módulo →
+                </button>
+            </div>
+
+            <!-- Screen 1: Learning Objectives -->
+            <div class="screen">
+                <h2 class="section-header">O que você vai aprender</h2>
+                <div class="objectives-grid">
+                    <div class="objective-card">
+                        <div class="objective-card-icon">🎯</div>
+                        <h3>Identificar vieses que operam em níveis de grupo e organizacionais</h3>
+                        <p>Entenda como dinâmicas coletivas criam padrões diferentes dos vieses individuais.</p>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-card-icon">🔗</div>
+                        <h3>Explicar como dinâmicas sociais amplificam vieses individuais</h3>
+                        <p>Veja como o contexto social transforma decisões pessoais.</p>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-card-icon">🧪</div>
+                        <h3>Analisar como a cultura mitiga ou reforça os vieses</h3>
+                        <p>A cultura organizacional influencia os viéses.</p>
+                    </div>
+                    <div class="objective-card">
+                        <div class="objective-card-icon">🛡️</div>
+                        <h3>Avaliar o papel da segurança psicológica no trabalho em equipe</h3>
+                        <p>Aprenda o que realmente funciona para construir equipes mais conscientes.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 2: Groupthink & False Consensus -->
+            <div class="screen">
+                <h2 class="section-header">Pensamento de Grupo e Falso Consenso</h2>
+                <div class="pair-cards">
+                    <div class="pair-card" onclick="togglePanel02(0)">
+                        <div class="pair-card-header">
+                            <span class="pair-card-icon">🫂</span>
+                            <span class="pair-card-title">Pensamento de Grupo</span>
+                            <span class="pair-card-chevron">▼</span>
+                        </div>
+                        <div class="pair-card-body">
+                            <div class="pair-card-def">Supressão da dissidência em busca do consenso. Mais comum em grupos coesos, hierárquicos ou sob pressão.</div>
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Exemplo:</div>
+                                <div class="pair-card-scenario">Uma equipe de produto descarta feedback negativo de usuários porque o CEO acredita no produto. Ninguém quer ser o portador de más notícias.</div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Contexto BR:</div>
+                                <div class="pair-card-context">Culturas de alta distância hierárquica são especialmente vulneráveis.</div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Antídoto:</div>
+                                <div class="pair-card-antidote">💊 Designe um 'advogado do diabo' formal. Crie espaço protegido para dissidência antes da decisão final.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pair-card" onclick="togglePanel02(1)">
+                        <div class="pair-card-header">
+                            <span class="pair-card-icon">🪞</span>
+                            <span class="pair-card-title">Efeito de Falso Consenso</span>
+                            <span class="pair-card-chevron">▼</span>
+                        </div>
+                        <div class="pair-card-body">
+                            <div class="pair-card-def">Superestimar que os outros compartilham suas opiniões, valores e preferências.</div>
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Exemplo:</div>
+                                <div class="pair-card-scenario">Um diretor assume que toda a equipe apoia a mudança de estratégia porque ninguém se opôs publicamente. Na realidade, 70% tem reservas significativas.</div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Antídoto:</div>
+                                <div class="pair-card-antidote">💊 Solicite opiniões anônimas antes de reuniões decisivas. Pergunte explicitamente: 'Quem tem uma perspectiva diferente?'</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="expand-hint" id="hint02">Clique em cada painel para explorar</div>
+            </div>
+
+            <!-- Screen 3: Social Norms & Reciprocity -->
+            <div class="screen">
+                <h2 class="section-header">Normas Sociais e Viés de Reciprocidade</h2>
+                <div class="pair-cards">
+                    <div class="pair-card" onclick="togglePanel03(0)">
+                        <div class="pair-card-header">
+                            <span class="pair-card-icon">📏</span>
+                            <span class="pair-card-title">Normas Sociais</span>
+                            <span class="pair-card-chevron">▼</span>
+                        </div>
+                        <div class="pair-card-body">
+                            <div class="pair-card-def">Regras invisíveis que governam comportamento em grupos — descritivas (o que outros fazem) vs. prescritivas (o que outros acham que você deve fazer).</div>
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Exemplo:</div>
+                                <div class="pair-card-scenario">Em uma empresa onde todos ficam até as 20h, sair às 18h (mesmo com o trabalho feito) parece transgressão. A norma implícita substitui a política formal.</div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Antídoto:</div>
+                                <div class="pair-card-antidote">💊 Torne as normas explícitas. Pergunte: 'Qual comportamento estamos realmente recompensando aqui?'</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pair-card" onclick="togglePanel03(1)">
+                        <div class="pair-card-header">
+                            <span class="pair-card-icon">🔄</span>
+                            <span class="pair-card-title">Viés de Reciprocidade</span>
+                            <span class="pair-card-chevron">▼</span>
+                        </div>
+                        <div class="pair-card-body">
+                            <div class="pair-card-def">Tendência de corresponder e espelhar as ações dos outros — criando espirais de cooperação (para cima) ou retaliação (para baixo).</div>
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Exemplo:</div>
+                                <div class="pair-card-scenario">Um gestor começa a compartilhar informações estratégicas com sua equipe. Em semanas, o time começa a trazer insights espontâneos que ele nunca teria obtido. O oposto também é verdadeiro.</div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Antídoto:</div>
+                                <div class="pair-card-antidote">💊 Seja o primeiro a agir com abertura. Culturas tóxicas se autoperpetram — culturas saudáveis também.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="expand-hint" id="hint03">Clique em cada painel para explorar</div>
+            </div>
+
+            <!-- Screen 4: Decision Fatigue, Choice Overload, Scarcity -->
+            <div class="screen">
+                <h2 class="section-header">Três Forças que Esgotam o Julgamento</h2>
+                <div class="mini-cards-grid">
+                    <div class="mini-card" onclick="toggleCard04(0)">
+                        <div class="mini-card-header">
+                            <div>
+                                <div style="font-size: 20px; margin-bottom: 4px;">🧠</div>
+                                <div class="mini-card-title">Fadiga de Decisão</div>
+                                <div class="mini-card-subtitle">A qualidade das decisões cai após um logo período de escolhas consecutivas.</div>
+                            </div>
+                            <div class="mini-card-chevron">▼</div>
+                        </div>
+                        <div class="mini-card-body">
+                            <div class="mini-card-content">Líderes se esgotam mais rápido do que percebem. Decisões às 17h têm menor qualidade que decisões às 9h. Juízes aprovam liberdade condicional (parole) com mais frequência após o almoço.</div>
+                            <div class="mini-card-antidote">💊 Reserve decisões importantes para o início do dia. Reduza decisões triviais com padrões e políticas operacionais.</div>
+                        </div>
+                    </div>
+                    <div class="mini-card" onclick="toggleCard04(1)">
+                        <div class="mini-card-header">
+                            <div>
+                                <div style="font-size: 20px; margin-bottom: 4px;">🌀</div>
+                                <div class="mini-card-title">Sobrecarga de Escolhas</div>
+                                <div class="mini-card-subtitle">Muitas opções levam à paralisia ou à escolha impulsiva.</div>
+                            </div>
+                            <div class="mini-card-chevron">▼</div>
+                        </div>
+                        <div class="mini-card-body">
+                            <div class="mini-card-content">Quanto mais opções, mais difícil decidir — e mais insatisfeitos ficamos com a escolha feita. Comitês com muitas alternativas tendem a escolher a mais familiar, não a melhor.</div>
+                            <div class="mini-card-antidote">💊 Limite opções a 3–4 alternativas por decisão. Defina critérios antes de apresentar as opções.</div>
+                        </div>
+                    </div>
+                    <div class="mini-card" onclick="toggleCard04(2)">
+                        <div class="mini-card-header">
+                            <div>
+                                <div style="font-size: 20px; margin-bottom: 4px;">🔍</div>
+                                <div class="mini-card-title">Escassez e Tunelamento (túnel da escassez)</div>
+                                <div class="mini-card-subtitle">A falta extrema de recursos reduz o foco e a capacidade de tomada de decisão.</div>
+                            </div>
+                            <div class="mini-card-chevron">▼</div>
+                        </div>
+                        <div class="mini-card-body">
+                            <div class="mini-card-content">Quando recursos são escassos (tempo, dinheiro, atenção), focamos na crise imediata e ignoramos o quadro maior. Líderes em modo de 'apagar incêndios' tomam decisões progressivamente piores.</div>
+                            <div class="mini-card-antidote">💊 Contexto brasileiro: líderes em organizações com recursos limitados estão especialmente expostos. Crie rituais de distância estratégica e reuniões mensais fora do contexto da operação.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 5: Psychological Safety Pyramid -->
+            <div class="screen">
+                <h2 class="section-header">A Base para Equipes se Protegerem dos Vieses</h2>
+                <div class="pyramid-container">
+                    <div class="pyramid-def">
+                        <strong>Segurança Psicológica</strong> é a crença compartilhada de que a equipe é segura para assumir riscos interpessoais — falar, desafiar, admitir erros. <em>(Amy Edmondson, Harvard)</em>
+                    </div>
+                    <div class="pyramid">
+                        <div class="pyramid-level" onclick="clickPyramidLevel(0)">
+                            <div class="pyramid-level-label">📚 Nível 1: Enquadrar trabalho como problema de aprendizagem</div>
+                            <div class="pyramid-level-behavior">Diga: "Ainda não temos todas as respostas. Precisamos de perspectivas diferentes." Posicione incerteza como normal, não como fraqueza.</div>
+                        </div>
+                        <div class="pyramid-level" onclick="clickPyramidLevel(1)">
+                            <div class="pyramid-level-label">🤝 Nível 2: Reconhecer a própria falibilidade</div>
+                            <div class="pyramid-level-behavior">Diga: "Eu errei nisso." Líderes que admitem erros criam permissão para que outros façam o mesmo.</div>
+                        </div>
+                        <div class="pyramid-level" onclick="clickPyramidLevel(2)">
+                            <div class="pyramid-level-label">❓ Nível 3: Modelar curiosidade</div>
+                            <div class="pyramid-level-behavior">Faça perguntas genuínas. "O que eu estou perdendo?" sinaliza abertura e reduz autocensura na equipe.</div>
+                        </div>
+                        <div class="pyramid-level" onclick="clickPyramidLevel(3)">
+                            <div class="pyramid-level-label">🎯 Nível 4: Estabelecer normas explícitas para dissidência</div>
+                            <div class="pyramid-level-behavior">Diga: "Precisamos de um advogado do diabo nessa decisão." Crie papéis formais para vozes discordantes.</div>
+                        </div>
+                    </div>
+                    <div class="pyramid-hint" id="pyramid-hint">Clique em cada nível para descobrir os comportamentos de liderança</div>
+                </div>
+            </div>
+
+            <!-- Screen 6: Pressure Point Simulation - Part 1 -->
+            <div class="screen">
+                <h2 class="section-header">Atividade: Simulação do Ponto de Pressão — Parte 1</h2>
+                <div class="recommendation-card">
+                    <div class="recommendation-prompt">Você é membro sênior do comitê executivo. Uma proposta está sendo votada: <strong>Lançar o novo produto no mercado em 60 dias</strong> com base em dados preliminares promissores. Antes da reunião começar, registre sua recomendação privada.</div>
+                    <div class="recommendation-context">
+                        <div style="margin-bottom: 8px;"><strong>Os dados preliminares mostram 34% de intenção de compra</strong> (acima do threshold de 25%)</div>
+                        <div style="margin-bottom: 8px;"><strong>O prazo é agressivo</strong> — a equipe de produto estimou que precisaria de 90 dias mínimos</div>
+                        <div><strong>Dois concorrentes estão desenvolvendo produtos similares</strong></div>
+                    </div>
+                    <div class="recommendation-buttons">
+                        <button class="recommendation-btn avancar" onclick="selectRecommendation('avancar', 6)">✅ Avançar</button>
+                        <button class="recommendation-btn pausar" onclick="selectRecommendation('pausar', 6)">⏸️ Pausar</button>
+                        <button class="recommendation-btn rejeitar" onclick="selectRecommendation('rejeitar', 6)">❌ Rejeitar</button>
+                    </div>
+                    <div class="recommendation-confirmation" id="confirm6">Sua posição foi registrada. Agora você vai observar a reunião.</div>
+                </div>
+            </div>
+
+            <!-- Screen 7: Pressure Point Simulation - Part 2 -->
+            <div class="screen">
+                <h2 class="section-header">🎬 A Reunião — Observe com Atenção</h2>
+                <p style="font-size: 14px; color: #555; margin-bottom: 16px;">Assista ao vídeo e leia a transcrição. Note quem fala, quem é silenciado, e como a posição do grupo evolui.</p>
+                <div style="max-width: 700px; margin: 0 auto 20px;">
+                <div style="border-radius: 10px; overflow: hidden; background: #000; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+                    <video controls style="width: 100%; height: auto; display: block;" preload="metadata">
+                        <source src="assets/Sem título.mp4" type="video/mp4">
+                        <p style="color: #fff; padding: 16px; text-align: center;">Seu navegador não suporta reprodução de vídeo HTML5.</p>
+                    </video>
+                </div>
+                </div>
+                <div class="meeting-transcript">
+                    <div class="meeting-line">
+                        <span class="meeting-time">[11h03]</span>
+                        <span class="meeting-speaker">DIRETOR CARLOS:</span>
+                        <span class="meeting-text">"Pessoal, os números preliminares são ótimos. Acho que temos uma oportunidade real aqui. Estou inclinado a votar Avançar."</span>
+                    </div>
+                    <div class="meeting-line">
+                        <span class="meeting-time">[11h04]</span>
+                        <span class="meeting-speaker">VP MARINA:</span>
+                        <span class="meeting-text">"Carlos, tenho algumas preocupações sobre o prazo. A equipe de produto disse que 60 dias é muito—"</span>
+                    </div>
+                    <div class="meeting-line">
+                        <span class="meeting-time">[11h06]</span>
+                        <span class="meeting-speaker">ANALISTA PEDRO:</span>
+                        <span class="meeting-text">"Olhei os dados de perto. A amostra tem 180 pessoas, que pode não ser representativa do mercado amplo. Também—"</span>
+                    </div>
+                    <div class="meeting-line">
+                        <span class="meeting-time">[11h05]</span>
+                        <span class="meeting-speaker">DIRETOR CARLOS:</span>
+                        <span class="meeting-text">"Marina, eu entendo a cautela, mas nossos concorrentes não vão esperar. Alguém mais quer comentar sobre os números positivos?"</span>
+                    </div>
+                    <div class="meeting-line">
+                        <span class="meeting-time">[11h11]</span>
+                        <span class="meeting-speaker">VP MARINA:</span>
+                        <span class="meeting-text">"Bem... talvez eu esteja sendo excessivamente cautelosa. Se o Carlos e a Helena estão confortáveis..."</span>
+                    </div>
+                    <div class="meeting-line">
+                        <span class="meeting-time">[11h12]</span>
+                        <span class="meeting-speaker">DIRETOR CARLOS:</span>
+                        <span class="meeting-text">"Ótimo. Parece que temos consenso. Voto Avançar. Alguém se opõe formalmente?"</span>
+                    </div>
+                    <div class="meeting-line silence">[11h13] [Silêncio]</div>
+                </div>
+                <div class="recommendation-card" style="margin-top: 24px;">
+                    <div class="recommendation-prompt">Depois de observar a reunião, qual é a sua recomendação agora?</div>
+                    <div class="recommendation-buttons">
+                        <button class="recommendation-btn avancar" onclick="selectRecommendation('avancar', 7)">✅ Avançar</button>
+                        <button class="recommendation-btn pausar" onclick="selectRecommendation('pausar', 7)">⏸️ Pausar</button>
+                        <button class="recommendation-btn rejeitar" onclick="selectRecommendation('rejeitar', 7)">❌ Rejeitar</button>
+                    </div>
+                    <div class="recommendation-confirmation" id="confirm7">Sua posição foi registrada.</div>
+                </div>
+            </div>
+
+            <!-- Screen 8: Debrief -->
+            <div class="screen">
+                <h2 class="section-header">🔍 O que Aconteceu Nessa Reunião?</h2>
+                <div class="debrief-boxes">
+                    <div class="debrief-box">
+                        <div class="debrief-label">Sua Posição Inicial</div>
+                        <div class="debrief-emoji" id="debrief-initial">—</div>
+                        <div class="debrief-value" id="debrief-initial-text">—</div>
+                    </div>
+                    <div class="debrief-box">
+                        <div class="debrief-label">Decisão do Grupo</div>
+                        <div class="debrief-emoji">✅</div>
+                        <div class="debrief-value">Avançar</div>
+                    </div>
+                    <div class="debrief-box">
+                        <div class="debrief-label">O que os Dados Indicavam</div>
+                        <div class="debrief-emoji">⏸️</div>
+                        <div class="debrief-value">Pausar</div>
+                    </div>
+                </div>
+                <div class="bias-breakdown">
+                    <h3>Vieses que Direcionaram a Decisão</h3>
+                    <div class="bias-item">
+                        <div class="bias-item-title">🎯 Viés de Autoridade</div>
+                        <div class="bias-item-desc">Pedro e Marina foram silenciados pela posição hierárquica do Carlos. Dados cederam espaço para status.</div>
+                    </div>
+                    <div class="bias-item">
+                        <div class="bias-item-title">👥 Pensamento de Grupo</div>
+                        <div class="bias-item-desc">A convergência foi gradual. Marina mudou sua posição não por novos dados, mas pela pressão social percebida.</div>
+                    </div>
+                    <div class="bias-item">
+                        <div class="bias-item-title">📢 Prova Social</div>
+                        <div class="bias-item-desc">A Helena validou o Carlos, criando a ilusão de que 'todos concordavam'.</div>
+                    </div>
+                    <div class="bias-item">
+                        <div class="bias-item-title">🤐 Efeito do Silêncio</div>
+                        <div class="bias-item-desc">Nenhuma oposição formal não significa consenso real. O silêncio foi interpretado como aprovação.</div>
+                    </div>
+                </div>
+                <div style="background: #f0fff4; border-left: 4px solid var(--accent); border-radius: 6px; padding: 14px; margin-top: 18px; font-size: 13px; color: #1a1a1a; line-height: 1.7;">
+                    <strong>Reflexão:</strong> O que o faria falar mais cedo em uma situação como essa?
+                </div>
+            </div>
+
+            <!-- Screen 9: Decision Fatigue Challenge -->
+            <div class="screen">
+                <h2 class="section-header">⚡ Desafio de Fadiga de Decisão</h2>
+                <p style="font-size: 14px; color: #555; margin-bottom: 20px;">Tome 5 decisões em sequência. Depois, avalie sua confiança em cada uma.</p>
+                <div id="decision-phase">
+                    <!-- Will be filled dynamically -->
+                </div>
+                <div id="confidence-phase" style="display: none;">
+                    <!-- Will be filled dynamically -->
+                </div>
+                <div id="decision-summary" style="display: none;">
+                    <div class="decision-summary">
+                        Decisões mais complexas tendem a gerar menor confiança — isso é <strong>fadiga de decisão em ação</strong>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 10: Diary Link - Audit -->
+            <div class="screen">
+                <h2 class="section-header">📓 Diário de Aprendizagem — Seção 4B</h2>
+                <div class="diary-card">
+                    <h3>Avalie Sua Equipe</h3>
+                    <p>A Auditoria de Normas Organizacionais na Seção 4B do seu diário contém 15 indicadores de cultura que reforça vieses. Avalie sua equipe honestamente — não como ela deveria ser, mas como ela é.</p>
+                    <div class="diary-note">Esta atividade se conecta à Simulação do Ponto de Pressão que você acabou de completar.</div>
+                    <a href="assets/diario-de-aprendizagem.pdf" target="_blank" class="diary-cta">📥 Acesse o Diário de Aprendizagem para completar esta atividade</a>
+                </div>
+            </div>
+
+            <!-- Screen 11: Diary Link - Psychological Safety -->
+            <div class="screen">
+                <h2 class="section-header">📓 Diário de Aprendizagem — Seção 4C</h2>
+                <div class="diary-card">
+                    <h3>Avalie a Segurança Psicológica da Sua Equipe</h3>
+                    <p>Use a avaliação de 10 itens na Seção 4C do seu diário para avaliar as condições atuais de segurança da sua equipe. Use-a honestamente, não como aspiração.</p>
+                    <a href="assets/diario-de-aprendizagem.pdf" target="_blank" class="diary-cta">📥 Acesse o Diário de Aprendizagem para completar esta atividade</a>
+                </div>
+            </div>
+
+            <!-- Screen 12: Case Study - Challenger -->
+            <div class="screen">
+                <h2 class="section-header">📋 Estudo de Caso</h2>
+                <h3 style="color: var(--accent); font-size: 18px; margin-bottom: 12px;">O Desastre do Challenger (1986)</h3>
+                <div style="background: white; border: 1px solid #e8e8e8; border-radius: 12px; padding: 16px; margin-bottom: 20px; font-size: 13px; color: #555; line-height: 1.7;">
+                    Na noite anterior ao lançamento, engenheiros da Morton Thiokol alertaram a NASA sobre o risco das juntas de vedação (O-rings) em baixas temperaturas. A recomendação técnica era: não lançar. A decisão gerencial foi: lançar.
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-item-title">Alerta técnico</div>
+                        <div class="timeline-item-desc">Engenheiros apresentam dados sobre falhas de O-rings em temperaturas baixas. Recomendação formal: adiar.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-item-title">Pressão da NASA</div>
+                        <div class="timeline-item-desc">"Coloquem seus chapéus de gerentes, não de engenheiros." A hierarquia inverteu o ônus da prova.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-item-title">Silêncio organizacional</div>
+                        <div class="timeline-item-desc">Engenheiros presentes não se opuseram formalmente. O silêncio foi registrado como aprovação.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-item-title">Lançamento</div>
+                        <div class="timeline-item-desc">28 de janeiro de 1986. 73 segundos após o lançamento, o Challenger se desintegrou.</div>
+                    </div>
+                </div>
+                <div class="bias-cards-row">
+                    <div class="bias-card-compact">
+                        <div class="bias-card-compact-title">🫂 Pensamento de Grupo</div>
+                        <div class="bias-card-compact-text">Pressão para aprovar vs. atrasar o programa espacial.</div>
+                    </div>
+                    <div class="bias-card-compact">
+                        <div class="bias-card-compact-title">👑 Viés de Autoridade</div>
+                        <div class="bias-card-compact-text">Deferência à gerência sobrepôs os dados técnicos.</div>
+                    </div>
+                    <div class="bias-card-compact">
+                        <div class="bias-card-compact-title">📈 Normalização do Desvio</div>
+                        <div class="bias-card-compact-text">Risco foi aceito gradualmente ao longo do tempo sem incidente.</div>
+                    </div>
+                    <div class="bias-card-compact">
+                        <div class="bias-card-compact-title">👁️ Viés de Disponibilidade</div>
+                        <div class="bias-card-compact-text">Ausência de falha anterior = baixa percepção de risco.</div>
+                    </div>
+                </div>
+                <div class="case-study-conclusion">
+                    <strong>Conclusão:</strong> Sistemas sem dissidência protegida falham de forma previsível. O Challenger não foi um acidente técnico — foi um fracasso organizacional.
+                </div>
+            </div>
+
+            <!-- Screen 13: Knowledge Check Quiz -->
+            <div class="screen">
+                <h2 class="section-header">✓ Verificação de Conhecimento</h2>
+                <div id="quiz-container">
+                    <!-- Will be filled dynamically -->
+                </div>
+                <button class="btn btn-primary" id="submit-quiz-btn" style="display: none; align-self: center; margin-top: 20px;" onclick="submitQuiz13()">
+                    Verificar Respostas
+                </button>
+            </div>
+
+            <!-- Screen 14: Summary & Bridge -->
+            <div class="screen">
+                <h2 class="section-header">📌 Reflexão Final e Resumo</h2>
+                <div class="summary-layout">
+                    <div class="summary-card">
+                        <h3>📓 Reflexão Final</h3>
+                        <p style="margin-bottom: 14px;">Qual é uma norma na sua equipe que pode estar silenciando vozes importantes? O que você poderia fazer diferente na próxima reunião?</p>
+                        <p style="font-size: 12px; color: #999; font-style: italic;">Registre sua resposta na Seção 4D do Diário de Aprendizagem.</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>📌 O que você aprendeu</h3>
+                        <ul>
+                            <li>Pensamento de Grupo e Falso Consenso criam ilusão de acordo</li>
+                            <li>Normas sociais e reciprocidade moldam cultura — para o bem e para o mal</li>
+                            <li>Fadiga de decisão compromete qualidade ao longo do dia</li>
+                            <li>Segurança psicológica é construída por comportamentos concretos de liderança</li>
+                            <li>A Simulação do Ponto de Pressão revelou como vieses operam em tempo real</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="summary-bridge">
+                    <strong>No próximo módulo:</strong> como construir sistemas e processos que reduzem vieses nas organizações.
+                </div>
+                <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 16px; align-self: center; width: 100%;">
+                    <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">✅ Módulo concluído!</p>
+                    <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div id="bottom-nav">
+            <button class="btn btn-secondary" id="back-btn" style="display: none;" onclick="goBack()">← Voltar</button>
+            <button class="btn btn-primary" id="next-btn" onclick="goNext()">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        const totalScreens = 15;
+        let currentScreen = 0;
+        let screenRequirements = {
+            0: true, 1: true, 2: false, 3: false, 4: false, 5: false,
+            6: false, 7: false, 8: true, 9: false,
+            10: true, 11: true, 12: true, 13: false, 14: true
+        };
+
+        let expanded02 = {0: false, 1: false};
+        let expanded03 = {0: false, 1: false};
+        let expanded04 = {0: false, 1: false, 2: false};
+        let pyramidLevels = {0: false, 1: false, 2: false, 3: false};
+        let pressaoChoice1 = null;
+        let pressaoChoice2 = null;
+        let decisionAnswers = [];
+        let decisionConfidence = [];
+        let currentDecision = 0;
+        let decisionPhase = 'deciding';
+        let quizAnswers = {};
+        let quizSubmitted = false;
+
+        const decisionQuestions = [
+            {
+                scenario: "Seu time quer usar a plataforma A ou B para o próximo projeto. A tem melhor integração, B tem melhor preço. Critérios claros existem.",
+                options: ["Plataforma A (melhor integração)", "Plataforma B (melhor preço)"]
+            },
+            {
+                scenario: "Você precisa priorizar: investir em treinamento da equipe atual OU contratar um especialista externo. Orçamento permite apenas um.",
+                options: ["Treinar equipe atual", "Contratar especialista externo"]
+            },
+            {
+                scenario: "Dois projetos estratégicos competem pelo mesmo recurso-chave. Projeto X tem maior ROI provável. Projeto Y tem menor risco, mas menor retorno. A janela de decisão é hoje.",
+                options: ["Projeto X (maior ROI, maior risco)", "Projeto Y (menor risco, menor retorno)"]
+            },
+            {
+                scenario: "Um membro sênior da equipe — que você conhece há 8 anos — entregou resultados 40% abaixo do esperado por 3 trimestres. Você precisa decidir agora.",
+                options: ["Plano de melhoria formal (mais tempo)", "Desligamento (decisão difícil agora)"]
+            },
+            {
+                scenario: "Sua empresa pode expandir para 3 novos mercados simultaneamente com o orçamento disponível, ou entrar fundo em 1 mercado com alta probabilidade de liderança. O conselho está dividido.",
+                options: ["Expansão em 3 mercados (diversificação)", "Dominar 1 mercado (foco)"]
+            }
+        ];
+
+        const quizQuestions = [
+            {
+                question: "Qual das seguintes situações é o exemplo mais claro de Pensamento de Grupo?",
+                options: [
+                    "Uma equipe discute longamente antes de chegar a consenso",
+                    "Membros evitam expressar dúvidas para não perturbar a harmonia do grupo",
+                    "Um líder consulta especialistas externos antes de decidir",
+                    "A equipe vota, e a maioria vence"
+                ],
+                correct: 1,
+                explanation: "Pensamento de Grupo ocorre quando a pressão para consenso suprime vozes divergentes — não quando o consenso é alcançado por discussão genuína."
+            },
+            {
+                question: "O Efeito de Falso Consenso faz um líder:",
+                options: [
+                    "Subestimar o próprio desempenho",
+                    "Assumir que os outros compartilham suas opiniões quando não compartilham",
+                    "Evitar tomar decisões difíceis",
+                    "Delegar em excesso para evitar conflito"
+                ],
+                correct: 1,
+                explanation: "Falso Consenso é a tendência de projetar nossas próprias opiniões nos outros — criando a ilusão de apoio onde não existe."
+            },
+            {
+                question: "Qual comportamento de liderança mais aumenta a segurança psicológica da equipe?",
+                options: [
+                    "Definir metas muito ambiciosas para motivar a equipe",
+                    "Reconhecer publicamente os próprios erros",
+                    "Evitar conflitos em reuniões para manter a harmonia",
+                    "Dar feedback positivo com frequência"
+                ],
+                correct: 1,
+                explanation: "Reconhecer a própria falibilidade é uma das quatro condições de Amy Edmondson. Cria permissão para que outros admitam erros e falem com honestidade."
+            },
+            {
+                question: "Na Simulação do Ponto de Pressão, Marina mudou sua posição inicial. Qual viés melhor explica essa mudança?",
+                options: [
+                    "Viés de Disponibilidade",
+                    "Falácia do Planejamento",
+                    "Pensamento de Grupo — pressão social para convergência",
+                    "Ancoragem"
+                ],
+                correct: 2,
+                explanation: "Marina não recebeu novos dados. Ela sentiu a pressão implícita para alinhar com a posição dominante do grupo — um padrão clássico de Pensamento de Grupo."
+            },
+            {
+                question: "Fadiga de Decisão afeta principalmente:",
+                options: [
+                    "Apenas decisões de alto risco",
+                    "A qualidade de decisões tomadas após período estendido de escolhas",
+                    "Líderes com menos experiência",
+                    "Decisões em grupo, não individuais"
+                ],
+                correct: 1,
+                explanation: "A fadiga de decisão afeta a qualidade progressivamente — independente de experiência ou importância da decisão. O momento do dia e a sequência importam mais do que se imagina."
+            },
+            {
+                question: "Qual estrutura reduz mais efetivamente o Pensamento de Grupo em reuniões?",
+                options: [
+                    "Votação secreta antes da discussão",
+                    "Reuniões mais longas para dar tempo a todos",
+                    "Limitar reuniões a membros seniores",
+                    "Apresentar a decisão final ao início"
+                ],
+                correct: 0,
+                explanation: "Coletar posições individuais antes da discussão em grupo reduz a influência da autoridade hierárquica e da pressão social — é uma das técnicas mais simples e eficazes."
+            }
+        ];
+
+        function showScreen(index) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.classList.remove('active'));
+            if (index >= 0 && index < screens.length) {
+                screens[index].classList.add('active');
+                currentScreen = index;
+                updateTopBar();
+                updateBottomNav();
+                updateNextButton();
+                const sc = document.getElementById('screens-container');
+                if (sc) sc.scrollTop = 0;
+
+                // Special handling for specific screens
+                if (index === 6) renderDecisionPhase();
+                if (index === 9) renderDecisionPhase();
+                if (index === 13) renderQuizPhase();
+            }
+        }
+
+        function updateTopBar() {
+            document.getElementById('screenCounter').textContent = `Tela ${currentScreen + 1} de ${totalScreens}`;
+            const progress = ((currentScreen + 1) / totalScreens) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function updateBottomNav() {
+            const backBtn = document.getElementById('back-btn');
+            backBtn.style.display = currentScreen > 0 ? 'block' : 'none';
+
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.textContent = currentScreen === totalScreens - 1 ? 'Finalizar ✓' : 'Próximo →';
+        }
+
+        function updateNextButton() {
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = !screenRequirements[currentScreen];
+        }
+
+        function goNext() {
+            if (currentScreen < totalScreens - 1) {
+                showScreen(currentScreen + 1);
+            }
+        }
+
+        function goBack() {
+            if (currentScreen > 0) {
+                showScreen(currentScreen - 1);
+            }
+        }
+
+        function togglePanel02(i) {
+            expanded02[i] = !expanded02[i];
+            const card = document.querySelectorAll('.screen')[2].querySelectorAll('.pair-card')[i];
+            card.classList.toggle('expanded');
+
+            if (expanded02[0] && expanded02[1]) {
+                screenRequirements[2] = true;
+                document.getElementById('hint02').classList.add('hidden');
+                updateNextButton();
+            }
+        }
+
+        function togglePanel03(i) {
+            expanded03[i] = !expanded03[i];
+            const card = document.querySelectorAll('.screen')[3].querySelectorAll('.pair-card')[i];
+            card.classList.toggle('expanded');
+
+            if (expanded03[0] && expanded03[1]) {
+                screenRequirements[3] = true;
+                document.getElementById('hint03').classList.add('hidden');
+                updateNextButton();
+            }
+        }
+
+        function toggleCard04(i) {
+            expanded04[i] = !expanded04[i];
+            const card = document.querySelectorAll('.screen')[4].querySelectorAll('.mini-card')[i];
+            card.classList.toggle('expanded');
+
+            if (expanded04[0] && expanded04[1] && expanded04[2]) {
+                screenRequirements[4] = true;
+                updateNextButton();
+            }
+        }
+
+        function clickPyramidLevel(i) {
+            pyramidLevels[i] = !pyramidLevels[i];
+            const level = document.querySelectorAll('.screen')[5].querySelectorAll('.pyramid-level')[i];
+            level.classList.toggle('active');
+
+            if (pyramidLevels[0] && pyramidLevels[1] && pyramidLevels[2] && pyramidLevels[3]) {
+                screenRequirements[5] = true;
+                document.getElementById('pyramid-hint').classList.add('hidden');
+                updateNextButton();
+            }
+        }
+
+        function selectRecommendation(choice, screen) {
+            if (screen === 6) {
+                pressaoChoice1 = choice;
+                const buttons = document.querySelectorAll('.screen')[6].querySelectorAll('.recommendation-btn');
+                buttons.forEach(b => b.classList.remove('selected'));
+                event.target.classList.add('selected');
+                document.getElementById('confirm6').classList.add('show');
+                screenRequirements[6] = true;
+                updateNextButton();
+            } else if (screen === 7) {
+                pressaoChoice2 = choice;
+                const buttons = document.querySelectorAll('.screen')[7].querySelectorAll('.recommendation-btn');
+                buttons.forEach(b => b.classList.remove('selected'));
+                event.target.classList.add('selected');
+                document.getElementById('confirm7').classList.add('show');
+                screenRequirements[7] = true;
+                updateNextButton();
+
+                // Update debrief screen with choices
+                updateDebrief();
+            }
+        }
+
+        function updateDebrief() {
+            const emojiMap = {
+                'avancar': '✅',
+                'pausar': '⏸️',
+                'rejeitar': '❌'
+            };
+            const textMap = {
+                'avancar': 'Avançar',
+                'pausar': 'Pausar',
+                'rejeitar': 'Rejeitar'
+            };
+
+            document.getElementById('debrief-initial').textContent = emojiMap[pressaoChoice1] || '—';
+            document.getElementById('debrief-initial-text').textContent = textMap[pressaoChoice1] || '—';
+        }
+
+        // Sequential decision-then-confidence flow
+        let activeDecisionIdx = 0; // which decision we are currently on
+
+        function renderDecisionPhase() {
+            if (currentScreen !== 9) return;
+            activeDecisionIdx = decisionAnswers.filter(a => a !== undefined).length;
+            if (activeDecisionIdx >= 5) { checkDecisionsComplete(); return; }
+            showDecisionStep(activeDecisionIdx);
+        }
+
+        function showDecisionStep(d) {
+            const q = decisionQuestions[d];
+            let html = `<div class="decision-card">
+                <div class="decision-progress">Decisão ${d + 1} de 5</div>
+                <div class="decision-scenario">${q.scenario}</div>
+                <div class="decision-options" id="dopts-${d}">`;
+            q.options.forEach((opt, i) => {
+                html += `<div class="decision-option" id="dopt-${d}-${i}" onclick="selectDecision(${d}, ${i});">${opt}</div>`;
+            });
+            html += `</div>
+                <div class="confidence-inline" id="conf-inline-${d}" style="display:none; margin-top:18px; padding: 14px; background: #f0fff4; border-radius: 8px; border-left: 4px solid var(--accent);">
+                    <div style="font-size:13px; font-weight:700; color: var(--accent); margin-bottom:10px;">Avalie sua confiança nessa decisão (1 = muito incerto · 5 = muito confiante):</div>
+                    <div class="confidence-buttons" id="cbtns-${d}">`;
+            for (let i = 1; i <= 5; i++) {
+                html += `<button class="confidence-btn" onclick="setConfidence(${d}, ${i});">${i}</button>`;
+            }
+            html += `</div></div></div>`;
+            document.getElementById('decision-phase').innerHTML = html;
+            document.getElementById('confidence-phase').style.display = 'none';
+            document.getElementById('decision-summary').style.display = 'none';
+        }
+
+        function selectDecision(d, optionIndex) {
+            if (decisionAnswers[d] !== undefined) return; // already answered
+            decisionAnswers[d] = optionIndex;
+
+            // Lock options and highlight selection
+            const opts = document.getElementById('dopts-' + d).querySelectorAll('.decision-option');
+            opts.forEach((o, i) => {
+                o.style.pointerEvents = 'none';
+                o.classList.toggle('selected', i === optionIndex);
+            });
+
+            // Show inline confidence rating
+            document.getElementById('conf-inline-' + d).style.display = 'block';
+            // Scroll so the confidence panel is visible
+            setTimeout(() => {
+                const el = document.getElementById('conf-inline-' + d);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function setConfidence(d, val) {
+            decisionConfidence[d] = val;
+            const buttons = document.getElementById('cbtns-' + d).querySelectorAll('.confidence-btn');
+            buttons.forEach((b, i) => {
+                b.classList.toggle('selected', i + 1 === val);
+                b.disabled = true;
+            });
+
+            // Move to next decision or finish
+            setTimeout(() => {
+                if (d < 4) {
+                    activeDecisionIdx = d + 1;
+                    showDecisionStep(activeDecisionIdx);
+                } else {
+                    checkDecisionsComplete();
+                }
+            }, 600);
+        }
+
+        function checkDecisionsComplete() {
+            screenRequirements[9] = true;
+            document.getElementById('decision-phase').style.display = 'none';
+            document.getElementById('decision-summary').style.display = 'block';
+            updateNextButton();
+        }
+
+        function renderQuizPhase() {
+            let html = '';
+            quizQuestions.forEach((q, qi) => {
+                html += `<div class="quiz-question">
+                    <div class="quiz-q-num">Pergunta ${qi + 1}</div>
+                    <div class="quiz-q-text">${q.question}</div>
+                    <div class="quiz-options">
+                `;
+                q.options.forEach((opt, oi) => {
+                    html += `<div class="quiz-option" onclick="selectAnswer13(${qi}, ${oi});">${opt}</div>`;
+                });
+                html += `<div class="quiz-explanation" id="expl13-${qi}">${q.explanation}</div></div>`;
+            });
+            document.getElementById('quiz-container').innerHTML = html;
+            document.getElementById('submit-quiz-btn').style.display = 'block';
+        }
+
+        function selectAnswer13(q, a) {
+            quizAnswers[q] = a;
+
+            if (!quizSubmitted) {
+                const options = document.querySelectorAll('.quiz-question')[q].querySelectorAll('.quiz-option');
+                options.forEach(o => o.classList.remove('selected'));
+                options[a].classList.add('selected');
+            }
+        }
+
+        function submitQuiz13() {
+            if (Object.keys(quizAnswers).length < 6) {
+                alert('Por favor responda todas as perguntas antes de enviar.');
+                return;
+            }
+
+            quizSubmitted = true;
+            quizQuestions.forEach((q, qi) => {
+                const options = document.querySelectorAll('.quiz-question')[qi].querySelectorAll('.quiz-option');
+                const userAnswer = quizAnswers[qi];
+                const correct = q.correct;
+
+                options.forEach((o, i) => {
+                    o.classList.remove('selected');
+                    if (i === correct) {
+                        o.classList.add('correct');
+                    } else if (i === userAnswer && i !== correct) {
+                        o.classList.add('incorrect');
+                    }
+                });
+
+                document.getElementById(`expl13-${qi}`).classList.add('show');
+            });
+
+            document.getElementById('submit-quiz-btn').textContent = 'Continuar';
+            document.getElementById('submit-quiz-btn').onclick = function() {
+                screenRequirements[13] = true;
+                updateNextButton();
+                goNext();
+            };
+        }
+
+        function saveProgress() {
+            const progress = {
+                currentScreen,
+                screenRequirements,
+                expanded02, expanded03, expanded04, pyramidLevels,
+                pressaoChoice1, pressaoChoice2,
+                decisionAnswers, decisionConfidence,
+                quizAnswers
+            };
+            localStorage.setItem('spc_progress_m4', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('spc_progress_m4');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                currentScreen = progress.currentScreen || 0;
+                screenRequirements = progress.screenRequirements || screenRequirements;
+                expanded02 = progress.expanded02 || expanded02;
+                expanded03 = progress.expanded03 || expanded03;
+                expanded04 = progress.expanded04 || expanded04;
+                pyramidLevels = progress.pyramidLevels || pyramidLevels;
+                pressaoChoice1 = progress.pressaoChoice1 || null;
+                pressaoChoice2 = progress.pressaoChoice2 || null;
+                decisionAnswers = progress.decisionAnswers || [];
+                decisionConfidence = progress.decisionConfidence || [];
+                quizAnswers = progress.quizAnswers || {};
+            }
+        }
+
+        // Initialize
+        loadProgress();
+        showScreen(currentScreen);
+
+        // Save progress on navigation
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

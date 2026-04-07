@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+      (function(){
+        var V='spc-m5-20260315a';
+        var s=sessionStorage.getItem('spc_v_m5');
+        if(s && s!==V){ sessionStorage.setItem('spc_v_m5',V); location.reload(true); }
+        else { sessionStorage.setItem('spc_v_m5',V); }
+      })();
+    </script>
+    <title>Módulo 5: Liderando com Clareza | Sem Pontos Cegos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --deep-green: #002610;
+            --accent: #007A40;
+            --accent-dark: #005a2e;
+            --neon-green: #4DF600;
+            --white: #ffffff;
+            --light-grey: #f5f5f5;
+            --mid-grey: #6c757d;
+            --shadow: 0 4px 20px rgba(0,74,34,0.15);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--light-grey);
+            color: var(--mid-grey);
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100vh; height: 100dvh;
+            max-height: 100vh; max-height: 100dvh;
+            overflow: hidden; background: var(--light-grey);
+        }
+
+        /* Top Bar */
+        #top-bar {
+            background-color: var(--deep-green); color: var(--white);
+            padding: 16px 24px; display: flex; align-items: center;
+            justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .top-bar-left { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .top-bar-center { flex: 1; text-align: center; font-size: 13px; opacity: 0.9; }
+        .top-bar-right { font-size: 14px; text-align: right; min-width: 150px; }
+        #progressBar { width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 4px auto 0; overflow: hidden; }
+        #progressFill { height: 100%; background: var(--neon-green); width: 0%; transition: width 0.3s ease; border-radius: 2px; }
+        #screenCounter { font-size: 13px; }
+
+        /* Content Area — v16 per-screen scroll architecture */
+        #screens-container {
+            flex: 1; min-height: 0;
+            overflow: hidden; /* container does NOT scroll */
+            position: relative;
+        }
+
+        .screen { display: none; }
+
+        /* Each active screen is its own scroll context */
+        .screen.active {
+            display: flex; flex-direction: column; justify-content: flex-start;
+            height: 100%; overflow-y: auto; overflow-x: hidden;
+            -webkit-overflow-scrolling: touch; overflow-anchor: none;
+            padding: 40px 60px 120px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Bottom Navigation */
+        #bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background-color: var(--deep-green);
+            padding: 18px 24px; padding-bottom: max(18px, env(safe-area-inset-bottom));
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn { padding: 12px 24px; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-family: system-ui, -apple-system, sans-serif; }
+        .btn-primary { background-color: var(--neon-green); color: var(--deep-green); }
+        .btn-primary:hover:not(:disabled) { background-color: #5dff1f; transform: translateY(-2px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background-color: transparent; color: var(--white); border: 2px solid var(--neon-green); }
+        .btn-secondary:hover:not(:disabled) { background-color: rgba(77,246,0,0.1); }
+        .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Banner */
+        .banner {
+            background: linear-gradient(135deg, var(--deep-green) 0%, #003A18 100%);
+            padding: 60px 40px; border-radius: 8px; color: var(--white);
+            text-align: center; position: relative; overflow: hidden;
+        }
+        .banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--neon-green); animation: slideRight 2s ease-in-out infinite; }
+        @keyframes slideRight { 0%,100% { transform: translateX(-100%); } 50% { transform: translateX(100%); } }
+        .banner h1 { font-size: 28px; font-weight: 700; margin-bottom: 12px; color: white; /* override global h1 rule */ }
+        .banner .subtitle { font-size: 20px; opacity: 0.95; margin-bottom: 20px; }
+        .banner .hook { font-size: 18px; color: rgba(255,255,255,0.9); margin-top: 24px; line-height: 1.7; font-style: italic; max-width: 680px; margin-left: auto; margin-right: auto; }
+        .time-badge { display: inline-block; background: var(--neon-green); color: var(--deep-green); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 20px; }
+
+        /* Section header */
+        .section-header { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 24px; }
+
+        h1 { color: var(--deep-green); }
+
+        /* Objectives */
+        .objectives-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 860px; margin: 20px auto; }
+        .objective-card { background: white; border-radius: 10px; padding: 24px; border-left: 4px solid var(--accent); box-shadow: var(--shadow); }
+        .objective-number { font-size: 28px; font-weight: 800; color: var(--accent); opacity: 0.3; line-height: 1; margin-bottom: 8px; }
+        .objective-text { font-size: 15px; color: #333; line-height: 1.5; }
+
+        /* Pyramid */
+        .pyramid-container { max-width: 600px; margin: 30px auto; }
+        .pyramid-level {
+            border-radius: 8px; cursor: pointer;
+            margin: 4px auto; padding: 18px 24px;
+            transition: all 0.3s ease; border: 2px solid transparent;
+        }
+        .pyramid-level:hover { transform: scale(1.02); }
+        .pyramid-level.cultural { width: 50%; background: linear-gradient(135deg, var(--deep-green), #1a6b3a); color: white; }
+        .pyramid-level.structural { width: 70%; background: linear-gradient(135deg, #005a2e, var(--accent)); color: white; }
+        .pyramid-level.individual { width: 90%; background: linear-gradient(135deg, var(--accent), #00a85a); color: white; }
+        .pyramid-level .level-title { font-size: 16px; font-weight: 700; }
+        .pyramid-level .level-subtitle { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+        .pyramid-expand { display: none; background: white; border-radius: 8px; margin-top: 8px; padding: 16px; border-left: 4px solid var(--accent); }
+        .pyramid-expand.open { display: block; animation: fadeIn 0.3s ease; }
+        .pyramid-expand ul { padding-left: 18px; color: #333; font-size: 14px; line-height: 1.8; }
+        .pyramid-caption { text-align: center; margin-top: 20px; padding: 16px; background: white; border-radius: 8px; font-size: 14px; color: #333; border-top: 3px solid var(--neon-green); }
+
+        /* Strategy Cards */
+        .strategy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .strategy-card { background: white; border-radius: 10px; padding: 20px; cursor: pointer; border: 2px solid #e8e8e8; transition: all 0.3s ease; position: relative; }
+        .strategy-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+        .strategy-card.open { border-color: var(--accent); }
+        .strategy-card .card-icon { font-size: 28px; margin-bottom: 8px; }
+        .strategy-card .card-title { font-size: 15px; font-weight: 700; color: var(--deep-green); }
+        .strategy-card .card-desc { font-size: 13px; color: #555; line-height: 1.5; margin-top: 6px; }
+        .strategy-card .card-example { display: none; margin-top: 12px; padding: 10px; background: #f0faf4; border-radius: 6px; font-size: 12px; color: var(--accent-dark); line-height: 1.5; border-left: 3px solid var(--accent); }
+        .strategy-card.open .card-example { display: block; animation: fadeIn 0.3s ease; }
+        .card-expand-hint { position: absolute; top: 12px; right: 12px; font-size: 18px; color: var(--accent); opacity: 0.6; transition: transform 0.2s; }
+        .strategy-card.open .card-expand-hint { transform: rotate(45deg); }
+
+        /* Matching Activity (M5-06) */
+        .match-intro { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
+        .match-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .match-column h3 { font-size: 14px; font-weight: 700; color: var(--deep-green); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .bias-tile { background: white; border: 2px solid #e0e0e0; border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; font-size: 13px; color: #333; transition: all 0.2s; }
+        .bias-tile:hover { border-color: var(--accent); }
+        .bias-tile.selected { border-color: var(--accent); background: #f0faf4; }
+        .bias-tile.matched { border-color: #4DF600; background: #f0fff0; cursor: default; }
+        .strategy-tile { background: white; border: 2px solid #e0e0e0; border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; font-size: 13px; color: #333; transition: all 0.2s; }
+        .strategy-tile:hover { border-color: var(--accent); }
+        .strategy-tile.selected { border-color: var(--neon-green); background: #fffdf0; }
+        .strategy-tile.matched { border-color: #4DF600; background: #f0fff0; cursor: default; }
+        .match-feedback { margin-top: 16px; padding: 14px; background: #f0faf4; border-radius: 8px; border-left: 4px solid var(--accent); font-size: 13px; color: #333; display: none; }
+        .match-feedback.show { display: block; animation: fadeIn 0.3s ease; }
+        .match-score { font-size: 16px; font-weight: 700; color: var(--accent); text-align: center; margin-top: 12px; }
+
+        /* Scenario Repair (M5-07, M5-08) */
+        .repair-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .repair-scenario { background: white; border-radius: 10px; padding: 20px; border-left: 4px solid #e74c3c; }
+        .repair-scenario h3 { font-size: 14px; font-weight: 700; color: #e74c3c; margin-bottom: 10px; text-transform: uppercase; }
+        .repair-workspace { background: white; border-radius: 10px; padding: 20px; border-left: 4px solid var(--accent); }
+        .repair-workspace h3 { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; }
+        .repair-strategy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+        .repair-strategy-btn { background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 6px; padding: 8px 10px; font-size: 12px; cursor: pointer; transition: all 0.2s; text-align: left; color: #333; }
+        .repair-strategy-btn:hover { border-color: var(--accent); background: #f0faf4; }
+        .repair-strategy-btn.selected { border-color: var(--accent); background: #f0faf4; color: var(--accent-dark); font-weight: 600; }
+        .repair-result { margin-top: 16px; padding: 14px; background: #f0faf4; border-radius: 8px; display: none; border-left: 4px solid var(--neon-green); font-size: 13px; color: #333; line-height: 1.6; }
+        .repair-result.show { display: block; animation: fadeIn 0.3s ease; }
+        .repair-btn { margin-top: 12px; background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .repair-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Advocatus Diaboli (M5-09) */
+        .ad-scenario { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--deep-green); }
+        .ad-scenario .scenario-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); margin-bottom: 8px; }
+        .ad-inputs { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        .ad-input-group label { font-size: 13px; font-weight: 700; color: var(--deep-green); display: block; margin-bottom: 6px; }
+        .ad-input-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; font-family: system-ui, -apple-system, sans-serif; resize: vertical; min-height: 80px; line-height: 1.5; transition: border-color 0.2s; }
+        .ad-input-group textarea:focus { outline: none; border-color: var(--accent); }
+        .ad-model-arg { margin-top: 20px; background: #f0faf4; border-radius: 10px; padding: 20px; display: none; border-left: 4px solid var(--accent); }
+        .ad-model-arg.show { display: block; animation: fadeIn 0.3s ease; }
+        .ad-model-arg h3 { color: var(--accent); font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+        .ad-reveal-btn { margin-top: 16px; background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .ad-reveal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Pre-Mortem (M5-10) */
+        .pm-inputs { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .pm-input-group { background: white; border-radius: 10px; padding: 18px; border-left: 4px solid var(--accent); }
+        .pm-input-group .pm-q { font-size: 14px; font-weight: 700; color: var(--deep-green); margin-bottom: 10px; line-height: 1.4; }
+        .pm-input-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; font-family: system-ui, -apple-system, sans-serif; resize: vertical; min-height: 90px; line-height: 1.5; }
+        .pm-input-group textarea:focus { outline: none; border-color: var(--accent); }
+        .pm-debrief { margin-top: 20px; background: var(--deep-green); color: white; border-radius: 10px; padding: 20px; display: none; }
+        .pm-debrief.show { display: block; animation: fadeIn 0.3s ease; }
+        .pm-debrief h3 { color: var(--neon-green); font-size: 15px; margin-bottom: 10px; }
+        .pm-submit-btn { margin-top: 16px; background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+        .pm-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pm-download-btn { margin-top: 12px; background: var(--neon-green); color: var(--deep-green); border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; margin-left: 10px; display: none; }
+        .pm-download-btn.show { display: inline-block; }
+
+        /* Action Plan (M5-11) */
+        .diary-card { background: white; border-radius: 10px; padding: 24px; border-left: 4px solid var(--accent); margin-bottom: 20px; }
+        .diary-card h3 { font-size: 16px; font-weight: 700; color: var(--deep-green); margin-bottom: 12px; }
+        .action-plan-preview { background: #f9f9f9; border-radius: 8px; padding: 16px; margin-top: 16px; font-size: 13px; color: #555; line-height: 1.7; border: 1px dashed #ccc; }
+        .action-plan-preview strong { color: var(--accent); }
+        .diary-checkbox-row { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding: 14px; background: #f0faf4; border-radius: 8px; cursor: pointer; }
+        .diary-checkbox-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; }
+        .diary-checkbox-row label { font-size: 15px; font-weight: 600; color: var(--deep-green); cursor: pointer; }
+        .diary-dl-btn { margin-top: 16px; background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+
+        /* Knowledge Check (M5-12) */
+        .kc-progress { font-size: 13px; color: var(--mid-grey); margin-bottom: 20px; }
+        .kc-question { background: white; border-radius: 10px; padding: 24px; margin-bottom: 16px; border-left: 4px solid var(--accent); }
+        .kc-question .q-text { font-size: 16px; font-weight: 600; color: var(--deep-green); margin-bottom: 16px; line-height: 1.5; }
+        .kc-options { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .kc-option { background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 8px; padding: 12px 16px; cursor: pointer; font-size: 14px; color: #333; transition: all 0.2s; }
+        .kc-option:hover { border-color: var(--accent); background: #f0faf4; }
+        .kc-option.correct { border-color: #4DF600; background: #f0fff0; color: var(--deep-green); font-weight: 600; }
+        .kc-option.wrong { border-color: #e74c3c; background: #fff5f5; color: #e74c3c; }
+        .kc-option.disabled { cursor: default; }
+        .kc-feedback { margin-top: 12px; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; display: none; }
+        .kc-feedback.show { display: block; }
+        .kc-feedback.correct { background: #f0fff0; color: #2d6a2d; border-left: 3px solid #4DF600; }
+        .kc-feedback.wrong { background: #fff5f5; color: #a33; border-left: 3px solid #e74c3c; }
+        .kc-score { background: white; border-radius: 10px; padding: 24px; text-align: center; border: 2px solid var(--accent); display: none; }
+        .kc-score.show { display: block; animation: fadeIn 0.4s ease; }
+        .kc-score .score-number { font-size: 48px; font-weight: 800; color: var(--accent); }
+        .kc-score .score-label { font-size: 16px; color: var(--mid-grey); margin-top: 4px; }
+
+        /* Journey Map (M5-13) */
+        .journey-map { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: nowrap; margin: 24px 0; padding: 20px; background: white; border-radius: 10px; overflow-x: auto; }
+        .journey-node { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .journey-circle { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: white; transition: all 0.4s; }
+        .journey-circle.lit { background: var(--accent); box-shadow: 0 0 12px rgba(0,122,64,0.4); }
+        .journey-circle.dim { background: #ccc; }
+        .journey-label { font-size: 10px; color: #666; text-align: center; max-width: 60px; line-height: 1.3; }
+        .journey-arrow { font-size: 18px; color: var(--accent); font-weight: 700; }
+        .journey-message { text-align: center; font-size: 18px; font-style: italic; color: var(--deep-green); font-weight: 600; line-height: 1.5; padding: 20px; background: white; border-radius: 10px; border-top: 4px solid var(--neon-green); margin-top: 8px; }
+        .cta-block { text-align: center; margin-top: 24px; padding: 24px; background: linear-gradient(135deg, var(--deep-green), #1a6b3a); border-radius: 10px; }
+        .cta-block h3 { color: white; font-size: 18px; margin-bottom: 8px; }
+        .cta-block p { color: rgba(255,255,255,0.85); font-size: 14px; margin-bottom: 16px; }
+        .cta-block a { display: inline-block; background: var(--neon-green); color: var(--deep-green); padding: 14px 32px; border-radius: 6px; font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+        .cta-block a:hover { background: #5dff1f; transform: translateY(-2px); }
+
+        /* Intro text */
+        .intro-text { font-size: 15px; color: #555; margin-bottom: 24px; line-height: 1.7; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .objectives-grid { grid-template-columns: 1fr; }
+            .strategy-grid { grid-template-columns: 1fr; }
+            .repair-layout { grid-template-columns: 1fr; }
+            .match-layout { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .screen.active { padding: 20px 18px 120px; }
+            .banner { padding: 36px 20px; }
+            .banner h1 { font-size: 22px; }
+            .banner .subtitle { font-size: 16px; }
+            #top-bar { padding: 10px 14px; }
+            .top-bar-left { font-size: 13px; gap: 8px; }
+            .top-bar-center { font-size: 11px; }
+            .top-bar-right { font-size: 11px; min-width: auto; }
+            #progressBar { width: 120px; }
+            #bottom-nav { padding: 12px 14px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+            .btn { padding: 10px 14px; font-size: 13px; }
+            .pyramid-level.cultural { width: 80%; }
+            .pyramid-level.structural { width: 90%; }
+            .pyramid-level.individual { width: 100%; }
+            .repair-strategy-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+
+    <!-- Top Bar -->
+    <div id="top-bar">
+        <div class="top-bar-left" onclick="goHome()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.16 114.38" height="28" style="flex-shrink:0;">
+                <path fill="#4DF600" d="M80.95,49.16c13.59,12.49,27.32,24.83,41.01,37.21,1.71-2.52,3.25-5.17,4.59-7.93-13.23-12.52-26.84-24.66-40.54-36.67-11.31-9.92-21.92-9.62-33.1.41-13.3,11.93-26.23,24.3-39.81,35.89,1.34,2.82,2.89,5.52,4.62,8.09,13.73-12.39,27.46-24.78,41.13-37.24,7.59-6.92,14.41-6.83,22.12.25Z"/>
+                <path fill="#4DF600" d="M56.92,20.51c8.24-4.87,16.3-5.35,24.64-.48,12.87,7.52,25.76,15,38.67,22.46,4.05,2.34,8.15,4.59,12.57,7.06-.09-3.94-.55-7.79-1.33-11.52-.69-.56-31.47-18.24-45.95-26.61-9.9-5.72-20.15-6.3-30.13-.8-14.57,8.03-46.01,26.35-47,27.22-.8,3.73-1.27,7.59-1.37,11.53.28-.12.54-.24.79-.38,16.39-9.47,32.83-18.86,49.13-28.49Z"/>
+                <path fill="#4DF600" d="M81.84,70.14c-6.01-8.23-19.13-8.13-24.57.09-7.27,10.97-14.02,22.3-21.15,33.89,2.58,1.64,5.28,3.1,8.09,4.36,1.2-1.51,14.61-23.59,19.71-31.88,3.28-5.34,8.32-5.41,11.49-.17,5.3,8.75,18.72,30.78,19.74,32.23,2.83-1.24,5.55-2.69,8.15-4.32-1.85-3.03-3.69-6.06-5.56-9.05-5.24-8.42-10.06-17.16-15.89-25.15Z"/>
+            </svg>
+            Sem Pontos Cegos
+        </div>
+        <div class="top-bar-center">
+            <div id="screenCounter">Tela 1 de 14</div>
+            <div id="progressBar"><div id="progressFill"></div></div>
+        </div>
+        <div class="top-bar-right">Módulo 5: Liderando com Clareza</div>
+    </div>
+
+    <!-- Screens Container -->
+    <div id="screens-container">
+
+        <!-- Screen 0: Welcome -->
+        <div class="screen active" id="screen-0">
+            <div class="banner">
+                <div class="time-badge">⏱ 40–45 minutos</div>
+                <h1>Módulo 5: Liderando com Clareza</h1>
+                <div class="subtitle">Estratégias de Mitigação de Vieses</div>
+                <div class="hook">"A consciência individual é o começo; a sistêmica, a solução."</div>
+            </div>
+            <div style="background: white; border-radius: 10px; padding: 24px; margin-top: 24px;">
+                <p style="font-size: 15px; color: #333; line-height: 1.8;">Você percorreu quatro módulos identificando como vieses cognitivos, sociais e organizacionais afetam decisões de liderança. Agora chegou a hora de agir.</p>
+                <p style="font-size: 15px; color: #333; line-height: 1.8; margin-top: 12px;">Neste módulo, você vai construir um arsenal de 15 estratégias concretas — individuais, estruturais e culturais — e praticar sua aplicação em cenários reais.</p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px;">
+                    <div style="text-align: center; padding: 14px; background: #f0faf4; border-radius: 8px;">
+                        <div style="font-size: 24px; margin-bottom: 4px;">👤</div>
+                        <div style="font-size: 12px; font-weight: 700; color: var(--accent);">INDIVIDUAL</div>
+                        <div style="font-size: 11px; color: #666;">5 estratégias pessoais</div>
+                    </div>
+                    <div style="text-align: center; padding: 14px; background: #f0faf4; border-radius: 8px;">
+                        <div style="font-size: 24px; margin-bottom: 4px;">🏗️</div>
+                        <div style="font-size: 12px; font-weight: 700; color: var(--accent);">ESTRUTURAL</div>
+                        <div style="font-size: 11px; color: #666;">5 estratégias de design</div>
+                    </div>
+                    <div style="text-align: center; padding: 14px; background: #f0faf4; border-radius: 8px;">
+                        <div style="font-size: 24px; margin-bottom: 4px;">🌱</div>
+                        <div style="font-size: 12px; font-weight: 700; color: var(--accent);">CULTURAL</div>
+                        <div style="font-size: 11px; color: #666;">5 estratégias contextuais</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 1: Learning Objectives -->
+        <div class="screen" id="screen-1">
+            <div class="section-header">🎯 Objetivos de Aprendizagem</div>
+            <p class="intro-text">Ao final deste módulo, você será capaz de:</p>
+            <div class="objectives-grid">
+                <div class="objective-card">
+                    <div class="objective-number">01</div>
+                    <div class="objective-text">Aplicar pelo menos cinco estratégias baseadas em evidências para mitigar vieses cognitivos específicos</div>
+                </div>
+                <div class="objective-card">
+                    <div class="objective-number">02</div>
+                    <div class="objective-text">Projetar intervenções estruturais nos níveis individual, de equipe e organizacional</div>
+                </div>
+                <div class="objective-card">
+                    <div class="objective-number">03</div>
+                    <div class="objective-text">Construir um plano de ação pessoal para liderança consciente</div>
+                </div>
+                <div class="objective-card">
+                    <div class="objective-number">04</div>
+                    <div class="objective-text">Avaliar estratégias de mitigação e aplicá-las em cenários reais de liderança</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Mitigation Framework -->
+        <div class="screen" id="screen-2">
+            <div class="section-header">🔺 Framework de Mitigação</div>
+            <p class="intro-text">Clique em cada nível para explorar as estratégias correspondentes.</p>
+            <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                <strong style="color: var(--deep-green);">Premissa central:</strong>
+                <span style="color: #555; font-size: 14px;"> "Você não pode eliminar o viés. Você pode construir sistemas que reduzem sua influência."</span>
+            </div>
+            <div class="pyramid-container">
+                <div class="pyramid-level cultural" onclick="togglePyramid('cultural')">
+                    <div class="level-title">🌱 Cultural (topo)</div>
+                    <div class="level-subtitle">Segurança psicológica, normas, feedback</div>
+                </div>
+                <div class="pyramid-expand" id="expand-cultural">
+                    <ul>
+                        <li>Cultivar Segurança Psicológica</li>
+                        <li>Normas Consistentes de Feedback</li>
+                        <li>Momentos de Novo Começo</li>
+                        <li>Iniciar Cadeias de Reciprocidade Positiva</li>
+                        <li>Tornar a Voz Segura</li>
+                    </ul>
+                </div>
+                <div class="pyramid-level structural" onclick="togglePyramid('structural')">
+                    <div class="level-title">🏗️ Estrutural (meio)</div>
+                    <div class="level-subtitle">Arquitetura de decisão, padrões, diversidade</div>
+                </div>
+                <div class="pyramid-expand" id="expand-structural">
+                    <ul>
+                        <li>Tornar Benefícios Salientes</li>
+                        <li>Reduzir Conjuntos de Escolhas</li>
+                        <li>Ajustar Padrões (defaults)</li>
+                        <li>Auxiliares de Decisão (checklists, rubricas)</li>
+                        <li>Insumos Diversificados</li>
+                    </ul>
+                </div>
+                <div class="pyramid-level individual" onclick="togglePyramid('individual')">
+                    <div class="level-title">👤 Individual (base)</div>
+                    <div class="level-subtitle">Desacelerar, pré-mortem, advocatus diaboli</div>
+                </div>
+                <div class="pyramid-expand" id="expand-individual">
+                    <ul>
+                        <li>Desacelerar (ativar Sistema 2)</li>
+                        <li>Análise Pré-Mortem</li>
+                        <li>Advocatus Diaboli</li>
+                        <li>Visão Externa </li>
+                        <li>Checklist de Vieses</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pyramid-caption">
+                💡 <strong>Insight:</strong> Estratégias individuais sem mudança estrutural e cultural são insuficientes para mitigação duradoura.
+            </div>
+        </div>
+
+        <!-- Screen 3: Individual Strategies -->
+        <div class="screen" id="screen-3">
+            <div class="section-header">👤 Estratégias Individuais</div>
+            <p class="intro-text">Cinco ferramentas que você pode aplicar pessoalmente antes de qualquer decisão crítica. Clique para ver exemplos de liderança.</p>
+            <div class="strategy-grid">
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">🐢</div>
+                    <div class="card-title">1. Desacelerar</div>
+                    <div class="card-desc">Ativar deliberadamente o Sistema 2. Inserir uma pausa antes de decisões de alto risco — mesmo que de apenas 10 minutos.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> Antes de apresentar a aprovação de budget ao conselho, o CFO pede 15 minutos de silêncio para que cada membro anote sua posição independente — antes da discussão em grupo.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">💀</div>
+                    <div class="card-title">2. Análise Pré-Mortem</div>
+                    <div class="card-desc">Imaginar que a decisão já falhou. O que deu errado? Força informações pessimistas antes do comprometimento.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> Antes de fechar parceria, a diretora pede à equipe: "É janeiro do próximo ano e a parceria falhou. Listem as três causas mais prováveis." Os argumentos revelam riscos que ninguém havia mencionado.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">⚖️</div>
+                    <div class="card-title">3. Advocatus Diaboli</div>
+                    <div class="card-desc">Atribuir formalmente a alguém a tarefa de argumentar contra a opção preferida — não para ser difícil, mas para revelar pontos cegos.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> Em reunião de diretoria, o CEO designa o CTO como "oponente oficial" da proposta de aquisição. O CTO identifica três riscos de integração não considerados, levando a revisão de cláusulas contratuais.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">🌍</div>
+                    <div class="card-title">4. Visão Externa</div>
+                    <div class="card-desc">Antes de estimar prazos, custos ou probabilidades, perguntar: "O que aconteceu em casos comparáveis?"</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> Ao aprovar novo sistema de ERP, o gerente pesquisa implantações semelhantes no setor. Descobre que 70% excedem o prazo em 40%. Revisa o cronograma antes de apresentar ao board.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">✅</div>
+                    <div class="card-title">5. Checklist de Vieses</div>
+                    <div class="card-desc">Antes de decisão de alto risco, percorrer uma lista dos vieses mais prováveis para aquele contexto específico.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> A empresa cria um checklist de 8 vieses para avaliar novos fornecedores. O checklist inclui: "Estou usando dados recentes ou memórias salientes?" e "Dei peso suficiente a evidências que contradizem minha escolha?"</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Structural Strategies -->
+        <div class="screen" id="screen-4">
+            <div class="section-header">🏗️ Estratégias Estruturais</div>
+            <p class="intro-text">Cinco intervenções de design que tornam boas decisões mais fáceis — para você e para sua equipe. Clique para expandir.</p>
+            <div class="strategy-grid">
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">🔦</div>
+                    <div class="card-title">1. Tornar Benefícios Salientes</div>
+                    <div class="card-desc">Projetar opções para que a escolha recomendada seja a mais visível e acessível — sem eliminar alternativas.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> A empresa redesenha sua intranet de benefícios: o plano de saúde de melhor custo-benefício aparece em primeiro lugar apresentando um visual descritivo. A adesão aumenta 34% sem nenhuma comunicação adicional.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">✂️</div>
+                    <div class="card-title">2. Reduzir Conjuntos de Escolha</div>
+                    <div class="card-desc">Reduzir opções àquelas que atendem critérios definidos antes da avaliação. Menos opções = menos fadiga cognitiva.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> Em processo de seleção com 200 candidatos, a empresa implementa triagem cega por competências antes de revelar nomes. O comitê avalia apenas os 15 que atendem critérios técnicos, eliminando o viés de auréola.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-title">3. Ajustar Padrões (Defaults)</div>
+                    <div class="card-desc">A opção padrão deve ser a melhor opção para a maioria dos casos. A inércia trabalha a favor da boa decisão.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> A empresa altera o padrão de contribuição ao fundo de pensão de opt-in para opt-out. Taxa de participação sobe de 42% para 91% sem mudança na política ou no benefício.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">4. Auxiliares de Decisão</div>
+                    <div class="card-desc">Checklists, rubricas e modelos estruturados que reduzem carga cognitiva e padronizam o processo decisório.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> A equipe de M&A cria rubrica de 12 critérios ponderados para avaliação de alvos. Cada critério é avaliado independentemente antes da reunião, eliminando ancoragem na primeira impressão.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">🔀</div>
+                    <div class="card-title">5. Insumos Diversificados</div>
+                    <div class="card-desc">Decisões acima de certo limiar devem incluir perspectivas de fora do grupo habitual — formalmente, não como gesto simbólico.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> Empresa brasileira com comitê executivo homogêneo implementa regra: qualquer decisão estratégica acima de R$5M precisa de avaliação de ao menos um stakeholder externo ao C-suite.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 5: Cultural Strategies -->
+        <div class="screen" id="screen-5">
+            <div class="section-header">🌱 Estratégias Culturais e Sociais</div>
+            <p class="intro-text">Cinco intervenções que mudam o contexto social — criando ambientes onde boas decisões florescem. Clique para expandir.</p>
+            <div class="strategy-grid">
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">🛡️</div>
+                    <div class="card-title">1. Cultivar Segurança Psicológica</div>
+                    <div class="card-desc">Modelar falibilidade como líder. Criar normas explícitas para dissidência. Punir o silêncio, não o erro honesto.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> A CEO começa reuniões mensais compartilhando uma decisão que tomou e que, olhando para trás, foi errada. Em seis meses, a quantidade de questões levantadas em reuniões triplica.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">🔁</div>
+                    <div class="card-title">2. Normas Consistentes de Feedback</div>
+                    <div class="card-desc">Feedback regular, com critérios explícitos, reduz recência, efeito auréola e favoritismo de endogrupo nas avaliações.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> Empresa implementa check-ins quinzenais com rubrica de 5 dimensões — aplicada igual para todos os membros da equipe. Disparidades de avaliação entre grupos demographicamente diferentes caem 60% em um ano.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">🌅</div>
+                    <div class="card-title">3. Momentos de Novo Começo</div>
+                    <div class="card-desc">Usar transições naturais — início de ano, mudança de cargo, novo projeto — como pontos de reinicialização deliberada de padrões.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> No início de cada semestre, o gestor conduz uma "redefinição de contrato" com a equipe: como queremos dar feedback? Como lidaremos com discordância? As normas são atualizadas — não apenas pressupostas.</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">🤝</div>
+                    <div class="card-title">4. Iniciar Cadeias de Reciprocidade</div>
+                    <div class="card-desc">Pequenos atos de confiança e transparência criam espirais ascendentes. Reciprocidade funciona para o bem e para o mal.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> O VP compartilha um insight pessoal de vulnerabilidade em reunião "all-hands". Na semana seguinte, três gerentes fazem o mesmo. Em três meses, a pesquisa de clima mostra aumento de 18 pontos em "confiança na liderança".</div>
+                </div>
+                <div class="strategy-card" onclick="toggleStrategy(this)">
+                    <div class="card-expand-hint">+</div>
+                    <div class="card-icon">📣</div>
+                    <div class="card-title">5. Tornar a Voz Segura</div>
+                    <div class="card-desc">Canais formais para discordância: feedback anônimo, políticas de porta aberta, retrospectivas estruturadas com facilitação.</div>
+                    <div class="card-example">📋 <strong>Exemplo:</strong> Empresa implementa "retrospectiva de decisão" 30 dias após toda decisão estratégica. O formulário anônimo pergunta: "O que impediu alguém de falar antes?" Os padrões encontrados redemodelam o processo decisório.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 6: Matching Activity -->
+        <div class="screen" id="screen-6">
+            <div class="section-header">🎯 Atividade: Combine Viés com Estratégia</div>
+            <div class="match-intro">
+                <strong>Instruções:</strong> Clique em um viés à esquerda e depois na estratégia mais adequada à direita. Qualquer combinação defensável será aceita.
+                <div id="match-score-display" style="margin-top: 8px; font-size: 13px; color: var(--accent); font-weight: 700;">Combinações: 0 / 7</div>
+            </div>
+            <div class="match-layout">
+                <div class="match-column">
+                    <h3>⚡ Vieses</h3>
+                    <div class="bias-tile" id="bias-0" onclick="selectBias(0)">📌 Ancoragem</div>
+                    <div class="bias-tile" id="bias-1" onclick="selectBias(1)">🔍 Viés de Confirmação</div>
+                    <div class="bias-tile" id="bias-2" onclick="selectBias(2)">🌟 Efeito Halo</div>
+                    <div class="bias-tile" id="bias-3" onclick="selectBias(3)">💸 Custo Irrecuperável</div>
+                    <div class="bias-tile" id="bias-4" onclick="selectBias(4)">👥 Pensamento de Grupo</div>
+                    <div class="bias-tile" id="bias-5" onclick="selectBias(5)">📅 Viés de Recência</div>
+                    <div class="bias-tile" id="bias-6" onclick="selectBias(6)">🚪 Status Quo</div>
+                </div>
+                <div class="match-column">
+                    <h3>🛡️ Estratégias</h3>
+                    <div class="strategy-tile" id="strat-0" onclick="selectStrategy(0)">Visão Externa (casos comparáveis)</div>
+                    <div class="strategy-tile" id="strat-1" onclick="selectStrategy(1)">Insumos Diversificados</div>
+                    <div class="strategy-tile" id="strat-2" onclick="selectStrategy(2)">Advocatus Diaboli</div>
+                    <div class="strategy-tile" id="strat-3" onclick="selectStrategy(3)">Reduzir Conjuntos de Escolha</div>
+                    <div class="strategy-tile" id="strat-4" onclick="selectStrategy(4)">Checklist de Vieses</div>
+                    <div class="strategy-tile" id="strat-5" onclick="selectStrategy(5)">Normas Consistentes de Feedback</div>
+                    <div class="strategy-tile" id="strat-6" onclick="selectStrategy(6)">Ajustar Padrões (Defaults)</div>
+                    <div class="strategy-tile" id="strat-7" onclick="selectStrategy(7)">Análise Pré-Mortem</div>
+                    <div class="strategy-tile" id="strat-8" onclick="selectStrategy(8)">Segurança Psicológica</div>
+                    <div class="strategy-tile" id="strat-9" onclick="selectStrategy(9)">Auxiliares de Decisão (checklists)</div>
+                </div>
+            </div>
+            <div class="match-feedback" id="match-feedback"></div>
+        </div>
+
+        <!-- Screen 7: Scenario Repair - M2 Return -->
+        <div class="screen" id="screen-7">
+            <div class="section-header">🔧 Reparação de Cenário — Retorno ao M2</div>
+            <p class="intro-text">Você vê o processo decisório original com viés de confirmação. Selecione 2–3 estratégias para "reparar" o processo e veja o resultado.</p>
+            <div class="repair-layout">
+                <div class="repair-scenario">
+                    <h3>❌ Processo Original (Defeituoso)</h3>
+                    <p style="font-size: 13px; color: #333; line-height: 1.6; margin-bottom: 10px;"><strong>Cenário:</strong> A equipe de estratégia está revisando dados de mercado para decidir se expande para o Nordeste.</p>
+                    <p style="font-size: 13px; color: #555; line-height: 1.6;">O diretor já acredita que a expansão é a decisão correta. Na reunião, ele apresenta primeiro os 4 estudos de caso de sucesso que encontrou. Quando um analista menciona dois casos de fracasso, o diretor diz: "Esses mercados eram diferentes." A equipe concorda com a expansão por unanimidade.</p>
+                    <div style="margin-top: 12px; padding: 10px; background: #fff5f5; border-radius: 6px; font-size: 12px; color: #c0392b;">
+                        <strong>Vieses presentes:</strong> Viés de Confirmação, Viés de Autoridade, Pensamento de Grupo
+                    </div>
+                </div>
+                <div class="repair-workspace">
+                    <h3>✅ Espaço de Reparação</h3>
+                    <p style="font-size: 13px; color: #555; margin-bottom: 10px;">Selecione 2–3 estratégias de mitigação:</p>
+                    <div class="repair-strategy-grid" id="repair7-grid">
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 7)">Advocatus Diaboli</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 7)">Visão Externa</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 7)">Insumos Diversificados</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 7)">Análise Pré-Mortem</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 7)">Checklist de Vieses</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 7)">Segurança Psicológica</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 7)">Auxiliares de Decisão</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 7)">Desacelerar</button>
+                    </div>
+                    <button class="repair-btn" id="repair7-btn" onclick="showRepairResult(7)" disabled>Ver Processo Reparado</button>
+                    <div class="repair-result" id="repair7-result">
+                        <strong style="color: var(--accent);">✅ Processo Reparado:</strong>
+                        <p style="margin-top: 8px; color: #333; line-height: 1.6;">Com as estratégias selecionadas, o diretor designa um membro para apresentar todos os casos negativos primeiro (Advocatus Diaboli). A equipe usa uma rubrica de critérios pré-definidos (Auxiliar de Decisão) para avaliar cada mercado independentemente. Um consultor externo fornece benchmarks do setor (Visão Externa). A decisão final considera tanto os casos positivos quanto os negativos — e a expansão é aprovada com plano de mitigação de riscos, não por unanimidade acrítica.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 8: Scenario Repair - M3 Return -->
+        <div class="screen" id="screen-8">
+            <div class="section-header">🔧 Reparação de Cenário — Retorno ao M3</div>
+            <p class="intro-text">Processo de seleção com Efeito Halo e Viés de Afinidade do Módulo 3. Selecione estratégias para reparar o processo.</p>
+            <div class="repair-layout">
+                <div class="repair-scenario">
+                    <h3>❌ Processo Original (Defeituoso)</h3>
+                    <p style="font-size: 13px; color: #333; line-height: 1.6; margin-bottom: 10px;"><strong>Cenário:</strong> Seleção para gerente de operações em empresa de manufatura.</p>
+                    <p style="font-size: 13px; color: #555; line-height: 1.6;">O primeiro candidato entrevistado tem presença forte, foi à mesma universidade que o CEO e conta histórias impressionantes de resultados. Nos dias seguintes, todos os outros candidatos são inconscientemente comparados a ele. Uma candidata com histórico mais consistente e referências excelentes parece "sem carisma" em comparação. O candidato original é selecionado.</p>
+                    <div style="margin-top: 12px; padding: 10px; background: #fff5f5; border-radius: 6px; font-size: 12px; color: #c0392b;">
+                        <strong>Vieses presentes:</strong> Efeito Halo, Viés de Afinidade, Ancoragem
+                    </div>
+                </div>
+                <div class="repair-workspace">
+                    <h3>✅ Espaço de Reparação</h3>
+                    <p style="font-size: 13px; color: #555; margin-bottom: 10px;">Selecione 2–3 estratégias de mitigação:</p>
+                    <div class="repair-strategy-grid" id="repair8-grid">
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 8)">Reduzir Conjuntos de Escolha</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 8)">Auxiliares de Decisão (rubrica)</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 8)">Insumos Diversificados</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 8)">Checklist de Vieses</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 8)">Desacelerar</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 8)">Normas de Feedback</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 8)">Tornar Benefícios Salientes</button>
+                        <button class="repair-strategy-btn" onclick="toggleRepairStrategy(this, 8)">Segurança Psicológica</button>
+                    </div>
+                    <button class="repair-btn" id="repair8-btn" onclick="showRepairResult(8)" disabled>Ver Processo Reparado</button>
+                    <div class="repair-result" id="repair8-result">
+                        <strong style="color: var(--accent);">✅ Processo Reparado:</strong>
+                        <p style="margin-top: 8px; color: #333; line-height: 1.6;">Com as estratégias selecionadas, o comitê usa uma rubrica de 8 critérios objetivos (Auxiliar de Decisão) para avaliar cada candidato independentemente, antes de qualquer discussão coletiva. As avaliações são compiladas anonimamente. Um membro de RH de outro departamento (Insumos Diversificados) revisa o shortlist. A candidata com histórico consistente aparece no topo em 6 dos 8 critérios. A decisão é baseada em evidências, não em impressão.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 9: Advocatus Diaboli -->
+        <div class="screen" id="screen-9">
+            <div class="section-header">⚖️ Prática: Advocatus Diaboli</div>
+            <div class="ad-scenario">
+                <div class="scenario-label">Cenário</div>
+                <p style="font-size: 14px; color: #333; line-height: 1.7; margin-bottom: 8px;">A equipe de liderança de uma empresa de serviços financeiros convergiu fortemente para <strong>terceirizar sua função de TI interna</strong>. As evidências parecem apoiar a decisão: redução de custos de 22%, foco no core business, e o fornecedor escolhido tem reputação sólida.</p>
+                <p style="font-size: 14px; color: #555; line-height: 1.7;"><strong>Sua tarefa:</strong> Você é o Advocatus Diaboli. Construa o contra-argumento mais forte possível em três dimensões.</p>
+            </div>
+            <div class="ad-inputs">
+                <div class="ad-input-group">
+                    <label>🎯 Risco Estratégico: Por que terceirizar pode prejudicar a posição competitiva de longo prazo?</label>
+                    <textarea id="ad-strategic" placeholder="Pense em: dependência de fornecedor, perda de capacidade proprietária, dados sensíveis, agilidade estratégica..." oninput="checkAdInputs()"></textarea>
+                </div>
+                <div class="ad-input-group">
+                    <label>👥 Risco Cultural: Qual o impacto nas pessoas e na cultura organizacional?</label>
+                    <textarea id="ad-cultural" placeholder="Pense em: moral dos colaboradores, perda de conhecimento tácito, cultura de inovação, confiança da equipe..." oninput="checkAdInputs()"></textarea>
+                </div>
+                <div class="ad-input-group">
+                    <label>⚙️ Risco Operacional: Onde o processo pode falhar na prática?</label>
+                    <textarea id="ad-operational" placeholder="Pense em: transição de conhecimento, SLAs, incidentes críticos, governança, conformidade regulatória..." oninput="checkAdInputs()"></textarea>
+                </div>
+            </div>
+            <button class="ad-reveal-btn" id="ad-reveal-btn" onclick="revealModelArg()" disabled>Revelar Argumento Modelo</button>
+            <div class="ad-model-arg" id="ad-model-arg">
+                <h3>🏆 Argumento Modelo</h3>
+                <p style="font-size: 13px; color: #333; line-height: 1.7; margin-bottom: 8px;"><strong>Estratégico:</strong> A redução de custos de 22% pressupõe estabilidade de escopo. Na prática, 68% dos contratos de outsourcing de TI exigem renegociações dentro de 18 meses, frequentemente resultando em custos reais 15–30% acima do projetado. Mais crítico: ao terceirizar TI, a empresa perde a capacidade de desenvolver vantagem competitiva tecnológica proprietária. Em um setor de serviços financeiros, onde FinTechs constroem diferenciais em dados e automação, essa capacidade pode ser estrategicamente insubstituível.</p>
+                <p style="font-size: 13px; color: #333; line-height: 1.7; margin-bottom: 8px;"><strong>Cultural:</strong> Os 40+ profissionais de TI internos carregam conhecimento tácito sobre sistemas legados e processos proprietários que não pode ser transferido em documentação. Sua saída — inevitável após a terceirização — representa perda irreversível de memória organizacional. Adicionalmente, para os demais colaboradores, a mensagem cultural é: "Nenhuma função está segura." Isso aumenta turnover voluntário nos 12 meses seguintes, com custo de reposição que raramente entra no modelo financeiro da terceirização.</p>
+                <p style="font-size: 13px; color: #333; line-height: 1.7;"><strong>Operacional:</strong> O fornecedor atenderá múltiplos clientes com prioridades concorrentes. Em incidentes críticos — especialmente em períodos de pico como fechamento de balanço ou campanhas — a empresa deixará de ter controle sobre tempos de resposta. Conformidade regulatória (LGPD, BACEN) será compartilhada com terceiro, criando risco reputacional e legal caso o fornecedor falhe. O custo de reversão da terceirização, se necessária, excede tipicamente 2–3x o custo de manutenção do modelo interno.</p>
+                <div style="margin-top: 12px; padding: 10px; background: var(--deep-green); border-radius: 6px; color: white; font-size: 12px;"><strong style="color: var(--neon-green);">💡 Lembre-se:</strong> O objetivo não é necessariamente derrotar a decisão — é garantir que ela foi testada rigorosamente antes do comprometimento.</div>
+            </div>
+        </div>
+
+        <!-- Screen 10: Pre-Mortem Builder -->
+        <div class="screen" id="screen-10">
+            <div class="section-header">💀 Construtor de Pré-Mortem</div>
+            <div style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                <p style="font-size: 14px; color: #333; line-height: 1.7;"><strong>Instruções:</strong> Escolha uma decisão real ou hipotética que você está enfrentando. Execute um pré-mortem respondendo as três perguntas abaixo.</p>
+                <p style="font-size: 13px; color: #777; margin-top: 8px; font-style: italic;">O objetivo não é prever o fracasso — é trazer à tona o que você não está se permitindo considerar.</p>
+            </div>
+            <div class="pm-inputs">
+                <div class="pm-input-group">
+                    <div class="pm-q">1. "Daqui a um ano, esta decisão levou ao fracasso. O que aconteceu?"</div>
+                    <textarea id="pm-1" placeholder="Descreva o cenário de fracasso com detalhes específicos. Seja pessimista — isso é necessário..." oninput="checkPmInputs()"></textarea>
+                </div>
+                <div class="pm-input-group">
+                    <div class="pm-q">2. "Quais vieses deste curso foram mais provavelmente responsáveis pelo fracasso?"</div>
+                    <textarea id="pm-2" placeholder="Identifique 2-3 vieses específicos (ex: excesso de confiança, custo irrecuperável, pensamento de grupo)..." oninput="checkPmInputs()"></textarea>
+                </div>
+                <div class="pm-input-group">
+                    <div class="pm-q">3. "Quais sinais de alerta precoce você deve observar nos próximos 30–90 dias?"</div>
+                    <textarea id="pm-3" placeholder="Seja específico: que métricas, comportamentos ou eventos indicariam que a decisão está falhando..." oninput="checkPmInputs()"></textarea>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 16px;">
+                <button class="pm-submit-btn" id="pm-submit-btn" onclick="submitPreMortem()" disabled>Enviar e Ver Debrief</button>
+                <button class="pm-download-btn" id="pm-download-btn" onclick="downloadPreMortem()">⬇ Baixar como PDF</button>
+            </div>
+            <div class="pm-debrief" id="pm-debrief">
+                <h3>💡 Debrief do Pré-Mortem</h3>
+                <p style="font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.9);">Você acabou de completar uma das ferramentas mais poderosas de liderança consciente de vieses. Pesquisas de Gary Klein mostram que o pré-mortem aumenta a detecção de problemas críticos em até 30% comparado com análises de risco convencionais.</p>
+                <p style="font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.9); margin-top: 10px;"><strong style="color: var(--neon-green);">Por que funciona:</strong> Ao assumir que a decisão já falhou, você "permissiona" o pessimismo. Isso contorna o groupthink, o excesso de confiança e o viés de otimismo — que, coletivamente, são as causas mais comuns de grandes decisões mal avaliadas.</p>
+                <p style="font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.9); margin-top: 10px;"><strong style="color: var(--neon-green);">Próximo passo:</strong> Compartilhe sua lista de sinais de alerta com alguém que você confia. Compromissos verbalizados têm três vezes mais probabilidade de ser monitorados.</p>
+            </div>
+        </div>
+
+        <!-- Screen 11: Action Plan Builder -->
+        <div class="screen" id="screen-11">
+            <div class="section-header">📖 Construtor de Plano de Ação</div>
+            <div class="diary-card">
+                <h3>🎯 Construa Seu Plano de Ação de Liderança Consciente de Vieses</h3>
+                <p style="font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 16px;">Use a <strong>Parte B do Módulo 5</strong> no seu diário. Complete o modelo de plano de ação de três vieses.</p>
+                <p style="font-size: 14px; color: var(--accent); font-weight: 600; line-height: 1.6; margin-bottom: 8px;">"Este é o output mais importante do curso. Comprometa-se com três mudanças específicas — por escrito."</p>
+                <p style="font-size: 14px; color: #777; font-style: italic;">"Seu plano é seu. Ninguém mais o vê. Seja honesto."</p>
+            </div>
+            <div class="action-plan-preview">
+                <strong>📋 Modelo do Plano de Ação (Parte B — Módulo 5)</strong><br><br>
+                <strong>Viés 1:</strong> _________________________ <br>
+                &nbsp;&nbsp;→ Situação de risco em que aparece: _________________________<br>
+                &nbsp;&nbsp;→ Estratégia de mitigação escolhida: _________________________<br>
+                &nbsp;&nbsp;→ Primeira ação concreta (próximos 7 dias): _________________________<br><br>
+                <strong>Viés 2:</strong> _________________________<br>
+                &nbsp;&nbsp;→ Situação de risco em que aparece: _________________________<br>
+                &nbsp;&nbsp;→ Estratégia de mitigação escolhida: _________________________<br>
+                &nbsp;&nbsp;→ Primeira ação concreta (próximos 7 dias): _________________________<br><br>
+                <strong>Viés 3:</strong> _________________________<br>
+                &nbsp;&nbsp;→ Situação de risco em que aparece: _________________________<br>
+                &nbsp;&nbsp;→ Estratégia de mitigação escolhida: _________________________<br>
+                &nbsp;&nbsp;→ Primeira ação concreta (próximos 7 dias): _________________________<br><br>
+                <strong>Compromisso de revisão:</strong> Revisarei este plano em: _________________________
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 16px;">
+                <button class="diary-dl-btn" onclick="downloadActionPlan()">⬇ Baixar Modelo do Plano de Ação</button>
+                <a href="assets/diario-de-aprendizagem.pdf" target="_blank" style="background: #002610; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;">📓 Diário de Aprendizagem Completo</a>
+            </div>
+            <div class="diary-checkbox-row">
+                <input type="checkbox" id="plan-check" onchange="planChecked()">
+                <label for="plan-check">✓ Completei meu plano de ação no diário</label>
+            </div>
+            <div id="plan-affirm" style="display: none; margin-top: 12px; padding: 12px; background: #f0faf4; border-radius: 8px; font-size: 14px; color: var(--accent); font-weight: 600; animation: fadeIn 0.3s ease;">
+                🎉 Excelente. Este comprometimento escrito é o passo mais importante que você tomou no curso.
+            </div>
+        </div>
+
+        <!-- Screen 12: Knowledge Check -->
+        <div class="screen" id="screen-12">
+            <div class="section-header">✅ Verificação de Conhecimento</div>
+            <div class="kc-progress" id="kc-progress">Questão 1 de 5</div>
+
+            <!-- Q1 -->
+            <div class="kc-question" id="kc-q1">
+                <div class="q-text">Q1: Em uma negociação, a ancoragem faz com que a primeira oferta distorça todo o processo. Qual estratégia aborda isso mais diretamente?</div>
+                <div class="kc-options">
+                    <div class="kc-option" onclick="answerKC(1, 'a', this)">A) Cultivar Segurança Psicológica</div>
+                    <div class="kc-option" onclick="answerKC(1, 'b', this)">B) Visão Externa — pesquisar referências de mercado antes da primeira oferta</div>
+                    <div class="kc-option" onclick="answerKC(1, 'c', this)">C) Ajustar Padrões (Defaults)</div>
+                    <div class="kc-option" onclick="answerKC(1, 'd', this)">D) Análise Pré-Mortem</div>
+                </div>
+                <div class="kc-feedback" id="kc-fb1"></div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="kc-question" id="kc-q2" style="display:none">
+                <div class="q-text">Q2: Sua equipe tem baixa segurança psicológica — ninguém discorda do chefe em reuniões. Qual estratégia cultural tem impacto mais imediato?</div>
+                <div class="kc-options">
+                    <div class="kc-option" onclick="answerKC(2, 'a', this)">A) Reduzir Conjuntos de Escolha</div>
+                    <div class="kc-option" onclick="answerKC(2, 'b', this)">B) Análise Pré-Mortem</div>
+                    <div class="kc-option" onclick="answerKC(2, 'c', this)">C) Advocatus Diaboli — atribuir formalmente o papel de oponente</div>
+                    <div class="kc-option" onclick="answerKC(2, 'd', this)">D) Visão Externa</div>
+                </div>
+                <div class="kc-feedback" id="kc-fb2"></div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="kc-question" id="kc-q3" style="display:none">
+                <div class="q-text">Q3: Um líder subestima consistentemente prazos de projeto em 30–40%. Qual ferramenta estrutural é mais eficaz para corrigir isso?</div>
+                <div class="kc-options">
+                    <div class="kc-option" onclick="answerKC(3, 'a', this)">A) Tornar a Voz Segura</div>
+                    <div class="kc-option" onclick="answerKC(3, 'b', this)">B) Segurança Psicológica</div>
+                    <div class="kc-option" onclick="answerKC(3, 'c', this)">C) Visão Externa </div>
+                    <div class="kc-option" onclick="answerKC(3, 'd', this)">D) Momentos de Novo Começo</div>
+                </div>
+                <div class="kc-feedback" id="kc-fb3"></div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="kc-question" id="kc-q4" style="display:none">
+                <div class="q-text">Q4: Em qual estágio do processo decisório a Análise Pré-Mortem é mais valiosa?</div>
+                <div class="kc-options">
+                    <div class="kc-option" onclick="answerKC(4, 'a', this)">A) Após a implementação, para identificar o que deu errado</div>
+                    <div class="kc-option" onclick="answerKC(4, 'b', this)">B) Antes do comprometimento final</div>
+                    <div class="kc-option" onclick="answerKC(4, 'c', this)">C) Durante o brainstorming inicial de opções</div>
+                    <div class="kc-option" onclick="answerKC(4, 'd', this)">D) Apenas em decisões irreversíveis</div>
+                </div>
+                <div class="kc-feedback" id="kc-fb4"></div>
+            </div>
+
+            <!-- Q5 -->
+            <div class="kc-question" id="kc-q5" style="display:none">
+                <div class="q-text">Q5: Uma decisão urgente precisa ser tomada em 20 minutos. Qual estratégia individual é mais rápida de aplicar nesse contexto?</div>
+                <div class="kc-options">
+                    <div class="kc-option" onclick="answerKC(5, 'a', this)">A) Insumos Diversificados</div>
+                    <div class="kc-option" onclick="answerKC(5, 'b', this)">B) Desacelerar</div>
+                    <div class="kc-option" onclick="answerKC(5, 'c', this)">C) Análise Pré-Mortem completa</div>
+                    <div class="kc-option" onclick="answerKC(5, 'd', this)">D) Ajustar Padrões</div>
+                </div>
+                <div class="kc-feedback" id="kc-fb5"></div>
+            </div>
+
+            <div class="kc-score" id="kc-score">
+                <div class="score-number" id="kc-score-num">0/5</div>
+                <div class="score-label" id="kc-score-label">Verificação concluída</div>
+                <div id="kc-score-msg" style="margin-top: 12px; font-size: 14px; color: #555; line-height: 1.6;"></div>
+            </div>
+        </div>
+
+        <!-- Screen 13: Module Summary + Course Review -->
+        <div class="screen" id="screen-13">
+            <div class="section-header">🏆 Resumo do Módulo e Revisão do Curso</div>
+            <div style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                <p style="font-size: 15px; font-weight: 700; color: var(--deep-green); margin-bottom: 12px;">O que você aprendeu neste módulo:</p>
+                <ul style="padding-left: 20px; color: #555; font-size: 14px; line-height: 1.9;">
+                    <li>15 estratégias de mitigação em 3 níveis: Individual, Estrutural e Cultural</li>
+                    <li>Como combinar estratégias com vieses específicos</li>
+                    <li>Como aplicar Pré-Mortem e Advocatus Diaboli em decisões reais</li>
+                    <li>Como reparar processos decisórios defeituosos</li>
+                    <li>Seu plano de ação pessoal de liderança consciente de vieses</li>
+                </ul>
+            </div>
+
+            <div class="journey-map" id="journey-map">
+                <div class="journey-node">
+                    <div class="journey-circle dim" id="jn-1">M1</div>
+                    <div class="journey-label">Como a mente funciona</div>
+                </div>
+                <div class="journey-arrow">→</div>
+                <div class="journey-node">
+                    <div class="journey-circle dim" id="jn-2">M2</div>
+                    <div class="journey-label">Armadilhas de decisão</div>
+                </div>
+                <div class="journey-arrow">→</div>
+                <div class="journey-node">
+                    <div class="journey-circle dim" id="jn-3">M3</div>
+                    <div class="journey-label">Pontos cegos</div>
+                </div>
+                <div class="journey-arrow">→</div>
+                <div class="journey-node">
+                    <div class="journey-circle dim" id="jn-4">M4</div>
+                    <div class="journey-label">Dinâmicas de grupo</div>
+                </div>
+                <div class="journey-arrow">→</div>
+                <div class="journey-node">
+                    <div class="journey-circle dim" id="jn-5">M5</div>
+                    <div class="journey-label">Mitigação</div>
+                </div>
+                <div class="journey-arrow">→</div>
+                <div class="journey-node">
+                    <div class="journey-circle dim" id="jn-fa">FA</div>
+                    <div class="journey-label">Avaliação Final</div>
+                </div>
+            </div>
+
+            <div class="journey-message">
+                "Clareza é uma prática, não um destino. Agora você tem o mapa."
+            </div>
+
+            <div style="background: white; border-radius: 10px; padding: 20px; margin-top: 16px;">
+                <p style="font-size: 14px; font-weight: 700; color: var(--deep-green); margin-bottom: 8px;">Seu kit de ferramentas completo:</p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                    <div style="padding: 12px; background: #f0faf4; border-radius: 8px;"><strong style="color: var(--accent);">5</strong><br><span style="font-size: 11px; color: #666;">Estratégias Individuais</span></div>
+                    <div style="padding: 12px; background: #f0faf4; border-radius: 8px;"><strong style="color: var(--accent);">5</strong><br><span style="font-size: 11px; color: #666;">Estratégias Estruturais</span></div>
+                    <div style="padding: 12px; background: #f0faf4; border-radius: 8px;"><strong style="color: var(--accent);">5</strong><br><span style="font-size: 11px; color: #666;">Estratégias Culturais</span></div>
+                </div>
+            </div>
+
+            <div class="cta-block">
+                <h3>Próximo passo: Avaliação Final</h3>
+                <p>Aplique tudo que aprendeu nos cinco módulos em três cenários reais de liderança. Nota de aprovação: 70% (11/15).</p>
+            </div>
+            <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 8px;">
+                <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">✅ Módulo concluído!</p>
+                <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
+            </div>
+        </div>
+
+    </div><!-- end screens-container -->
+
+    <!-- Bottom Navigation -->
+    <div id="bottom-nav">
+        <button class="btn btn-secondary" id="btn-prev" onclick="prevScreen()" disabled>← Anterior</button>
+        <span id="nav-progress" style="color: rgba(255,255,255,0.7); font-size: 13px;">1 / 14</span>
+        <button class="btn btn-primary" id="btn-next" onclick="nextScreen()">Próximo →</button>
+    </div>
+
+</div><!-- end app-container -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+    // ── State ────────────────────────────────────────────────────────────────
+    const TOTAL = 14;
+    let currentScreen = 0;
+    let screenRequirements = {};
+    for (let i = 0; i < TOTAL; i++) screenRequirements[i] = true;
+    // Activities that need interaction:
+    screenRequirements[6]  = false; // card matching — need at least 3 matches
+    screenRequirements[7]  = false; // scenario repair M2
+    screenRequirements[8]  = false; // scenario repair M3
+    screenRequirements[9]  = false; // advocatus diaboli — need to fill inputs
+    screenRequirements[10] = false; // pre-mortem — need to fill inputs
+    screenRequirements[12] = false; // knowledge check
+
+    // Matching state
+    let selectedBiasIdx = null;
+    let matchedPairs = {}; // biasIdx -> stratIdx
+    let matchCount = 0;
+    const MATCH_OPTIMAL = {0:0, 1:4, 2:9, 3:7, 4:2, 5:5, 6:6};
+    const MATCH_FEEDBACK_TEXT = {
+        0: "Ancoragem → Visão Externa: buscar benchmarks de casos comparáveis antes da primeira oferta anula o poder da âncora.",
+        1: "Viés de Confirmação → Checklist de Vieses: um checklist pré-decisão força considerar evidências que contradizem a hipótese favorita.",
+        2: "Efeito Halo → Auxiliares de Decisão: rubricas e critérios objetivos separados evitam que uma impressão positiva contamine toda a avaliação.",
+        3: "Custo Irrecuperável → Análise Pré-Mortem: imaginar o fracasso futuro ajuda a deslocar o foco do passado investido para o futuro possível.",
+        4: "Pensamento de Grupo → Advocatus Diaboli: atribuir formalmente o papel de oponente cria permissão estrutural para discordância.",
+        5: "Viés de Recência → Normas de Feedback: avaliações regulares com critérios fixos compensam a tendência de pesar excessivamente eventos recentes.",
+        6: "Status Quo → Ajustar Padrões: mudar o padrão (default) faz com que a inércia trabalhe a favor da melhor opção, não da opção atual."
+    };
+
+    // Repair state
+    let repair7Selected = [];
+    let repair8Selected = [];
+    // KnowledgeCheck state
+    let kcAnswers = {};
+    const KC_CORRECT = {1:'b', 2:'c', 3:'c', 4:'b', 5:'b'};
+    const KC_FEEDBACK = {
+        1: {b: "Correto! A Visão Externa quebra o poder da âncora ao fornecer referências independentes antes da negociação.", wrong: "A estratégia mais direta para ancoragem é a Visão Externa — buscar referências de mercado antes de qualquer oferta."},
+        2: {c: "Correto! O Advocatus Diaboli cria uma estrutura formal para discordância, tornando-a segura e esperada — mesmo em culturas hierárquicas.", wrong: "Para baixa segurança psicológica, o Advocatus Diaboli é imediato pois cria permissão formal para o desacordo sem expor indivíduos."},
+        3: {c: "Correto! A Visão Externa corrige o viés de otimismo e planejamento ao substituir estimativas internas por dados de casos comparáveis.", wrong: "Para subestimativa consistente de prazos, a Visão Externa é mais eficaz — dados de projetos similares corrigem o viés de planejamento."},
+        4: {b: "Correto! O pré-mortem é mais valioso antes do comprometimento final — quando ainda há espaço para mudar a decisão com base no que for revelado.", wrong: "O pré-mortem é mais valioso imediatamente antes do comprometimento final — quando a decisão está tomada mas ainda pode ser ajustada."},
+        5: {b: "Correto! Desacelerar — mesmo 5 minutos de pausa — ativa o Sistema 2 e é instantaneamente aplicável em qualquer contexto, sem preparação prévia.", wrong: "Em contextos urgentes, Desacelerar é a estratégia mais rápida — uma breve pausa de reflexão pode ser implementada imediatamente."}
+    };
+
+    // Journey animation
+    let journeyAnimated = false;
+
+    // ── Core Navigation ───────────────────────────────────────────────────────
+    function showScreen(index) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const screen = document.getElementById('screen-' + index);
+        if (screen) screen.classList.add('active');
+        // No scrollTop reset needed — each .screen.active is its own scroll context
+        if (index === 13 && !journeyAnimated) animateJourney();
+        updateTopBar();
+        updateBottomNav();
+        updateNextButton();
+        saveProgress();
+    }
+
+    function updateTopBar() {
+        document.getElementById('screenCounter').textContent = `Tela ${currentScreen + 1} de ${TOTAL}`;
+        document.getElementById('progressFill').style.width = ((currentScreen + 1) / TOTAL * 100) + '%';
+    }
+
+    function updateBottomNav() {
+        document.getElementById('btn-prev').disabled = currentScreen === 0;
+        document.getElementById('nav-progress').textContent = `${currentScreen + 1} / ${TOTAL}`;
+        updateNextButton();
+    }
+
+    function updateNextButton() {
+        const btn = document.getElementById('btn-next');
+        if (currentScreen === TOTAL - 1) {
+            btn.textContent = 'Concluir Módulo ✓';
+            btn.disabled = !screenRequirements[currentScreen];
+        } else {
+            btn.textContent = 'Próximo →';
+            btn.disabled = !screenRequirements[currentScreen];
+        }
+    }
+
+    function nextScreen() {
+        if (!screenRequirements[currentScreen]) return;
+        if (currentScreen < TOTAL - 1) {
+            currentScreen++;
+            showScreen(currentScreen);
+        } else {
+            try { localStorage.setItem('spc_m5_complete', 'true'); } catch(e) {}
+            // In Hotmart version: stay on last screen, message already visible
+        }
+    }
+
+    function prevScreen() {
+        if (currentScreen > 0) {
+            currentScreen--;
+            showScreen(currentScreen);
+        }
+    }
+
+    function goHome() { currentScreen = 0; showScreen(0); }
+
+    function saveProgress() {
+        try { localStorage.setItem('spc_m5_screen', currentScreen); } catch(e) {}
+    }
+
+    // ── Pyramid ───────────────────────────────────────────────────────────────
+    function togglePyramid(level) {
+        const el = document.getElementById('expand-' + level);
+        el.classList.toggle('open');
+    }
+
+    // ── Strategy Cards ────────────────────────────────────────────────────────
+    function toggleStrategy(card) {
+        card.classList.toggle('open');
+    }
+
+    // ── Card Matching (M5-06) ─────────────────────────────────────────────────
+    function selectBias(idx) {
+        if (matchedPairs.hasOwnProperty(idx)) return;
+        document.querySelectorAll('.bias-tile').forEach(t => t.classList.remove('selected'));
+        const tile = document.getElementById('bias-' + idx);
+        if (selectedBiasIdx === idx) { selectedBiasIdx = null; return; }
+        selectedBiasIdx = idx;
+        tile.classList.add('selected');
+    }
+
+    function selectStrategy(idx) {
+        if (selectedBiasIdx === null) return;
+        // Check if this strategy is already matched
+        if (Object.values(matchedPairs).includes(idx)) return;
+        const biasIdx = selectedBiasIdx;
+        matchedPairs[biasIdx] = idx;
+        matchCount++;
+        // Mark tiles
+        const bTile = document.getElementById('bias-' + biasIdx);
+        const sTile = document.getElementById('strat-' + idx);
+        bTile.classList.remove('selected');
+        bTile.classList.add('matched');
+        sTile.classList.add('matched');
+        // Show feedback
+        const fb = document.getElementById('match-feedback');
+        fb.innerHTML = `<strong>✅ Combinação registrada:</strong> ${fb.innerHTML ? fb.innerHTML.replace(/<strong>.*?<\/strong> /,'') : ''}<br>${MATCH_FEEDBACK_TEXT[biasIdx] || 'Combinação válida!'}`;
+        fb.classList.add('show');
+        // Update score
+        document.getElementById('match-score-display').textContent = `Combinações: ${matchCount} / 7`;
+        selectedBiasIdx = null;
+        if (matchCount >= 3) {
+            screenRequirements[6] = true;
+            updateNextButton();
+        }
+    }
+
+    // ── Scenario Repair ───────────────────────────────────────────────────────
+    function toggleRepairStrategy(btn, screenIdx) {
+        const arr = screenIdx === 7 ? repair7Selected : repair8Selected;
+        const text = btn.textContent;
+        const i = arr.indexOf(text);
+        if (i > -1) { arr.splice(i, 1); btn.classList.remove('selected'); }
+        else { arr.push(text); btn.classList.add('selected'); }
+        const needed = screenIdx === 7 ? repair7Selected : repair8Selected;
+        document.getElementById('repair' + screenIdx + '-btn').disabled = needed.length < 2;
+    }
+
+    function showRepairResult(screenIdx) {
+        // Hide all selected strategy buttons so result takes focus
+        const grid = document.getElementById('repair' + screenIdx + '-grid');
+        if (grid) {
+            grid.querySelectorAll('.repair-strategy-btn').forEach(btn => {
+                btn.style.display = 'none';
+            });
+        }
+        // Also hide the "Ver Processo Reparado" button itself
+        const repairBtn = document.getElementById('repair' + screenIdx + '-btn');
+        if (repairBtn) repairBtn.style.display = 'none';
+
+        document.getElementById('repair' + screenIdx + '-result').classList.add('show');
+        screenRequirements[screenIdx] = true;
+        updateNextButton();
+    }
+
+    // ── Advocatus Diaboli (M5-09) ─────────────────────────────────────────────
+    function checkAdInputs() {
+        const s = document.getElementById('ad-strategic').value.trim();
+        const c = document.getElementById('ad-cultural').value.trim();
+        const o = document.getElementById('ad-operational').value.trim();
+        const ready = s.length >= 2 && c.length >= 2 && o.length >= 2;
+        document.getElementById('ad-reveal-btn').disabled = !ready;
+        if (ready) { screenRequirements[9] = true; updateNextButton(); }
+    }
+
+    function revealModelArg() {
+        document.getElementById('ad-model-arg').classList.add('show');
+    }
+
+    // ── Pre-Mortem (M5-10) ────────────────────────────────────────────────────
+    function checkPmInputs() {
+        const v1 = document.getElementById('pm-1').value.trim();
+        const v2 = document.getElementById('pm-2').value.trim();
+        const v3 = document.getElementById('pm-3').value.trim();
+        const ready = v1.length >= 2 && v2.length >= 2 && v3.length >= 2;
+        document.getElementById('pm-submit-btn').disabled = !ready;
+    }
+
+    function submitPreMortem() {
+        document.getElementById('pm-debrief').classList.add('show');
+        document.getElementById('pm-download-btn').classList.add('show');
+        screenRequirements[10] = true;
+        updateNextButton();
+    }
+
+    function downloadPreMortem() {
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text('Pré-Mortem — Sem Pontos Cegos', 20, 20);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(11);
+            const today = new Date().toLocaleDateString('pt-BR');
+            doc.text(`Data: ${today}`, 20, 32);
+            doc.setFont('helvetica', 'bold');
+            doc.text('1. Cenário de Fracasso:', 20, 46);
+            doc.setFont('helvetica', 'normal');
+            const v1 = doc.splitTextToSize(document.getElementById('pm-1').value || '—', 170);
+            doc.text(v1, 20, 54);
+            let y = 54 + v1.length * 7 + 10;
+            doc.setFont('helvetica', 'bold');
+            doc.text('2. Vieses Responsáveis:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            const v2 = doc.splitTextToSize(document.getElementById('pm-2').value || '—', 170);
+            doc.text(v2, 20, y + 8);
+            y = y + 8 + v2.length * 7 + 10;
+            doc.setFont('helvetica', 'bold');
+            doc.text('3. Sinais de Alerta:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            const v3 = doc.splitTextToSize(document.getElementById('pm-3').value || '—', 170);
+            doc.text(v3, 20, y + 8);
+            doc.save('pre-mortem-sem-pontos-cegos.pdf');
+        } catch(e) { alert('Para baixar o PDF, certifique-se de estar online para carregar a biblioteca jsPDF.'); }
+    }
+
+    // ── Action Plan (M5-11) ───────────────────────────────────────────────────
+    function planChecked() {
+        const checked = document.getElementById('plan-check').checked;
+        if (checked) {
+            document.getElementById('plan-affirm').style.display = 'block';
+        }
+    }
+
+    function downloadActionPlan() {
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text('Plano de Ação — Liderança Consciente de Vieses', 20, 20);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text('Sem Pontos Cegos — Módulo 5 | Parte B do Diário de Aprendizagem', 20, 30);
+            const items = [
+                ['Viés 1:', '________________________'],
+                ['  Situação de risco:', '________________________'],
+                ['  Estratégia escolhida:', '________________________'],
+                ['  Ação concreta (7 dias):', '________________________'],
+                ['', ''],
+                ['Viés 2:', '________________________'],
+                ['  Situação de risco:', '________________________'],
+                ['  Estratégia escolhida:', '________________________'],
+                ['  Ação concreta (7 dias):', '________________________'],
+                ['', ''],
+                ['Viés 3:', '________________________'],
+                ['  Situação de risco:', '________________________'],
+                ['  Estratégia escolhida:', '________________________'],
+                ['  Ação concreta (7 dias):', '________________________'],
+                ['', ''],
+                ['Compromisso de revisão:', '________________________'],
+            ];
+            let y = 44;
+            items.forEach(([label, val]) => {
+                if (label) {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(label, 20, y);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(val, 80, y);
+                }
+                y += 8;
+            });
+            doc.save('plano-de-acao-sem-pontos-cegos.pdf');
+        } catch(e) { alert('Para baixar o PDF, certifique-se de estar online.'); }
+    }
+
+    // ── Knowledge Check (M5-12) ───────────────────────────────────────────────
+    function answerKC(qNum, choice, el) {
+        if (kcAnswers[qNum]) return;
+        kcAnswers[qNum] = choice;
+        const correct = KC_CORRECT[qNum];
+        const isCorrect = choice === correct;
+        // Style options
+        el.closest('.kc-question').querySelectorAll('.kc-option').forEach(o => o.classList.add('disabled'));
+        el.classList.add(isCorrect ? 'correct' : 'wrong');
+        if (!isCorrect) {
+            el.closest('.kc-question').querySelectorAll('.kc-option').forEach(o => {
+                if (o.textContent.trim().startsWith(correct.toUpperCase() + ')')) o.classList.add('correct');
+            });
+        }
+        // Show feedback
+        const fb = document.getElementById('kc-fb' + qNum);
+        fb.textContent = isCorrect ? '✅ ' + KC_FEEDBACK[qNum][correct] : '❌ ' + KC_FEEDBACK[qNum].wrong;
+        fb.classList.add('show', isCorrect ? 'correct' : 'wrong');
+        // Update progress & next question
+        const nextQ = qNum + 1;
+        if (nextQ <= 5) {
+            setTimeout(() => {
+                document.getElementById('kc-q' + qNum).style.display = 'none';
+                document.getElementById('kc-q' + nextQ).style.display = 'block';
+                document.getElementById('kc-progress').textContent = `Questão ${nextQ} de 5`;
+            }, 1800);
+        } else {
+            // Show score
+            setTimeout(() => {
+                document.getElementById('kc-q5').style.display = 'none';
+                document.getElementById('kc-progress').style.display = 'none';
+                const score = Object.keys(kcAnswers).filter(q => kcAnswers[q] === KC_CORRECT[parseInt(q)]).length;
+                document.getElementById('kc-score-num').textContent = score + '/5';
+                document.getElementById('kc-score-label').textContent = score >= 4 ? '🌟 Excelente domínio!' : score >= 3 ? '✅ Bom desempenho!' : '📚 Revise as estratégias';
+                document.getElementById('kc-score-msg').textContent = score >= 4 ? 'Você demonstra sólida compreensão das estratégias de mitigação. Pronto para a Avaliação Final!' : score >= 3 ? 'Você tem boa base. Revise as estratégias das questões erradas antes da Avaliação Final.' : 'Revise os módulos de estratégias (telas 3–5) antes de avançar.';
+                document.getElementById('kc-score').classList.add('show');
+                screenRequirements[12] = true;
+                updateNextButton();
+            }, 1800);
+        }
+    }
+
+    // ── Journey Animation ─────────────────────────────────────────────────────
+    function animateJourney() {
+        journeyAnimated = true;
+        const nodes = ['jn-1','jn-2','jn-3','jn-4','jn-5','jn-fa'];
+        nodes.forEach((id, i) => {
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) { el.classList.remove('dim'); el.classList.add('lit'); }
+            }, i * 400);
+        });
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    (function init() {
+        try {
+            const saved = parseInt(localStorage.getItem('spc_m5_screen'));
+            if (!isNaN(saved) && saved > 0 && saved < TOTAL) currentScreen = saved;
+        } catch(e) {}
+        showScreen(currentScreen);
+    })();
+</script>
+</body>
+</html>

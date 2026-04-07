@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+      (function(){
+        var V='spc-fa-20260315a';
+        var s=sessionStorage.getItem('spc_v_fa');
+        if(s && s!==V){ sessionStorage.setItem('spc_v_fa',V); location.reload(true); }
+        else { sessionStorage.setItem('spc_v_fa',V); }
+      })();
+    </script>
+    <title>Avaliação Final | Sem Pontos Cegos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --deep-green: #002610;
+            --accent: #007A40;
+            --neon-green: #4DF600;
+            --white: #ffffff;
+            --light-grey: #f5f5f5;
+            --mid-grey: #6c757d;
+            --shadow: 0 4px 20px rgba(0,74,34,0.15);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--light-grey);
+            color: var(--mid-grey);
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100vh; height: 100dvh;
+            max-height: 100vh; max-height: 100dvh;
+            overflow: hidden; background: var(--light-grey);
+        }
+
+        /* Top Bar */
+        #top-bar {
+            background-color: var(--deep-green); color: var(--white);
+            padding: 16px 24px; display: flex; align-items: center;
+            justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .top-bar-left { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .top-bar-center { flex: 1; text-align: center; font-size: 13px; opacity: 0.9; }
+        .top-bar-right { font-size: 14px; text-align: right; min-width: 150px; }
+        #progressBar { width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 4px auto 0; overflow: hidden; }
+        #progressFill { height: 100%; background: var(--neon-green); width: 0%; transition: width 0.3s ease; border-radius: 2px; }
+
+        /* Content Area — v16 per-screen scroll architecture */
+        #screens-container { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+        .screen { display: none; }
+        .screen.active {
+            display: flex; flex-direction: column; justify-content: flex-start;
+            height: 100%; overflow-y: auto; overflow-x: hidden;
+            -webkit-overflow-scrolling: touch; overflow-anchor: none;
+            padding: 40px 60px 120px;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Bottom Navigation */
+        #bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background-color: var(--deep-green);
+            padding: 18px 24px; padding-bottom: max(18px, env(safe-area-inset-bottom));
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn { padding: 12px 24px; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-family: system-ui, -apple-system, sans-serif; }
+        .btn-primary { background-color: var(--neon-green); color: var(--deep-green); }
+        .btn-primary:hover:not(:disabled) { background-color: #5dff1f; transform: translateY(-2px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background-color: transparent; color: var(--white); border: 2px solid var(--neon-green); }
+        .btn-secondary:hover:not(:disabled) { background-color: rgba(77,246,0,0.1); }
+        .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        h1 { color: var(--deep-green); }
+
+        /* Intro screen */
+        .intro-banner {
+            background: linear-gradient(135deg, var(--deep-green) 0%, #003A18 100%);
+            padding: 60px 40px; border-radius: 10px; color: white; text-align: center;
+            position: relative; overflow: hidden; margin-bottom: 24px;
+        }
+        .intro-banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--neon-green); animation: slide 2s ease-in-out infinite; }
+        @keyframes slide { 0%,100% { transform: translateX(-100%); } 50% { transform: translateX(100%); } }
+        .intro-banner h1 { font-size: 26px; font-weight: 700; color: white; margin-bottom: 10px; }
+        .intro-banner p { color: rgba(255,255,255,0.9); font-size: 15px; margin-bottom: 6px; }
+        .intro-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+        .intro-stat { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; }
+        .intro-stat .stat-num { font-size: 26px; font-weight: 800; color: var(--neon-green); }
+        .intro-stat .stat-label { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+        .intro-note { background: white; border-radius: 8px; padding: 16px; font-size: 14px; color: #555; line-height: 1.7; }
+
+        /* Scenario screens */
+        .scenario-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding: 14px 18px; background: var(--deep-green); color: white; border-radius: 8px; }
+        .scenario-header .scenario-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--neon-green); }
+        .scenario-header h2 { font-size: 18px; font-weight: 700; color: white; }
+        .scenario-imgs { display: flex; gap: 10px; margin-left: auto; flex-shrink: 0; }
+        .scenario-imgs img { height: 56px; width: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--neon-green); background: #fff; }
+        @media (max-width: 480px) { .scenario-imgs img { height: 40px; width: 40px; } }
+        .candidates-panel { display: flex; gap: 24px; justify-content: center; margin: 0 0 16px; background: white; border-radius: 8px; padding: 16px 20px; }
+        .candidate-card { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .candidate-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--neon-green); background: #f0f0f0; }
+        .candidate-name { font-size: 12px; color: #444; font-weight: 600; text-align: center; }
+        .scenario-img-panel { display: flex; justify-content: center; margin: 0 0 16px; background: white; border-radius: 8px; padding: 12px 20px; }
+        .scenario-body { background: white; border-radius: 10px; padding: 24px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
+        .scenario-body h3 { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .scenario-body p { font-size: 14px; color: #333; line-height: 1.8; margin-bottom: 10px; }
+        .scenario-body .context-detail { font-size: 13px; color: #555; background: #f9f9f9; padding: 12px; border-radius: 6px; margin-top: 8px; line-height: 1.7; }
+        .bias-ref { padding: 12px; background: #f0faf4; border-radius: 6px; font-size: 12px; color: var(--accent); border-left: 3px solid var(--accent); margin-top: 12px; }
+
+        /* Questions */
+        .question-block { background: white; border-radius: 10px; padding: 22px; margin-bottom: 16px; border-top: 3px solid var(--accent); }
+        .q-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); margin-bottom: 8px; }
+        .q-text { font-size: 15px; font-weight: 600; color: var(--deep-green); margin-bottom: 14px; line-height: 1.5; }
+        .q-options { display: grid; gap: 8px; }
+        .q-option { background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 8px; padding: 12px 16px; cursor: pointer; font-size: 13px; color: #333; transition: all 0.2s; text-align: left; width: 100%; }
+        .q-option:hover:not(.disabled) { border-color: var(--accent); background: #f0faf4; }
+        .q-option.correct { border-color: #4DF600; background: #f0fff0; color: var(--deep-green); font-weight: 600; }
+        .q-option.wrong { border-color: #e74c3c; background: #fff5f5; color: #c0392b; }
+        .q-option.disabled { cursor: default; }
+        .q-feedback { margin-top: 12px; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.6; display: none; }
+        .q-feedback.show { display: block; }
+        .q-feedback.correct { background: #f0fff0; color: #2d6a2d; border-left: 3px solid #4DF600; }
+        .q-feedback.wrong { background: #fff5f5; color: #a33; border-left: 3px solid #e74c3c; }
+
+        /* Branch scenario (Q5) */
+        .branch-result { margin-top: 12px; padding: 14px; border-radius: 8px; font-size: 13px; line-height: 1.7; display: none; border-left: 4px solid var(--accent); background: #f0faf4; color: #333; }
+        .branch-result.show { display: block; animation: fadeIn 0.3s ease; }
+
+        /* Results */
+        .results-header { text-align: center; padding: 30px; background: white; border-radius: 10px; margin-bottom: 20px; }
+        .score-ring { width: 120px; height: 120px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 16px; }
+        .score-ring.pass { background: linear-gradient(135deg, #f0fff0, #e0ffe0); border: 4px solid var(--neon-green); }
+        .score-ring.fail { background: linear-gradient(135deg, #fff8e8, #fff0c0); border: 4px solid #f39c12; }
+        .score-num { font-size: 36px; font-weight: 800; color: var(--deep-green); }
+        .score-pct { font-size: 14px; color: var(--mid-grey); }
+        .result-status { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+        .result-status.pass { color: var(--accent); }
+        .result-status.fail { color: #d68910; }
+
+        .results-breakdown { background: white; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+        .results-breakdown h3 { font-size: 15px; font-weight: 700; color: var(--deep-green); margin-bottom: 14px; }
+        .breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .breakdown-row:last-child { border-bottom: none; }
+        .breakdown-label { color: #333; }
+        .breakdown-score { font-weight: 700; }
+        .breakdown-score.good { color: var(--accent); }
+        .breakdown-score.ok { color: #d68910; }
+        .breakdown-score.bad { color: #e74c3c; }
+
+        .detail-list { background: white; border-radius: 10px; padding: 20px; }
+        .detail-list h3 { font-size: 15px; font-weight: 700; color: var(--deep-green); margin-bottom: 14px; }
+        .detail-item { padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-item .di-q { color: #555; margin-bottom: 4px; }
+        .detail-item .di-status { font-weight: 700; }
+        .detail-item .di-status.correct { color: var(--accent); }
+        .detail-item .di-status.wrong { color: #e74c3c; }
+
+        /* Certificate */
+        .cert-wrap { background: white; border: 3px solid var(--deep-green); border-radius: 12px; max-width: 700px; margin: 0 auto; padding: 40px; text-align: center; position: relative; }
+        .cert-wrap::before, .cert-wrap::after { content: ''; position: absolute; top: 8px; bottom: 8px; left: 8px; right: 8px; border: 1px solid var(--neon-green); border-radius: 8px; pointer-events: none; }
+        .cert-wrap::after { top: 12px; bottom: 12px; left: 12px; right: 12px; border-color: rgba(77,246,0,0.3); }
+        .cert-logo { font-size: 32px; margin-bottom: 10px; }
+        .cert-brand { font-size: 13px; font-weight: 700; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 24px; }
+        .cert-title { font-size: 13px; color: var(--mid-grey); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+        .cert-recipient-label { font-size: 13px; color: #999; margin-bottom: 6px; }
+        .cert-recipient { font-size: 28px; font-weight: 700; color: var(--deep-green); margin-bottom: 20px; min-height: 40px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; }
+        .cert-course { font-size: 16px; font-weight: 700; color: var(--deep-green); margin-bottom: 6px; }
+        .cert-subtitle { font-size: 13px; color: var(--mid-grey); margin-bottom: 20px; }
+        .cert-score-date { display: flex; justify-content: center; gap: 40px; margin-bottom: 24px; font-size: 13px; color: #555; }
+        .cert-score-date span { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .cert-score-date strong { color: var(--deep-green); font-size: 16px; }
+        .cert-footer { font-size: 11px; color: #aaa; margin-top: 20px; }
+        .cert-name-input { width: 100%; max-width: 400px; padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 18px; text-align: center; font-family: system-ui; margin-bottom: 8px; color: var(--deep-green); }
+        .cert-name-input:focus { outline: none; border-color: var(--accent); }
+        .cert-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .cert-btn { padding: 12px 24px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: system-ui; }
+        .cert-btn-primary { background: var(--neon-green); color: var(--deep-green); }
+        .cert-btn-primary:hover { background: #5dff1f; }
+        .cert-btn-secondary { background: transparent; color: var(--deep-green); border: 2px solid var(--deep-green); }
+        .cert-btn-secondary:hover { background: #f0faf4; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .screen.active { padding: 20px 18px 120px; }
+            #top-bar { padding: 10px 14px; }
+            .top-bar-left { font-size: 13px; gap: 8px; }
+            .top-bar-center { font-size: 11px; }
+            .top-bar-right { font-size: 11px; min-width: auto; }
+            #progressBar { width: 120px; }
+            #bottom-nav { padding: 12px 14px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+            .btn { padding: 10px 14px; font-size: 13px; }
+            .intro-stats { grid-template-columns: 1fr; }
+            .cert-wrap { padding: 24px 16px; }
+            .cert-score-date { gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+
+    <!-- Top Bar -->
+    <div id="top-bar">
+        <div class="top-bar-left" onclick="goHome()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.16 114.38" height="28" style="flex-shrink:0;">
+                <path fill="#4DF600" d="M80.95,49.16c13.59,12.49,27.32,24.83,41.01,37.21,1.71-2.52,3.25-5.17,4.59-7.93-13.23-12.52-26.84-24.66-40.54-36.67-11.31-9.92-21.92-9.62-33.1.41-13.3,11.93-26.23,24.3-39.81,35.89,1.34,2.82,2.89,5.52,4.62,8.09,13.73-12.39,27.46-24.78,41.13-37.24,7.59-6.92,14.41-6.83,22.12.25Z"/>
+                <path fill="#4DF600" d="M56.92,20.51c8.24-4.87,16.3-5.35,24.64-.48,12.87,7.52,25.76,15,38.67,22.46,4.05,2.34,8.15,4.59,12.57,7.06-.09-3.94-.55-7.79-1.33-11.52-.69-.56-31.47-18.24-45.95-26.61-9.9-5.72-20.15-6.3-30.13-.8-14.57,8.03-46.01,26.35-47,27.22-.8,3.73-1.27,7.59-1.37,11.53.28-.12.54-.24.79-.38,16.39-9.47,32.83-18.86,49.13-28.49Z"/>
+                <path fill="#4DF600" d="M81.84,70.14c-6.01-8.23-19.13-8.13-24.57.09-7.27,10.97-14.02,22.3-21.15,33.89,2.58,1.64,5.28,3.1,8.09,4.36,1.2-1.51,14.61-23.59,19.71-31.88,3.28-5.34,8.32-5.41,11.49-.17,5.3,8.75,18.72,30.78,19.74,32.23,2.83-1.24,5.55-2.69,8.15-4.32-1.85-3.03-3.69-6.06-5.56-9.05-5.24-8.42-10.06-17.16-15.89-25.15Z"/>
+            </svg>
+            Sem Pontos Cegos
+        </div>
+        <div class="top-bar-center">
+            <div id="progressLabel">Questão 0 de 15</div>
+            <div id="progressBar"><div id="progressFill"></div></div>
+        </div>
+        <div class="top-bar-right">Avaliação Final</div>
+    </div>
+
+    <!-- Screens Container -->
+    <div id="screens-container">
+
+        <!-- Screen 0: FA-00 Introduction -->
+        <div class="screen active" id="screen-0">
+            <div class="intro-banner">
+                <h1>Aplicando Seu Conhecimento</h1>
+                <p style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--neon-green);">Avaliação Final</p>
+                <p>Três cenários reais de liderança, 15 questões</p>
+                <div class="intro-stats">
+                    <div class="intro-stat">
+                        <div class="stat-num">15</div>
+                        <div class="stat-label">Questões</div>
+                    </div>
+                    <div class="intro-stat">
+                        <div class="stat-num">70%</div>
+                        <div class="stat-label">Nota de aprovação (11/15)</div>
+                    </div>
+                    <div class="intro-stat">
+                        <div class="stat-num">20–25</div>
+                        <div class="stat-label">Minutos estimados</div>
+                    </div>
+                </div>
+            </div>
+            <div class="intro-note">
+                <p><strong>Como funciona:</strong> Você vai ler três cenários de liderança e responder 5 questões por cenário. As questões testam sua capacidade de identificar vieses, prever consequências e escolher estratégias de mitigação.</p>
+                <p style="margin-top: 10px;"><strong>Regras:</strong> Sem limite de tempo. Você pode refazer a avaliação após revisar os módulos indicados. Leia cada cenário com cuidado antes de responder.</p>
+                <p style="margin-top: 10px; color: var(--accent); font-weight: 600;">Nota de aprovação: 70% — 11 ou mais questões corretas de 15.</p>
+            </div>
+        </div>
+
+        <!-- Screen 1: FA-01 Scenario 1 -->
+        <div class="screen" id="screen-1">
+            <div class="scenario-header">
+                <div>
+                    <div class="scenario-num">Cenário 1 de 3</div>
+                    <h2>O Painel de Seleção</h2>
+                </div>
+            </div>
+            <div class="candidates-panel">
+                <div class="candidate-card">
+                    <img src="assets/Renato.png" alt="Renato Souza">
+                    <div class="candidate-name">Renato Souza</div>
+                </div>
+                <div class="candidate-card">
+                    <img src="assets/Beatriz.png" alt="Beatriz Novais">
+                    <div class="candidate-name">Beatriz Novais</div>
+                </div>
+            </div>
+            <div class="scenario-body">
+                <h3>Contexto</h3>
+                <p>A Vebraco Industrial, empresa de médio porte do setor de manufatura em Campinas, está selecionando um novo Diretor de Operações. O processo foi delegado a um comitê de cinco pessoas: a CEO Fernanda Lins, o CFO Marco Augusto, a VP de RH Cláudia Torres, o Diretor Comercial Roberto Menezes e um consultor externo de RH.</p>
+                <p>Desde o início, Fernanda demonstrou forte preferência por Renato Souza, o primeiro candidato a ser entrevistado. Renato é carismático, frequentou a mesma pós-graduação que a CEO, e tem histórico de resultados em uma empresa menor. Sua apresentação foi energizante.</p>
+                <p>Ao longo de três semanas e doze entrevistas, o campo se estreita. Uma candidata, Beatriz Novais, tem histórico operacional mais consistente, referências impecáveis de empresas de escala comparável, e resultados quantitativos superiores nos testes técnicos. Mas é percebida como "menos dinâmica" pelos membros do comitê que entrevistaram Renato primeiro.</p>
+                <p>Na reunião final de calibração, Fernanda abre com: "Sinto que Renato tem o que a empresa precisa neste momento. Gostei da energia que ele traz." O CFO e o Diretor Comercial concordam rapidamente. A VP de RH esboça uma objeção: "e os dados do assessment técnico?" — mas recua quando a CEO reitera sua posição. O consultor externo anota algo e permanece em silêncio.</p>
+                <div class="context-detail">
+                    <strong>Resultado:</strong> Renato é selecionado. Seis meses depois, marcos operacionais críticos são perdidos. A VP de RH descobre que o consultor externo havia preparado uma análise comparativa mostrando Beatriz 40% à frente em critérios técnicos, mas não a compartilhou por não querer "contrariar o cliente".
+                </div>
+                <div class="bias-ref">
+                    <strong>Módulos relevantes:</strong> Módulos 1 à 4
+                </div>
+            </div>
+
+            <!-- Q1 -->
+            <div class="question-block" id="s1-q1">
+                <div class="q-label">Questão 1 de 5</div>
+                <div class="q-text">Qual é o viés mais diretamente responsável pelo fato de outros candidatos serem inconscientemente comparados com Renato ao longo do processo?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s1',1,'a',this)">A) Viés de Confirmação</button>
+                    <button class="q-option" onclick="answerQ('s1',1,'b',this)">B) Ancoragem</button>
+                    <button class="q-option" onclick="answerQ('s1',1,'c',this)">C) Efeito de Enquadramento</button>
+                    <button class="q-option" onclick="answerQ('s1',1,'d',this)">D) Viés de Recência</button>
+                </div>
+                <div class="q-feedback" id="s1-fb1"></div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="question-block" id="s1-q2" style="display:none">
+                <div class="q-label">Questão 2 de 5</div>
+                <div class="q-text">O fato de Fernanda e Renato terem frequentado a mesma pós-graduação provavelmente ativa qual viés na CEO?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s1',2,'a',this)">A) Viés de Status Quo</button>
+                    <button class="q-option" onclick="answerQ('s1',2,'b',this)">B) Efeito Halo + Viés de Afinidade</button>
+                    <button class="q-option" onclick="answerQ('s1',2,'c',this)">C) Aversão à Ambiguidade</button>
+                    <button class="q-option" onclick="answerQ('s1',2,'d',this)">D) Viés de Representatividade</button>
+                </div>
+                <div class="q-feedback" id="s1-fb2"></div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="question-block" id="s1-q3" style="display:none">
+                <div class="q-label">Questão 3 de 5</div>
+                <div class="q-text">Quando a VP de RH recuou após a CEO reiterar sua posição, qual dinâmica de grupo ocorreu?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s1',3,'a',this)">A) Efeito de Enquadramento</button>
+                    <button class="q-option" onclick="answerQ('s1',3,'b',this)">B) Reciprocidade Social</button>
+                    <button class="q-option" onclick="answerQ('s1',3,'c',this)">C) Viés de Autoridade + Pensamento de Grupo</button>
+                    <button class="q-option" onclick="answerQ('s1',3,'d',this)">D) Viés de Recência</button>
+                </div>
+                <div class="q-feedback" id="s1-fb3"></div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="question-block" id="s1-q4" style="display:none">
+                <div class="q-label">Questão 4 de 5</div>
+                <div class="q-text">Qual intervenção estrutural, implementada ANTES das entrevistas, teria sido mais eficaz para prevenir a maioria dos vieses neste cenário?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s1',4,'a',this)">A) Cultivar Segurança Psicológica</button>
+                    <button class="q-option" onclick="answerQ('s1',4,'b',this)">B) Rubrica de critérios pré-definidos</button>
+                    <button class="q-option" onclick="answerQ('s1',4,'c',this)">C) Análise Pré-Mortem da decisão</button>
+                    <button class="q-option" onclick="answerQ('s1',4,'d',this)">D) Reduzir o número de entrevistadores para 2</button>
+                </div>
+                <div class="q-feedback" id="s1-fb4"></div>
+            </div>
+
+            <!-- Q5 (branching) -->
+            <div class="question-block" id="s1-q5" style="display:none">
+                <div class="q-label">Questão 5 de 5 — Ramificação</div>
+                <div class="q-text">Como consultor externo presente na reunião, você decide intervir. Qual abordagem é mais eficaz?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="branchQ('s1',5,'a',this)">A) Contradizer diretamente a CEO</button>
+                    <button class="q-option" onclick="branchQ('s1',5,'b',this)">B) Compartilhar a análise comparativa</button>
+                    <button class="q-option" onclick="branchQ('s1',5,'c',this)">C) Permanecer em silêncio</button>
+                    <button class="q-option" onclick="branchQ('s1',5,'d',this)">D) Sugerir adiamento da decisão</button>
+                </div>
+                <div class="branch-result" id="s1-br5-a">
+                    <strong>❌ Resultado:</strong> A intervenção direta confronta a CEO publicamente, ativa resistência defensiva e é descartada. O grupo fecha mais fortemente em torno de Renato. A Fernanda cancela o contrato de consultoria.
+                </div>
+                <div class="branch-result" id="s1-br5-b">
+                    <strong>✅ Resultado:</strong> Apresentar dados concretos, sem atacar a CEO, abre espaço para reconsideração. A VP de RH se junta imediatamente. O CFO pede para ver os dados. A decisão é adiada por 48h — e Beatriz é selecionada após revisão dos critérios técnicos.
+                </div>
+                <div class="branch-result" id="s1-br5-c">
+                    <strong>❌ Resultado:</strong> O silêncio por conveniência é a escolha mais cara. Renato é contratado. Seis meses depois, a empresa perde marcos críticos. O consultor é cobrado por não ter apresentado sua análise.
+                </div>
+                <div class="branch-result" id="s1-br5-d">
+                    <strong>⚠️ Resultado:</strong> O adiamento não resolve o problema — sem dados novos, a decisão final será idêntica. A CEO fica impaciente com a demora e o viés permanece sem ser endereçado.
+                </div>
+                <div class="q-feedback" id="s1-fb5"></div>
+            </div>
+        </div>
+
+        <!-- Screen 2: FA-02 Scenario 2 -->
+        <div class="screen" id="screen-2">
+            <div class="scenario-header">
+                <div>
+                    <div class="scenario-num">Cenário 2 de 3</div>
+                    <h2>A Reunião Estratégica</h2>
+                </div>
+            </div>
+            <div class="scenario-img-panel">
+                <img src="assets/Consuma Brasil,.png" alt="Consuma Brasil" title="Consuma Brasil" style="border-radius: 8px; max-height: 80px; object-fit: contain; border: 2px solid var(--neon-green); background: #f0f0f0; padding: 4px;">
+            </div>
+            <div class="scenario-body">
+                <h3>Contexto</h3>
+                <p>A Consuma Brasil, empresa de bens de consumo com sede em São Paulo, enfrenta uma decisão difícil: encerrar sua linha de produtos "Natura Viva", que registra queda de volume de 18% ao ano por três anos consecutivos. A linha foi lançada há seis anos com grande animação e R$45 milhões de investimento inicial.</p>
+                <p>Na reunião estratégica, o CEO Paulo Drummond apresenta os dados. A linha perde dinheiro. A estrutura de custos é incompatível com o volume atual. A projeção indica déficit crescente. Três analistas externos recomendam encerramento.</p>
+                <p>No entanto, o VP de Marketing, Eduardo Fontes, que liderou o lançamento da linha, argumenta: "Não podemos jogar fora R$45 milhões. Demos apenas dois anos de verdadeiro suporte de marketing. Precisamos de mais um ciclo." O VP de Operações, Diana Rocha, adiciona: "Sempre fizemos assim. Encerrar uma linha envia sinal errado ao mercado." O CFO Guilherme Assis anota os números em silêncio.</p>
+                <p>Quando Paulo pergunta se há consenso para encerrar, apenas o CFO levanta objeções técnicas. Os outros dois VPs concordam com Eduardo. Paulo, sentindo pressão para "defender o legado", adia a decisão: "Vamos dar mais um trimestre."</p>
+                <div class="context-detail">
+                    <strong>Resultado:</strong> Quatro trimestres depois, a linha foi encerrada com R$12 milhões adicionais de prejuízo acumulado. O CFO Guilherme havia calculado esse número na reunião original, mas não o compartilhou por considerar "desnecessariamente confrontador".
+                </div>
+                <div class="bias-ref">
+                    <strong>Módulos relevantes:</strong> Módulo 2 ao Módulo 4
+                </div>
+            </div>
+
+            <!-- Q1 -->
+            <div class="question-block" id="s2-q1">
+                <div class="q-label">Questão 1 de 5</div>
+                <div class="q-text">O argumento de Eduardo — "não podemos jogar fora R$45 milhões" — é a manifestação clássica de qual viés?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s2',1,'a',this)">A) Viés de Afinidade (endogrupo)</button>
+                    <button class="q-option" onclick="answerQ('s2',1,'b',this)">B) Falácia do Custo Irrecuperável</button>
+                    <button class="q-option" onclick="answerQ('s2',1,'c',this)">C) Ancoragem</button>
+                    <button class="q-option" onclick="answerQ('s2',1,'d',this)">D) Excesso de Confiança</button>
+                </div>
+                <div class="q-feedback" id="s2-fb1"></div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="question-block" id="s2-q2" style="display:none">
+                <div class="q-label">Questão 2 de 5</div>
+                <div class="q-text">Diana Rocha argumenta "sempre fizemos assim — encerrar uma linha envia sinal errado". Isso demonstra qual viés?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s2',2,'a',this)">A) Viés de Confirmação</button>
+                    <button class="q-option" onclick="answerQ('s2',2,'b',this)">B) Viés de Status Quo</button>
+                    <button class="q-option" onclick="answerQ('s2',2,'c',this)">C) Aversão ao Risco</button>
+                    <button class="q-option" onclick="answerQ('s2',2,'d',this)">D) Efeito Halo</button>
+                </div>
+                <div class="q-feedback" id="s2-fb2"></div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="question-block" id="s2-q3" style="display:none">
+                <div class="q-label">Questão 3 de 5</div>
+                <div class="q-text">O CFO Guilherme tinha os dados que mostrariam o custo do adiamento, mas não os compartilhou. Qual viés ou dinâmica explica melhor esse silêncio?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s2',3,'a',this)">A) Efeito Avestruz</button>
+                    <button class="q-option" onclick="answerQ('s2',3,'b',this)">B) Viés de Recência</button>
+                    <button class="q-option" onclick="answerQ('s2',3,'c',this)">C) Aversão à Ambiguidade</button>
+                    <button class="q-option" onclick="answerQ('s2',3,'d',this)">D) Falácia do Planejamento</button>
+                </div>
+                <div class="q-feedback" id="s2-fb3"></div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="question-block" id="s2-q4" style="display:none">
+                <div class="q-label">Questão 4 de 5</div>
+                <div class="q-text">Qual estratégia de mitigação, aplicada antes da reunião, teria maior probabilidade de evitar o custo adicional de R$12 milhões?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s2',4,'a',this)">A) Normas Consistentes de Feedback</button>
+                    <button class="q-option" onclick="answerQ('s2',4,'b',this)">B) Análise Pré-Mortem</button>
+                    <button class="q-option" onclick="answerQ('s2',4,'c',this)">C) Ajustar Padrões</button>
+                    <button class="q-option" onclick="answerQ('s2',4,'d',this)">D) Visão Externa</button>
+                </div>
+                <div class="q-feedback" id="s2-fb4"></div>
+            </div>
+
+            <!-- Q5 (branching) -->
+            <div class="question-block" id="s2-q5" style="display:none">
+                <div class="q-label">Questão 5 de 5 — Ramificação</div>
+                <div class="q-text">Você é o CEO Paulo. Percebe o padrão de groupthink se formando. Qual é sua melhor intervenção nesse momento?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="branchQ('s2',5,'a',this)">A) Encerrar a reunião e tomar a decisão sozinho, evitando mais debate</button>
+                    <button class="q-option" onclick="branchQ('s2',5,'b',this)">B) Pedir ao CFO para apresentar os dados completos, designar Eduardo como Advocatus Diaboli e fazer uma votação independente antes da discussão</button>
+                    <button class="q-option" onclick="branchQ('s2',5,'c',this)">C) Concordar com o grupo para manter coesão da equipe</button>
+                    <button class="q-option" onclick="branchQ('s2',5,'d',this)">D) Trazer a decisão para o Conselho sem resolução interna</button>
+                </div>
+                <div class="branch-result" id="s2-br5-a">
+                    <strong>⚠️ Resultado:</strong> A decisão unilateral evita o groupthink, mas prejudica o engajamento do time. Eduardo e Diana se sentem desconsiderados. A implementação enfrenta resistência passiva.
+                </div>
+                <div class="branch-result" id="s2-br5-b">
+                    <strong>✅ Resultado:</strong> O CFO apresenta o custo de R$12M do adiamento. Com Eduardo no papel de oponente estrutural, o argumento do custo irrecuperável é desmontado publicamente. A votação independente mostra 4/5 favoráveis ao encerramento. A decisão é tomada com dados — e Eduardo lidera a comunicação interna do encerramento.
+                </div>
+                <div class="branch-result" id="s2-br5-c">
+                    <strong>❌ Resultado:</strong> A coesão é mantida — às custas de R$12M adicionais e da credibilidade do CEO como líder analítico. O padrão se repete em decisões futuras.
+                </div>
+                <div class="branch-result" id="s2-br5-d">
+                    <strong>⚠️ Resultado:</strong> O Conselho vê a indecisão como fraqueza de liderança. A decisão é tomada pelo Conselho, mas Paulo perde autoridade executiva na área. A linha é encerrada de qualquer forma.
+                </div>
+                <div class="q-feedback" id="s2-fb5"></div>
+            </div>
+        </div>
+
+        <!-- Screen 3: FA-03 Scenario 3 -->
+        <div class="screen" id="screen-3">
+            <div class="scenario-header">
+                <div>
+                    <div class="scenario-num">Cenário 3 de 3</div>
+                    <h2>O Conflito de Equipe</h2>
+                </div>
+            </div>
+            <div class="scenario-img-panel">
+                <img src="assets/Marcos e Lara.png" alt="Marcos e Lara" title="Marcos e Lara" style="border-radius: 8px; max-height: 80px; object-fit: contain; border: 2px solid var(--neon-green); background: #f0f0f0; padding: 4px;">
+            </div>
+            <div class="scenario-body">
+                <h3>Contexto</h3>
+                <p>A TechNovus, startup de tecnologia em São Paulo com 80 colaboradores, tem um conflito crescente entre Marcos Viana (desenvolvedor sênior, 9 anos na empresa, produtor excepcional) e Lara Sousa (desenvolvedora júnior contratada há 8 meses, altamente talentosa, vinda de empresa internacional).</p>
+                <p>Marcos frequentemente interrompe Lara em reuniões, minimiza suas sugestões e, quando ela propõe uma arquitetura nova que o time aprova, comenta: "Isso já foi tentado. Não vai funcionar aqui." O gerente direto, Henrique Braga, observa o padrão há meses mas não intervém: "Marcos tem nove anos aqui e entrega sempre. Lara ainda está aprendendo como as coisas funcionam por aqui."</p>
+                <p>Uma segunda líder, a VP de Engenharia Tatiana Leal, ao ser informada do padrão, age diferente: ela agenda uma conversa separada com ambos, apresenta exemplos específicos de comportamento (sem julgamento), e cria uma norma de equipe sobre como sugestões técnicas são avaliadas — por mérito técnico, não por senioridade. Em 60 dias, o clima muda visivelmente.</p>
+                <div class="context-detail">
+                    <strong>Desfecho:</strong> Lara apresenta a nova arquitetura, que se torna a base do produto principal. Marcos, após a conversa com Tatiana, reconhece o padrão e se torna um dos maiores defensores de Lara. O time relata o melhor NPS interno da história da empresa.
+                </div>
+                <div class="bias-ref">
+                    <strong>Módulos relevantes:</strong> Módulo 3 ao Módulo 5
+                </div>
+            </div>
+
+            <!-- Q1 -->
+            <div class="question-block" id="s3-q1">
+                <div class="q-label">Questão 1 de 5</div>
+                <div class="q-text">O comportamento de Marcos de minimizar sugestões de Lara com base em seu menor tempo de empresa é mais bem explicado por qual viés?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s3',1,'a',this)">A) Ancoragem</button>
+                    <button class="q-option" onclick="answerQ('s3',1,'b',this)">B) Viés de Endogrupo</button>
+                    <button class="q-option" onclick="answerQ('s3',1,'c',this)">C) Viés de Recência</button>
+                    <button class="q-option" onclick="answerQ('s3',1,'d',this)">D) Efeito de Enquadramento</button>
+                </div>
+                <div class="q-feedback" id="s3-fb1"></div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="question-block" id="s3-q2" style="display:none">
+                <div class="q-label">Questão 2 de 5</div>
+                <div class="q-text">A inação de Henrique — "Marcos entrega sempre, Lara ainda está aprendendo" — exemplifica qual viés ou erro de avaliação?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s3',2,'a',this)">A) Efeito Halo (auréola)</button>
+                    <button class="q-option" onclick="answerQ('s3',2,'b',this)">B) Aversão à Ambiguidade</button>
+                    <button class="q-option" onclick="answerQ('s3',2,'c',this)">C) Viés de Confirmação</button>
+                    <button class="q-option" onclick="answerQ('s3',2,'d',this)">D) Falácia do Custo Irrecuperável</button>
+                </div>
+                <div class="q-feedback" id="s3-fb2"></div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="question-block" id="s3-q3" style="display:none">
+                <div class="q-label">Questão 3 de 5</div>
+                <div class="q-text">A abordagem de Tatiana — conversa separada, exemplos específicos, norma baseada em mérito técnico — demonstra principalmente qual estratégia do Módulo 5?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s3',3,'a',this)">A) Análise Pré-Mortem</button>
+                    <button class="q-option" onclick="answerQ('s3',3,'b',this)">B) Visão Externa</button>
+                    <button class="q-option" onclick="answerQ('s3',3,'c',this)">C) Auxiliares de Decisão + Normas Consistentes de Feedback</button>
+                    <button class="q-option" onclick="answerQ('s3',3,'d',this)">D) Reduzir Conjuntos de Escolha</button>
+                </div>
+                <div class="q-feedback" id="s3-fb3"></div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="question-block" id="s3-q4" style="display:none">
+                <div class="q-label">Questão 4 de 5</div>
+                <div class="q-text">Por que a intervenção de Tatiana foi mais eficaz do que a inação de Henrique?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="answerQ('s3',4,'a',this)">A) Tatiana tem mais autoridade formal do que Henrique</button>
+                    <button class="q-option" onclick="answerQ('s3',4,'b',this)">B) Tatiana mudou a estrutura de como sugestões são avaliadas</button>
+                    <button class="q-option" onclick="answerQ('s3',4,'c',this)">C) Tatiana ameaçou demitir Marcos se o comportamento continuasse</button>
+                    <button class="q-option" onclick="answerQ('s3',4,'d',this)">D) Tatiana substituiu Lara por alguém mais experiente</button>
+                </div>
+                <div class="q-feedback" id="s3-fb4"></div>
+            </div>
+
+            <!-- Q5 (branching) -->
+            <div class="question-block" id="s3-q5" style="display:none">
+                <div class="q-label">Questão 5 de 5 — Reflexão Pessoal</div>
+                <div class="q-text">Pensando na sua própria equipe: qual das situações abaixo é mais provável que esteja ocorrendo SEM que você perceba claramente?</div>
+                <div class="q-options">
+                    <button class="q-option" onclick="branchQ('s3',5,'a',this)">A) Membros de alta performance tendo comportamentos excludentes tolerados pelo Efeito Halo</button>
+                    <button class="q-option" onclick="branchQ('s3',5,'b',this)">B) Pessoas com menos tempo de empresa tendo ideias sistematicamente subvalorizadas</button>
+                    <button class="q-option" onclick="branchQ('s3',5,'c',this)">C) Ausência de normas explícitas sobre como decisões técnicas são tomadas</button>
+                    <button class="q-option" onclick="branchQ('s3',5,'d',this)">D) Todas as anteriores são possíveis — e a ausência de feedback estruturado torna difícil saber qual é mais relevante</button>
+                </div>
+                <div class="branch-result" id="s3-br5-a">
+                    <strong>🔍 Reflexão:</strong> O Efeito Halo é extremamente comum em equipes técnicas. O próximo passo: revisar as últimas 5 avaliações de desempenho de seus high performers — o comportamento interpessoal está sendo avaliado com o mesmo rigor que o desempenho técnico?
+                </div>
+                <div class="branch-result" id="s3-br5-b">
+                    <strong>🔍 Reflexão:</strong> O Viés de Afinidade/Endogrupo favorece pessoas que "entendem como as coisas funcionam aqui" — que são, por definição, as mais antigas. Próximo passo: nas próximas 3 reuniões, observe ativamente quantas ideias de pessoas novas são adotadas versus descartadas.
+                </div>
+                <div class="branch-result" id="s3-br5-c">
+                    <strong>🔍 Reflexão:</strong> Sem critérios explícitos, decisões técnicas são tomadas pelo membro mais vocal ou mais sênior — não necessariamente pelo mais correto. Próximo passo: defina com a equipe os 3-5 critérios que tornam uma proposta técnica boa, independente de quem a fez.
+                </div>
+                <div class="branch-result" id="s3-br5-d">
+                    <strong>✅ Reflexão:</strong> Esta é a resposta mais honesta e provavelmente mais correta. Sem um mecanismo estruturado de feedback — como retrospectivas regulares com perguntas específicas — é impossível saber qual padrão predomina. Próximo passo: implemente uma retrospectiva mensal com a pergunta: "Houve algo que alguém quis dizer e não disse?"
+                </div>
+                <div class="q-feedback" id="s3-fb5"></div>
+            </div>
+        </div>
+
+        <!-- Screen 4: FA-04 Results -->
+        <div class="screen" id="screen-4">
+            <div class="results-header">
+                <div class="score-ring" id="results-ring">
+                    <div class="score-num" id="results-score">0/15</div>
+                    <div class="score-pct" id="results-pct">0%</div>
+                </div>
+                <div class="result-status" id="results-status">–</div>
+                <p id="results-message" style="font-size: 14px; color: #555; max-width: 500px; margin: 0 auto; line-height: 1.6;"></p>
+            </div>
+
+            <div class="results-breakdown">
+                <h3>📊 Desempenho por Cenário</h3>
+                <div class="breakdown-row">
+                    <span class="breakdown-label">Cenário 1 — O Painel de Seleção</span>
+                    <span class="breakdown-score" id="br-s1">–/5</span>
+                </div>
+                <div class="breakdown-row">
+                    <span class="breakdown-label">Cenário 2 — A Reunião Estratégica</span>
+                    <span class="breakdown-score" id="br-s2">–/5</span>
+                </div>
+                <div class="breakdown-row">
+                    <span class="breakdown-label">Cenário 3 — O Conflito de Equipe</span>
+                    <span class="breakdown-score" id="br-s3">–/5</span>
+                </div>
+            </div>
+
+            <div class="detail-list" id="detail-list">
+                <h3>📝 Revisão por Questão</h3>
+                <div id="detail-items"></div>
+            </div>
+
+            <div id="review-links" style="display:none; margin-top:16px; background: white; border-radius: 10px; padding: 20px; border-left: 4px solid #f39c12;">
+                <h3 style="font-size: 15px; font-weight: 700; color: #d68910; margin-bottom: 10px;">📚 Módulos para Revisão</h3>
+                <p id="review-text" style="font-size: 13px; color: #555; line-height: 1.7;"></p>
+            </div>
+        </div>
+
+        <!-- Screen 5: FA-05 Certificate -->
+        <div class="screen" id="screen-5">
+            <div id="cert-blocked" style="display:none; background: white; border-radius: 10px; padding: 30px; text-align: center; border-left: 4px solid #f39c12;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📚</div>
+                <h2 style="color: #d68910; margin-bottom: 12px;">Revisão Recomendada</h2>
+                <p style="font-size: 15px; color: #555; line-height: 1.7; margin-bottom: 16px;">Você obteve menos de 70% na avaliação. O certificado está disponível após atingir a nota de aprovação.</p>
+                <p style="font-size: 14px; color: #555;">Revise os módulos indicados nos resultados e tente novamente — não há limite de tentativas.</p>
+                <button style="margin-top: 20px; background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;" onclick="retakeAssessment()">Refazer Avaliação</button>
+            </div>
+            <div id="cert-content" style="display:none;">
+                <div style="text-align: center; margin-bottom: 16px;">
+                    <label style="font-size: 14px; color: #555; font-weight: 600;">Insira seu nome para o certificado:</label><br>
+                    <input type="text" class="cert-name-input" id="cert-name" placeholder="Seu nome completo" oninput="updateCertName()">
+                </div>
+                <div class="cert-wrap" id="cert-wrap">
+                    <div class="cert-logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.16 114.38" height="48" style="display:block;margin:0 auto;">
+                            <path fill="#4DF600" d="M80.95,49.16c13.59,12.49,27.32,24.83,41.01,37.21,1.71-2.52,3.25-5.17,4.59-7.93-13.23-12.52-26.84-24.66-40.54-36.67-11.31-9.92-21.92-9.62-33.1.41-13.3,11.93-26.23,24.3-39.81,35.89,1.34,2.82,2.89,5.52,4.62,8.09,13.73-12.39,27.46-24.78,41.13-37.24,7.59-6.92,14.41-6.83,22.12.25Z"/>
+                            <path fill="#4DF600" d="M56.92,20.51c8.24-4.87,16.3-5.35,24.64-.48,12.87,7.52,25.76,15,38.67,22.46,4.05,2.34,8.15,4.59,12.57,7.06-.09-3.94-.55-7.79-1.33-11.52-.69-.56-31.47-18.24-45.95-26.61-9.9-5.72-20.15-6.3-30.13-.8-14.57,8.03-46.01,26.35-47,27.22-.8,3.73-1.27,7.59-1.37,11.53.28-.12.54-.24.79-.38,16.39-9.47,32.83-18.86,49.13-28.49Z"/>
+                            <path fill="#4DF600" d="M81.84,70.14c-6.01-8.23-19.13-8.13-24.57.09-7.27,10.97-14.02,22.3-21.15,33.89,2.58,1.64,5.28,3.1,8.09,4.36,1.2-1.51,14.61-23.59,19.71-31.88,3.28-5.34,8.32-5.41,11.49-.17,5.3,8.75,18.72,30.78,19.74,32.23,2.83-1.24,5.55-2.69,8.15-4.32-1.85-3.03-3.69-6.06-5.56-9.05-5.24-8.42-10.06-17.16-15.89-25.15Z"/>
+                        </svg>
+                    </div>
+                    <div class="cert-brand">Travsia Facilitação e Desenvolvimento</div>
+                    <div class="cert-title">Certificado de Conclusão</div>
+                    <div class="cert-recipient-label">Este certificado reconhece que</div>
+                    <div class="cert-recipient" id="cert-name-display">__________________________</div>
+                    <div class="cert-course">concluiu com sucesso</div>
+                    <div class="cert-course" style="font-size: 18px; margin-top: 6px;">Sem Pontos Cegos</div>
+                    <div class="cert-subtitle">Como líderes trabalham com vieses cognitivos para decidir melhor</div>
+                    <div class="cert-score-date">
+                        <span>
+                            <strong id="cert-score-display">–%</strong>
+                            Pontuação Final
+                        </span>
+                        <span>
+                            <strong id="cert-date-display">–</strong>
+                            Data de Conclusão
+                        </span>
+                    </div>
+                    <div style="width: 120px; height: 1px; background: var(--deep-green); margin: 0 auto 12px;"></div>
+                    <div class="cert-footer">Travsia Facilitação e Desenvolvimento · Formação em Liderança Consciente</div>
+                </div>
+                <div class="cert-actions">
+                    <button class="cert-btn cert-btn-primary" onclick="downloadCertificate()">⬇ Baixar Certificado PDF</button>
+                    <button class="cert-btn cert-btn-secondary" onclick="goHome()">← Início do Curso</button>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end screens-container -->
+
+    <!-- Bottom Navigation -->
+    <div id="bottom-nav">
+        <button class="btn btn-secondary" id="btn-prev" onclick="prevScreen()" disabled>← Anterior</button>
+        <span id="nav-progress" style="color: rgba(255,255,255,0.7); font-size: 13px;">1 / 6</span>
+        <button class="btn btn-primary" id="btn-next" onclick="nextScreen()">Iniciar Avaliação →</button>
+    </div>
+
+</div><!-- end app-container -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+    // ── State ─────────────────────────────────────────────────────────────────
+    const TOTAL = 6;
+    let currentScreen = 0;
+
+    // All answers: { 's1-1': 'b', 's1-2': 'a', ... }
+    let allAnswers = {};
+    let allCorrect = {}; // boolean per q
+
+    // Screen requirements
+    let screenRequirements = {0:true, 1:false, 2:false, 3:false, 4:true, 5:true};
+
+    // Q counters per scenario
+    let scenarioQ = {s1: 1, s2: 1, s3: 1};
+
+    // Correct answers
+    const CORRECT = {
+        's1-1':'b', 's1-2':'b', 's1-3':'c', 's1-4':'b', 's1-5':'b',
+        's2-1':'b', 's2-2':'b', 's2-3':'a', 's2-4':'b', 's2-5':'b',
+        's3-1':'b', 's3-2':'a', 's3-3':'c', 's3-4':'b', 's3-5':'d'
+    };
+
+    const FEEDBACK_TEXT = {
+        's1-1': {b:"Correto! Renato tornou-se a âncora cognitiva do processo — todos os candidatos subsequentes foram avaliados relativamente a ele, não por critérios independentes.", wrong:"Ancoragem é o viés central aqui — Renato estabeleceu o ponto de referência que distorceu a avaliação de todos os outros."},
+        's1-2': {b:"Correto! A escola compartilhada ativa Viés de Afinidade (endogrupo). O carisma de Renato ativa o Efeito Halo. Combinados, criam uma preferência fortíssima e difícil de questionar.", wrong:"A combinação de Efeito Halo (carisma) e Viés de Afinidade (escola compartilhada) cria a preferência mais poderosa e menos visível."},
+        's1-3': {c:"Correto! A CEO reiterar sua posição ativou Viés de Autoridade — a VP de RH recuou não por convicção, mas por pressão hierárquica. O silêncio coletivo resultante é Pensamento de Grupo.", wrong:"Viés de Autoridade (CEO reiterando posição) + Pensamento de Grupo (silêncio coletivo resultante) é a combinação que explica o recuo da VP de RH."},
+        's1-4': {b:"Correto! Uma rubrica de critérios pré-definidos, avaliados antes da calibração coletiva, teria anulado a ancoragem, o halo e a afinidade simultaneamente — tornando a avaliação baseada em evidências.", wrong:"A rubrica pré-definida é a intervenção estrutural mais poderosa porque redefine o que 'bom' significa — antes que os vieses contaminem a avaliação."},
+        's1-5': {b:"Correto! Dados concretos, apresentados sem confronto direto, abrem espaço para reconsideração sem ativar resistência defensiva. Esta é a intervenção mais eficaz.", wrong:"Apresentar dados concretos de forma não confrontadora (opção B) é a estratégia mais eficaz — abre reconsideração sem ativar resistência."},
+        's2-1': {b:"Correto! A Falácia do Custo Irrecuperável é exatamente isso: usar investimento passado (que não pode ser recuperado) como razão para continuar investindo no futuro.", wrong:"O 'não podemos jogar fora R$45M' é a definição clássica da Falácia do Custo Irrecuperável — o dinheiro passado não deveria influenciar decisões futuras."},
+        's2-2': {b:"Correto! 'Sempre fizemos assim' é a manifestação pura do Viés de Status Quo — preferência pela continuidade, independente dos dados que apontam para mudança.", wrong:"'Sempre fizemos assim' é Status Quo puro — preferência pelo presente sobre qualquer mudança, independente dos dados."},
+        's2-3': {a:"Correto! O Efeito Avestruz é exatamente isso — evitar compartilhar informações negativas que poderiam criar conflito. Guilherme tinha os dados mas os guardou por desconforto com o confronto.", wrong:"O Efeito Avestruz explica o silêncio de Guilherme — ignorar ou esconder dados negativos para evitar confronto desconfortável."},
+        's2-4': {b:"Correto! O Pré-Mortem força o grupo a assumir o fracasso do adiamento como dado — deslocando o debate do 'deveríamos tentar' para o 'o que acontece quando falhar'. Isso contorna o custo irrecuperável e o status quo.", wrong:"O Pré-Mortem é mais eficaz aqui porque força a imaginação do fracasso — contornando tanto o custo irrecuperável quanto o status quo simultaneamente."},
+        's2-5': {b:"Correto! Dados + estrutura formal para discordância + votação independente: esta combinação aborda groupthink, custo irrecuperável e status quo com uma única intervenção integrada.", wrong:"A opção B combina múltiplas estratégias de mitigação (dados, advocatus diaboli, votação independente) para endereçar todos os vieses presentes."},
+        's3-1': {b:"Correto! Marcos valoriza seu próprio julgamento acima do de Lara (Excesso de Confiança) e trata como menos válido quem não pertence ao 'grupo' dos veteranos (Viés de Endogrupo).", wrong:"Viés de Endogrupo (favorece veteranos) combinado com Excesso de Confiança (no próprio julgamento) explica o comportamento de Marcos."},
+        's3-2': {a:"Correto! O Efeito Halo: 'Marcos entrega sempre' contaminou a avaliação do comportamento interpessoal de Marcos. Alta performance técnica ≠ comportamento interpessoal adequado.", wrong:"Efeito Halo — o excelente desempenho técnico de Marcos contaminou a percepção de Henrique sobre seu comportamento interpessoal."},
+        's3-3': {c:"Correto! A norma baseada em mérito técnico é um Auxiliar de Decisão (rubrica de avaliação). Feedback consistente e estruturado é Norma de Feedback. Tatiana usou ambos.", wrong:"Tatiana usou Auxiliar de Decisão (critério de mérito técnico) e Norma de Feedback (estrutura consistente para avaliação de propostas)."},
+        's3-4': {b:"Correto! Tatiana não pediu comportamento diferente — ela mudou a estrutura. Agora é mais difícil para qualquer pessoa (incluindo Marcos) exercer viés, porque as regras do jogo mudaram.", wrong:"Tatiana mudou a estrutura — criando critérios que tornam o viés mais difícil de exercer. Pedir comportamento diferente sem mudar estrutura raramente funciona."},
+        's3-5': {d:"Correto! A honestidade de reconhecer que todos os padrões são possíveis — e que sem feedback estruturado é impossível saber qual predomina — é tanto a resposta mais intelectualmente honesta quanto a que mais motiva ação.", wrong:"Todas as anteriores são possíveis, e sem mecanismo de feedback estruturado é impossível saber qual predomina — esta é a resposta mais honesta e mais útil."}
+    };
+
+    const Q_LABELS = {
+        's1-1': 'C1-Q1: Ancoragem no processo', 's1-2': 'C1-Q2: Halo + Afinidade', 's1-3': 'C1-Q3: Autoridade + Groupthink',
+        's1-4': 'C1-Q4: Intervenção estrutural', 's1-5': 'C1-Q5: Intervenção como consultor',
+        's2-1': 'C2-Q1: Custo Irrecuperável', 's2-2': 'C2-Q2: Status Quo', 's2-3': 'C2-Q3: Efeito Avestruz',
+        's2-4': 'C2-Q4: Estratégia de mitigação', 's2-5': 'C2-Q5: Intervenção como CEO',
+        's3-1': 'C3-Q1: Endogrupo + Excesso Confiança', 's3-2': 'C3-Q2: Efeito Halo (Henrique)', 's3-3': 'C3-Q3: Estratégia de Tatiana',
+        's3-4': 'C3-Q4: Por que Tatiana foi eficaz', 's3-5': 'C3-Q5: Reflexão pessoal'
+    };
+
+    const REVIEW_MODULES = {
+        's1-1': 'M2 (Ancoragem)', 's1-2': 'M3 (Halo, Afinidade)', 's1-3': 'M4 (Autoridade, Groupthink)',
+        's1-4': 'M5 (Auxiliares de Decisão)', 's1-5': 'M5 (Intervenção prática)',
+        's2-1': 'M2 (Custo Irrecuperável)', 's2-2': 'M2 (Status Quo)', 's2-3': 'M3 (Efeito Avestruz)',
+        's2-4': 'M5 (Pré-Mortem)', 's2-5': 'M5 (Advocatus Diaboli)',
+        's3-1': 'M3 (Endogrupo, Excesso de Confiança)', 's3-2': 'M3 (Efeito Halo)', 's3-3': 'M5 (Estratégias Culturais)',
+        's3-4': 'M5 (Mudança Estrutural)', 's3-5': 'M5 (Reflexão aplicada)'
+    };
+
+    // ── Navigation ────────────────────────────────────────────────────────────
+    function showScreen(index) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const screen = document.getElementById('screen-' + index);
+        if (screen) screen.classList.add('active');
+        // No scrollTop reset — per-screen scroll context handles it automatically
+        if (index === 4) buildResults();
+        if (index === 5) buildCertificate();
+        updateTopBar();
+        updateBottomNav();
+    }
+
+    function updateTopBar() {
+        const answered = Object.keys(allAnswers).length;
+        document.getElementById('progressLabel').textContent = `Questão ${answered} de 15`;
+        document.getElementById('progressFill').style.width = (answered / 15 * 100) + '%';
+    }
+
+    function updateBottomNav() {
+        document.getElementById('btn-prev').disabled = currentScreen === 0;
+        document.getElementById('nav-progress').textContent = `${currentScreen + 1} / ${TOTAL}`;
+        const btn = document.getElementById('btn-next');
+        if (currentScreen === 0) {
+            btn.textContent = 'Iniciar Avaliação →';
+            btn.disabled = false;
+        } else if (currentScreen === TOTAL - 1) {
+            btn.textContent = 'Início';
+            btn.disabled = false;
+        } else if (currentScreen === 4) {
+            btn.textContent = 'Ver Certificado →';
+            btn.disabled = false;
+        } else {
+            btn.textContent = 'Próximo →';
+            btn.disabled = !screenRequirements[currentScreen];
+        }
+    }
+
+    function nextScreen() {
+        if (currentScreen === TOTAL - 1) { goHome(); return; }
+        if (currentScreen < TOTAL - 1) {
+            currentScreen++;
+            showScreen(currentScreen);
+        }
+    }
+
+    function prevScreen() {
+        if (currentScreen > 0) { currentScreen--; showScreen(currentScreen); }
+    }
+
+    function goHome() { currentScreen = 0; showScreen(0); }
+
+    // ── Answering Questions ───────────────────────────────────────────────────
+    function answerQ(scenario, qNum, choice, el) {
+        const key = scenario + '-' + qNum;
+        if (allAnswers[key]) return;
+        allAnswers[key] = choice;
+        const correct = CORRECT[key];
+        const isCorrect = choice === correct;
+        allCorrect[key] = isCorrect;
+
+        // Style options
+        el.closest('.question-block').querySelectorAll('.q-option').forEach(o => o.classList.add('disabled'));
+        el.classList.add(isCorrect ? 'correct' : 'wrong');
+        if (!isCorrect) {
+            el.closest('.question-block').querySelectorAll('.q-option').forEach(o => {
+                if (o.textContent.trim().startsWith(correct.toUpperCase() + ')')) o.classList.add('correct');
+            });
+        }
+
+        // Show feedback
+        const fbData = FEEDBACK_TEXT[key];
+        const fbEl = document.getElementById(scenario + '-fb' + qNum);
+        fbEl.textContent = isCorrect ? '✅ ' + fbData[correct] : '❌ ' + fbData.wrong;
+        fbEl.classList.add('show', isCorrect ? 'correct' : 'wrong');
+
+        // Advance to next question
+        const nextQ = qNum + 1;
+        if (nextQ <= 5) {
+            setTimeout(() => {
+                document.getElementById(scenario + '-q' + qNum).style.display = 'none';
+                document.getElementById(scenario + '-q' + nextQ).style.display = 'block';
+            }, 3500);
+        } else {
+            // All 5 answered — unlock next screen
+            screenRequirements[currentScreen] = true;
+            setTimeout(() => { updateBottomNav(); }, 1800);
+        }
+        updateTopBar();
+    }
+
+    function branchQ(scenario, qNum, choice, el) {
+        const key = scenario + '-' + qNum;
+        if (allAnswers[key]) return;
+        allAnswers[key] = choice;
+        const correct = CORRECT[key];
+        const isCorrect = choice === correct;
+        allCorrect[key] = isCorrect;
+
+        el.closest('.question-block').querySelectorAll('.q-option').forEach(o => o.classList.add('disabled'));
+        el.classList.add(isCorrect ? 'correct' : 'wrong');
+
+        // Show branch result
+        const brEl = document.getElementById(scenario + '-br' + qNum + '-' + choice);
+        if (brEl) brEl.classList.add('show');
+
+        const fbEl = document.getElementById(scenario + '-fb' + qNum);
+        fbEl.textContent = isCorrect ? '✅ ' + FEEDBACK_TEXT[key][correct] : '❌ ' + FEEDBACK_TEXT[key].wrong;
+        fbEl.classList.add('show', isCorrect ? 'correct' : 'wrong');
+
+        screenRequirements[currentScreen] = true;
+        setTimeout(() => { updateBottomNav(); }, 1800);
+        updateTopBar();
+    }
+
+    // ── Results ────────────────────────────────────────────────────────────────
+    function buildResults() {
+        const keys = Object.keys(CORRECT);
+        const total = keys.length;
+        let totalCorrect = 0;
+        let s1c = 0, s2c = 0, s3c = 0;
+
+        keys.forEach(k => {
+            if (allCorrect[k]) {
+                totalCorrect++;
+                if (k.startsWith('s1')) s1c++;
+                if (k.startsWith('s2')) s2c++;
+                if (k.startsWith('s3')) s3c++;
+            }
+        });
+
+        const pct = Math.round(totalCorrect / total * 100);
+        const pass = pct >= 70;
+
+        // Score ring
+        const ring = document.getElementById('results-ring');
+        ring.className = 'score-ring ' + (pass ? 'pass' : 'fail');
+        document.getElementById('results-score').textContent = totalCorrect + '/15';
+        document.getElementById('results-pct').textContent = pct + '%';
+
+        const statusEl = document.getElementById('results-status');
+        statusEl.textContent = pass ? '✅ Aprovado(a)!' : '⚠️ Revisão Recomendada';
+        statusEl.className = 'result-status ' + (pass ? 'pass' : 'fail');
+
+        document.getElementById('results-message').textContent = pass
+            ? `Parabéns! Você demonstrou domínio aplicado de vieses cognitivos e estratégias de mitigação. Sua pontuação de ${pct}% supera a nota mínima de 70%.`
+            : `Você obteve ${pct}% — a nota mínima é 70% (11/15). Revise os módulos indicados abaixo e tente novamente.`;
+
+        // Breakdown
+        const colorClass = n => n >= 4 ? 'good' : n >= 3 ? 'ok' : 'bad';
+        document.getElementById('br-s1').textContent = s1c + '/5';
+        document.getElementById('br-s1').className = 'breakdown-score ' + colorClass(s1c);
+        document.getElementById('br-s2').textContent = s2c + '/5';
+        document.getElementById('br-s2').className = 'breakdown-score ' + colorClass(s2c);
+        document.getElementById('br-s3').textContent = s3c + '/5';
+        document.getElementById('br-s3').className = 'breakdown-score ' + colorClass(s3c);
+
+        // Detail items
+        const detailContainer = document.getElementById('detail-items');
+        detailContainer.innerHTML = '';
+        keys.forEach(k => {
+            const isC = allCorrect[k];
+            const div = document.createElement('div');
+            div.className = 'detail-item';
+            div.innerHTML = `<div class="di-q">${Q_LABELS[k] || k}</div><div class="di-status ${isC ? 'correct' : 'wrong'}">${isC ? '✅ Correto' : '❌ Incorreto'}</div>`;
+            detailContainer.appendChild(div);
+        });
+
+        // Review links
+        if (!pass) {
+            const wrongKeys = keys.filter(k => !allCorrect[k]);
+            const modules = [...new Set(wrongKeys.map(k => REVIEW_MODULES[k]))];
+            document.getElementById('review-links').style.display = 'block';
+            document.getElementById('review-text').textContent = 'Baseado nas suas respostas, recomendamos revisar: ' + modules.join(', ') + '.';
+        }
+
+        // Store for certificate
+        try {
+            localStorage.setItem('spc_fa_score', pct);
+            localStorage.setItem('spc_fa_pass', pass ? '1' : '0');
+        } catch(e) {}
+    }
+
+    // ── Certificate ────────────────────────────────────────────────────────────
+    function buildCertificate() {
+        let pct = 0;
+        try { pct = parseInt(localStorage.getItem('spc_fa_score')) || 0; } catch(e) {}
+        const pass = pct >= 70;
+
+        if (!pass) {
+            document.getElementById('cert-blocked').style.display = 'block';
+            document.getElementById('cert-content').style.display = 'none';
+        } else {
+            document.getElementById('cert-blocked').style.display = 'none';
+            document.getElementById('cert-content').style.display = 'block';
+            document.getElementById('cert-score-display').textContent = pct + '%';
+            document.getElementById('cert-date-display').textContent = new Date().toLocaleDateString('pt-BR');
+        }
+    }
+
+    function updateCertName() {
+        const name = document.getElementById('cert-name').value || '__________________________';
+        document.getElementById('cert-name-display').textContent = name;
+    }
+
+    async function downloadCertificate() {
+        try {
+            const { jsPDF } = window.jspdf;
+            const name = document.getElementById('cert-name').value || 'Participante';
+            let pct = 0;
+            try { pct = parseInt(localStorage.getItem('spc_fa_score')) || 0; } catch(e) {}
+            const dateStr = new Date().toLocaleDateString('pt-BR');
+
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const w = 297; const h = 210;
+
+            // Background
+            doc.setFillColor(0, 38, 16);
+            doc.rect(0, 0, w, h, 'F');
+            doc.setFillColor(245, 245, 245);
+            doc.roundedRect(12, 12, w - 24, h - 24, 4, 4, 'F');
+            doc.setFillColor(0, 38, 16);
+            doc.roundedRect(18, 18, w - 36, h - 36, 3, 3, 'S');
+
+            // Green accent line top
+            doc.setFillColor(77, 246, 0);
+            doc.rect(12, 12, w - 24, 3, 'F');
+
+            // Logo (SVG rendered to canvas then added as image)
+            const svgLogoStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.16 114.38"><path fill="#4DF600" d="M80.95,49.16c13.59,12.49,27.32,24.83,41.01,37.21,1.71-2.52,3.25-5.17,4.59-7.93-13.23-12.52-26.84-24.66-40.54-36.67-11.31-9.92-21.92-9.62-33.1.41-13.3,11.93-26.23,24.3-39.81,35.89,1.34,2.82,2.89,5.52,4.62,8.09,13.73-12.39,27.46-24.78,41.13-37.24,7.59-6.92,14.41-6.83,22.12.25Z"/><path fill="#4DF600" d="M56.92,20.51c8.24-4.87,16.3-5.35,24.64-.48,12.87,7.52,25.76,15,38.67,22.46,4.05,2.34,8.15,4.59,12.57,7.06-.09-3.94-.55-7.79-1.33-11.52-.69-.56-31.47-18.24-45.95-26.61-9.9-5.72-20.15-6.3-30.13-.8-14.57,8.03-46.01,26.35-47,27.22-.8,3.73-1.27,7.59-1.37,11.53.28-.12.54-.24.79-.38,16.39-9.47,32.83-18.86,49.13-28.49Z"/><path fill="#4DF600" d="M81.84,70.14c-6.01-8.23-19.13-8.13-24.57.09-7.27,10.97-14.02,22.3-21.15,33.89,2.58,1.64,5.28,3.1,8.09,4.36,1.2-1.51,14.61-23.59,19.71-31.88,3.28-5.34,8.32-5.41,11.49-.17,5.3,8.75,18.72,30.78,19.74,32.23,2.83-1.24,5.55-2.69,8.15-4.32-1.85-3.03-3.69-6.06-5.56-9.05-5.24-8.42-10.06-17.16-15.89-25.15Z"/></svg>`;
+            try {
+                const logoCanvas = document.createElement('canvas');
+                logoCanvas.width = 276; logoCanvas.height = 228;
+                const logoCtx = logoCanvas.getContext('2d');
+                const logoImg = new Image();
+                const logoBlob = new Blob([svgLogoStr], { type: 'image/svg+xml' });
+                const logoUrl = URL.createObjectURL(logoBlob);
+                await new Promise((res, rej) => { logoImg.onload = res; logoImg.onerror = rej; logoImg.src = logoUrl; });
+                logoCtx.drawImage(logoImg, 0, 0, 276, 228);
+                URL.revokeObjectURL(logoUrl);
+                const logoDataUrl = logoCanvas.toDataURL('image/png');
+                doc.addImage(logoDataUrl, 'PNG', (w - 22) / 2, 17, 22, 18);
+            } catch(logoErr) {}
+
+            // Brand
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(0, 122, 64);
+            doc.text('TRAVSIA FACILITAÇÃO E DESENVOLVIMENTO', w / 2, 42, { align: 'center' });
+
+            // Title
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text('CERTIFICADO DE CONCLUSÃO', w / 2, 54, { align: 'center' });
+
+            // "Este certificado reconhece que"
+            doc.setFontSize(12);
+            doc.setTextColor(80, 80, 80);
+            doc.text('Este certificado reconhece que', w / 2, 68, { align: 'center' });
+
+            // Name
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(28);
+            doc.setTextColor(0, 38, 16);
+            doc.text(name, w / 2, 88, { align: 'center' });
+
+            // Underline name
+            doc.setDrawColor(0, 122, 64);
+            doc.setLineWidth(0.5);
+            const nameWidth = doc.getTextWidth(name);
+            doc.line((w - nameWidth) / 2, 91, (w + nameWidth) / 2, 91);
+
+            // Course
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.setTextColor(80, 80, 80);
+            doc.text('concluiu com sucesso', w / 2, 103, { align: 'center' });
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.setTextColor(0, 38, 16);
+            doc.text('Sem Pontos Cegos', w / 2, 114, { align: 'center' });
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(11);
+            doc.setTextColor(80, 80, 80);
+            doc.text('Como líderes trabalham com vieses cognitivos para decidir melhor', w / 2, 123, { align: 'center' });
+
+            // Score and date
+            doc.setFontSize(11);
+            doc.setTextColor(0, 38, 16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Pontuação: ' + pct + '%', w / 2 - 40, 140, { align: 'center' });
+            doc.text('Data: ' + dateStr, w / 2 + 40, 140, { align: 'center' });
+
+            // Divider
+            doc.setDrawColor(0, 38, 16);
+            doc.setLineWidth(0.3);
+            doc.line(w / 2 - 40, 147, w / 2 + 40, 147);
+
+            // Footer
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(140, 140, 140);
+            doc.text('Travsia Facilitação e Desenvolvimento · Formação em Liderança Consciente', w / 2, 155, { align: 'center' });
+
+            // Green bottom accent
+            doc.setFillColor(77, 246, 0);
+            doc.rect(12, h - 15, w - 24, 3, 'F');
+
+            doc.save('certificado-sem-pontos-cegos.pdf');
+        } catch(e) {
+            alert('Para baixar o certificado, certifique-se de estar online para carregar a biblioteca jsPDF.');
+        }
+    }
+
+    function retakeAssessment() {
+        allAnswers = {};
+        allCorrect = {};
+        screenRequirements = {0:true, 1:false, 2:false, 3:false, 4:true, 5:true};
+        currentScreen = 0;
+        // Reset all question blocks
+        ['s1','s2','s3'].forEach(s => {
+            for (let i = 1; i <= 5; i++) {
+                const qEl = document.getElementById(s + '-q' + i);
+                if (qEl) {
+                    qEl.style.display = i === 1 ? 'block' : 'none';
+                    qEl.querySelectorAll('.q-option').forEach(o => o.className = 'q-option');
+                    const fb = document.getElementById(s + '-fb' + i);
+                    if (fb) { fb.textContent = ''; fb.className = 'q-feedback'; }
+                    ['a','b','c','d'].forEach(c => {
+                        const br = document.getElementById(s + '-br' + i + '-' + c);
+                        if (br) br.classList.remove('show');
+                    });
+                }
+            }
+        });
+        showScreen(0);
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    showScreen(0);
+</script>
+</body>
+</html>
