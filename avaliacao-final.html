@@ -55,6 +55,7 @@
         .top-bar-right { font-size: 14px; text-align: right; min-width: 150px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
         .fullscreen-btn { background: none; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 6px; color: white; cursor: pointer; padding: 4px 8px; font-size: 16px; line-height: 1; transition: background 0.2s; flex-shrink: 0; }
         .fullscreen-btn:hover { background: rgba(255,255,255,0.15); }
+        .app-container.ios-fs { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; z-index: 99998 !important; }
         #progressBar { width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 4px auto 0; overflow: hidden; }
         #progressFill { height: 100%; background: var(--neon-green); width: 0%; transition: width 0.3s ease; border-radius: 2px; }
 
@@ -117,7 +118,7 @@
         @media (max-width: 480px) { .scenario-imgs img { height: 40px; width: 40px; } }
         .candidates-panel { display: flex; gap: 24px; justify-content: center; margin: 0 0 16px; background: white; border-radius: 8px; padding: 16px 20px; }
         .candidate-card { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .candidate-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--neon-green); background: #f0f0f0; }
+        .candidate-card img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--neon-green); background: #f0f0f0; }
         .candidate-name { font-size: 12px; color: #444; font-weight: 600; text-align: center; }
         .scenario-img-panel { display: flex; justify-content: center; margin: 0 0 16px; background: white; border-radius: 8px; padding: 12px 20px; }
         .scenario-body { background: white; border-radius: 10px; padding: 24px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
@@ -289,7 +290,7 @@
                 <p>A Vebraco Industrial, empresa de médio porte do setor de manufatura em Campinas, está selecionando um novo Diretor de Operações. O processo foi delegado a um comitê de cinco pessoas: a CEO Fernanda Lins, o CFO Marco Augusto, a VP de RH Cláudia Torres, o Diretor Comercial Roberto Menezes e um consultor externo de RH.</p>
                 <p>Desde o início, Fernanda demonstrou forte preferência por Renato Souza, o primeiro candidato a ser entrevistado. Renato é carismático, frequentou a mesma pós-graduação que a CEO, e tem histórico de resultados em uma empresa menor. Sua apresentação foi energizante.</p>
                 <p>Ao longo de três semanas e doze entrevistas, o campo se estreita. Uma candidata, Beatriz Novais, tem histórico operacional mais consistente, referências impecáveis de empresas de escala comparável, e resultados quantitativos superiores nos testes técnicos. Mas é percebida como "menos dinâmica" pelos membros do comitê que entrevistaram Renato primeiro.</p>
-                <p>Na reunião final de calibração, Fernanda abre com: "Sinto que Renato tem o que a empresa precisa neste momento. Gostei da energia que ele traz." O CFO e o Diretor Comercial concordam rapidamente. A VP de RH esboça uma objeção: "e os dados do assessment técnico?" — mas recua quando a CEO reitera sua posição. O consultor externo anota algo e permanece em silêncio.</p>
+                <p>Na reunião final de calibração, Fernanda abre com: "Sinto que Renato tem o que a empresa precisa neste momento. Gostei da energia que ele traz." O CFO e o Diretor Comercial concordam rapidamente. A VP de RH esboça uma objeção: "e os dados da avaliação técnica?" — mas recua quando a CEO reitera sua posição. O consultor externo anota algo e permanece em silêncio.</p>
                 <div class="context-detail">
                     <strong>Resultado:</strong> Renato é selecionado. Seis meses depois, marcos operacionais críticos são perdidos. A VP de RH descobre que o consultor externo havia preparado uma análise comparativa mostrando Beatriz 40% à frente em critérios técnicos, mas não a compartilhou por não querer "contrariar o cliente".
                 </div>
@@ -385,7 +386,7 @@
                 </div>
             </div>
             <div class="scenario-img-panel">
-                <img src="assets/Consuma Brasil,.png" alt="Consuma Brasil" title="Consuma Brasil" style="border-radius: 8px; max-height: 80px; object-fit: contain; border: 2px solid var(--neon-green); background: #f0f0f0; padding: 4px;">
+                <img src="assets/cenario-2.jpg" alt="Consuma Brasil" title="Consuma Brasil" style="border-radius: 8px; max-height: 80px; object-fit: contain; border: 2px solid var(--neon-green); background: #f0f0f0; padding: 4px;">
             </div>
             <div class="scenario-body">
                 <h3>Contexto</h3>
@@ -488,7 +489,7 @@
                 </div>
             </div>
             <div class="scenario-img-panel">
-                <img src="assets/Marcos e Lara.png" alt="Marcos e Lara" title="Marcos e Lara" style="border-radius: 8px; max-height: 80px; object-fit: contain; border: 2px solid var(--neon-green); background: #f0f0f0; padding: 4px;">
+                <img src="assets/cenario-3.jpg" alt="Marcos e Lara" title="Marcos e Lara" style="border-radius: 8px; max-height: 80px; object-fit: contain; border: 2px solid var(--neon-green); background: #f0f0f0; padding: 4px;">
             </div>
             <div class="scenario-body">
                 <h3>Contexto</h3>
@@ -647,7 +648,7 @@
                     <div class="cert-recipient" id="cert-name-display">__________________________</div>
                     <div class="cert-course">concluiu com sucesso</div>
                     <div class="cert-course" style="font-size: 18px; margin-top: 6px;">Sem Pontos Cegos</div>
-                    <div class="cert-subtitle">Como líderes trabalham com vieses cognitivos para decidir melhor</div>
+                    <div class="cert-subtitle">Domine a Ciência da Mente para Decidir e Persuadir</div>
                     <div class="cert-score-date">
                         <span>
                             <strong id="cert-score-display">–%</strong>
@@ -1024,7 +1025,7 @@
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(11);
             doc.setTextColor(80, 80, 80);
-            doc.text('Como líderes trabalham com vieses cognitivos para decidir melhor', w / 2, 123, { align: 'center' });
+            doc.text('Domine a Ciência da Mente para Decidir e Persuadir', w / 2, 123, { align: 'center' });
 
             // Score and date
             doc.setFontSize(11);
@@ -1083,6 +1084,20 @@
 
         function toggleFullscreen() {
             var btn = document.querySelector('.fullscreen-btn');
+            var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isIOS) {
+                var container = document.querySelector('.app-container');
+                if (container.classList.contains('ios-fs')) {
+                    container.classList.remove('ios-fs');
+                    btn.textContent = '⛶';
+                    btn.title = 'Tela cheia';
+                } else {
+                    container.classList.add('ios-fs');
+                    btn.textContent = '✕';
+                    btn.title = 'Sair da tela cheia';
+                }
+                return;
+            }
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(function(){});
                 btn.textContent = '✕';

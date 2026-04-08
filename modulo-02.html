@@ -102,6 +102,7 @@
             flex-shrink: 0;
         }
         .fullscreen-btn:hover { background: rgba(255,255,255,0.15); }
+        .app-container.ios-fs { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; z-index: 99998 !important; }
 
         #progressBar {
             width: 200px;
@@ -1885,6 +1886,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.16 114.38" height="28" style="flex-shrink:0;">
                     <path fill="#4DF600" d="M80.95,49.16c13.59,12.49,27.32,24.83,41.01,37.21,1.71-2.52,3.25-5.17,4.59-7.93-13.23-12.52-26.84-24.66-40.54-36.67-11.31-9.92-21.92-9.62-33.1.41-13.3,11.93-26.23,24.3-39.81,35.89,1.34,2.82,2.89,5.52,4.62,8.09,13.73-12.39,27.46-24.78,41.13-37.24,7.59-6.92,14.41-6.83,22.12.25Z"/>
                     <path fill="#4DF600" d="M56.92,20.51c8.24-4.87,16.3-5.35,24.64-.48,12.87,7.52,25.76,15,38.67,22.46,4.05,2.34,8.15,4.59,12.57,7.06-.09-3.94-.55-7.79-1.33-11.52-.69-.56-31.47-18.24-45.95-26.61-9.9-5.72-20.15-6.3-30.13-.8-14.57,8.03-46.01,26.35-47,27.22-.8,3.73-1.27,7.59-1.37,11.53.28-.12.54-.24.79-.38,16.39-9.47,32.83-18.86,49.13-28.49Z"/>
+                    <path fill="#4DF600" d="M81.84,70.14c-6.01-8.23-19.13-8.13-24.57.09-7.27,10.97-14.02,22.3-21.15,33.89,2.58,1.64,5.28,3.1,8.09,4.36,1.2-1.51,14.61-23.59,19.71-31.88,3.28-5.34,8.32-5.41,11.49-.17,5.3,8.75,18.72,30.78,19.74,32.23,2.83-1.24,5.55-2.69,8.15-4.32-1.85-3.03-3.69-6.06-5.56-9.05-5.24-8.42-10.06-17.16-15.89-25.15Z"/>
                 </svg>
                 Sem Pontos Cegos
             </div>
@@ -2680,6 +2682,7 @@
                         <p>Qual dos 9 vieses deste módulo se sente mais presente no seu contexto de liderança atual? Em que tipo de decisão você o reconhece?</p>
                         <p style="margin-top: 20px; font-size: 13px; color: #888;">Use a Seção 2 do seu diário para explorar isso antes de continuar.</p>
                         <a href="assets/diario-de-aprendizagem.pdf" target="_blank" style="display: inline-block; margin-top: 12px; background: #006A36; color: white; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">📓 Abrir Diário de Aprendizagem</a>
+                        <a href="assets/diario-de-aprendizagem.docx" download style="display: inline-block; margin-top: 12px; margin-left: 8px; background: #002610; color: #4DF600; border: 1.5px solid #4DF600; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">📄 Baixar como Word</a>
                     </div>
                     <div class="summary-layout">
                         <h2>📚 O que você explorou neste módulo</h2>
@@ -3549,6 +3552,20 @@ function showPlanningVizAndComplete() {
     
         function toggleFullscreen() {
             var btn = document.querySelector('.fullscreen-btn');
+            var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isIOS) {
+                var container = document.querySelector('.app-container');
+                if (container.classList.contains('ios-fs')) {
+                    container.classList.remove('ios-fs');
+                    btn.textContent = '⛶';
+                    btn.title = 'Tela cheia';
+                } else {
+                    container.classList.add('ios-fs');
+                    btn.textContent = '✕';
+                    btn.title = 'Sair da tela cheia';
+                }
+                return;
+            }
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(function(){});
                 btn.textContent = '✕';

@@ -16,6 +16,20 @@
     
         function toggleFullscreen() {
             var btn = document.querySelector('.fullscreen-btn');
+            var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isIOS) {
+                var container = document.querySelector('.app-container');
+                if (container.classList.contains('ios-fs')) {
+                    container.classList.remove('ios-fs');
+                    btn.textContent = '⛶';
+                    btn.title = 'Tela cheia';
+                } else {
+                    container.classList.add('ios-fs');
+                    btn.textContent = '✕';
+                    btn.title = 'Sair da tela cheia';
+                }
+                return;
+            }
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(function(){});
                 btn.textContent = '✕';
@@ -76,6 +90,7 @@
         .top-bar-right { font-size: 14px; text-align: right; min-width: 150px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
         .fullscreen-btn { background: none; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 6px; color: white; cursor: pointer; padding: 4px 8px; font-size: 16px; line-height: 1; transition: background 0.2s; flex-shrink: 0; }
         .fullscreen-btn:hover { background: rgba(255,255,255,0.15); }
+        .app-container.ios-fs { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; z-index: 99998 !important; }
         #progressBar { width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 4px auto 0; overflow: hidden; }
         #progressFill { height: 100%; background: var(--neon-green); width: 0%; transition: width 0.3s ease; border-radius: 2px; }
         #screenCounter { font-size: 13px; }
@@ -265,7 +280,7 @@
         /* Journey Map (M5-13) */
         .journey-map { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: nowrap; margin: 24px 0; padding: 20px; background: white; border-radius: 10px; overflow-x: auto; }
         .journey-node { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .journey-circle { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: white; transition: all 0.4s; }
+        .journey-circle { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: white; transition: all 0.4s; }
         .journey-circle.lit { background: var(--accent); box-shadow: 0 0 12px rgba(0,122,64,0.4); }
         .journey-circle.dim { background: #ccc; }
         .journey-label { font-size: 10px; color: #666; text-align: center; max-width: 60px; line-height: 1.3; }
@@ -334,7 +349,7 @@
             <div class="banner">
                 <div class="time-badge">⏱ 40–45 minutos</div>
                 <h1>Módulo 5: Liderando com Clareza</h1>
-                <div class="subtitle">Estratégias de Mitigação de Vieses</div>
+                <div class="subtitle">Sistemas e Processos para Reduzir Erros nas Decisões Organizacionais</div>
                 <div class="hook">"A consciência individual é o começo; a sistêmica, a solução."</div>
             </div>
             <div style="background: white; border-radius: 10px; padding: 24px; margin-top: 24px;">
@@ -631,7 +646,7 @@
                     <button class="repair-btn" id="repair7-btn" onclick="showRepairResult(7)" disabled>Ver Processo Reparado</button>
                     <div class="repair-result" id="repair7-result">
                         <strong style="color: var(--accent);">✅ Processo Reparado:</strong>
-                        <p style="margin-top: 8px; color: #333; line-height: 1.6;">Com as estratégias selecionadas, o diretor designa um membro para apresentar todos os casos negativos primeiro (Advocatus Diaboli). A equipe usa uma rubrica de critérios pré-definidos (Auxiliar de Decisão) para avaliar cada mercado independentemente. Um consultor externo fornece benchmarks do setor (Visão Externa). A decisão final considera tanto os casos positivos quanto os negativos — e a expansão é aprovada com plano de mitigação de riscos, não por unanimidade acrítica.</p>
+                        <p style="margin-top: 8px; color: #333; line-height: 1.6;">O diretor designa um membro para apresentar todos os casos negativos primeiro (Advocatus Diaboli). A equipe usa uma rubrica de critérios pré-definidos (Auxiliar de Decisão) para avaliar cada mercado independentemente. Um consultor externo fornece benchmarks do setor (Visão Externa). A decisão final considera tanto os casos positivos quanto os negativos — e a expansão é aprovada com plano de mitigação de riscos, não por unanimidade acrítica.</p>
                     </div>
                 </div>
             </div>
@@ -666,7 +681,7 @@
                     <button class="repair-btn" id="repair8-btn" onclick="showRepairResult(8)" disabled>Ver Processo Reparado</button>
                     <div class="repair-result" id="repair8-result">
                         <strong style="color: var(--accent);">✅ Processo Reparado:</strong>
-                        <p style="margin-top: 8px; color: #333; line-height: 1.6;">Com as estratégias selecionadas, o comitê usa uma rubrica de 8 critérios objetivos (Auxiliar de Decisão) para avaliar cada candidato independentemente, antes de qualquer discussão coletiva. As avaliações são compiladas anonimamente. Um membro de RH de outro departamento (Insumos Diversificados) revisa o shortlist. A candidata com histórico consistente aparece no topo em 6 dos 8 critérios. A decisão é baseada em evidências, não em impressão.</p>
+                        <p style="margin-top: 8px; color: #333; line-height: 1.6;">O comitê usa uma rubrica de 8 critérios objetivos (Auxiliar de Decisão) para avaliar cada candidato independentemente, antes de qualquer discussão coletiva. As avaliações são compiladas anonimamente. Um membro de RH de outro departamento (Insumos Diversificados) revisa o shortlist. A candidata com histórico consistente aparece no topo em 6 dos 8 critérios. A decisão é baseada em evidências, não em impressão.</p>
                     </div>
                 </div>
             </div>
@@ -741,8 +756,8 @@
         <div class="screen" id="screen-11">
             <div class="section-header">📖 Construtor de Plano de Ação</div>
             <div class="diary-card">
-                <h3>🎯 Construa Seu Plano de Ação de Liderança Consciente de Vieses</h3>
-                <p style="font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 16px;">Use a <strong>Parte B do Módulo 5</strong> no seu diário. Complete o modelo de plano de ação de três vieses.</p>
+                <h3>🎯 Construa Seu Plano de Ação para Liderança Consciente</h3>
+                <p style="font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 16px;">Use a <strong>Parte B do Módulo 5</strong> no seu diário. Complete o modelo de plano de ação para uma liderança consciente de três vieses.</p>
                 <p style="font-size: 14px; color: var(--accent); font-weight: 600; line-height: 1.6; margin-bottom: 8px;">"Este é o output mais importante do curso. Comprometa-se com três mudanças específicas — por escrito."</p>
                 <p style="font-size: 14px; color: #777; font-style: italic;">"Seu plano é seu. Ninguém mais o vê. Seja honesto."</p>
             </div>
@@ -764,7 +779,8 @@
             </div>
             <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 16px;">
                 <button class="diary-dl-btn" onclick="downloadActionPlan()">⬇ Baixar Modelo do Plano de Ação</button>
-                <a href="assets/diario-de-aprendizagem.pdf" target="_blank" style="background: #002610; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;">📓 Diário de Aprendizagem Completo</a>
+                <a href="assets/diario-de-aprendizagem.pdf" target="_blank" style="background: #002610; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;">📓 Diário de Aprendizagem</a>
+                <a href="assets/diario-de-aprendizagem.docx" download style="background: #002610; color: #4DF600; border: 1.5px solid #4DF600; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block; margin-left: 8px;">📄 Baixar como Word</a>
             </div>
             <div class="diary-checkbox-row">
                 <input type="checkbox" id="plan-check" onchange="planChecked()">
@@ -785,7 +801,7 @@
                 <div class="q-text">Q1: Em uma negociação, a ancoragem faz com que a primeira oferta distorça todo o processo. Qual estratégia aborda isso mais diretamente?</div>
                 <div class="kc-options">
                     <div class="kc-option" onclick="answerKC(1, 'a', this)">A) Cultivar Segurança Psicológica</div>
-                    <div class="kc-option" onclick="answerKC(1, 'b', this)">B) Visão Externa — pesquisar referências de mercado antes da primeira oferta</div>
+                    <div class="kc-option" onclick="answerKC(1, 'b', this)">B) Visão Externa</div>
                     <div class="kc-option" onclick="answerKC(1, 'c', this)">C) Ajustar Padrões (Defaults)</div>
                     <div class="kc-option" onclick="answerKC(1, 'd', this)">D) Análise Pré-Mortem</div>
                 </div>
@@ -798,7 +814,7 @@
                 <div class="kc-options">
                     <div class="kc-option" onclick="answerKC(2, 'a', this)">A) Reduzir Conjuntos de Escolha</div>
                     <div class="kc-option" onclick="answerKC(2, 'b', this)">B) Análise Pré-Mortem</div>
-                    <div class="kc-option" onclick="answerKC(2, 'c', this)">C) Advocatus Diaboli — atribuir formalmente o papel de oponente</div>
+                    <div class="kc-option" onclick="answerKC(2, 'c', this)">C) Advocatus Diaboli</div>
                     <div class="kc-option" onclick="answerKC(2, 'd', this)">D) Visão Externa</div>
                 </div>
                 <div class="kc-feedback" id="kc-fb2"></div>
@@ -806,7 +822,7 @@
 
             <!-- Q3 -->
             <div class="kc-question" id="kc-q3" style="display:none">
-                <div class="q-text">Q3: Um líder subestima consistentemente prazos de projeto em 30–40%. Qual ferramenta estrutural é mais eficaz para corrigir isso?</div>
+                <div class="q-text">Q3: Um líder frequentemente subestima os prazos em 30-40%. Qual ferramenta estrutural é mais eficaz para corrigir isso?</div>
                 <div class="kc-options">
                     <div class="kc-option" onclick="answerKC(3, 'a', this)">A) Tornar a Voz Segura</div>
                     <div class="kc-option" onclick="answerKC(3, 'b', this)">B) Segurança Psicológica</div>

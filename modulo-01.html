@@ -116,6 +116,7 @@
             flex-shrink: 0;
         }
         .fullscreen-btn:hover { background: rgba(255,255,255,0.15); }
+        .app-container.ios-fs { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; z-index: 99998 !important; }
 
         /* Main Content Area */
         .content-wrapper {
@@ -3627,9 +3628,23 @@
 
         // Navigation to Next Module
         function toggleFullscreen() {
-            const btn = document.querySelector('.fullscreen-btn');
+            var btn = document.querySelector('.fullscreen-btn');
+            var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isIOS) {
+                var container = document.querySelector('.app-container');
+                if (container.classList.contains('ios-fs')) {
+                    container.classList.remove('ios-fs');
+                    btn.textContent = '⛶';
+                    btn.title = 'Tela cheia';
+                } else {
+                    container.classList.add('ios-fs');
+                    btn.textContent = '✕';
+                    btn.title = 'Sair da tela cheia';
+                }
+                return;
+            }
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
+                document.documentElement.requestFullscreen().catch(function(){});
                 btn.textContent = '✕';
                 btn.title = 'Sair da tela cheia';
             } else {
@@ -3638,8 +3653,8 @@
                 btn.title = 'Tela cheia';
             }
         }
-        document.addEventListener('fullscreenchange', () => {
-            const btn = document.querySelector('.fullscreen-btn');
+        document.addEventListener('fullscreenchange', function() {
+            var btn = document.querySelector('.fullscreen-btn');
             if (!document.fullscreenElement) {
                 btn.textContent = '⛶';
                 btn.title = 'Tela cheia';

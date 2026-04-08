@@ -97,6 +97,7 @@
             flex-shrink: 0;
         }
         .fullscreen-btn:hover { background: rgba(255,255,255,0.15); }
+        .app-container.ios-fs { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; z-index: 99998 !important; }
 
         #progressBar {
             width: 200px; height: 4px;
@@ -721,6 +722,7 @@
             </div>
             <div class="top-bar-right">
                 <div>Módulo 4: Pensamento de Grupo</div>
+                <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Tela cheia">&#x26F6;</button>
             </div>
         </div>
 
@@ -729,8 +731,8 @@
             <!-- Screen 0: Welcome Banner -->
             <div class="screen active">
                 <div class="banner">
-                    <h1>Módulo 4: Pensamento de Grupo</h1>
-                    <div class="subtitle">Vieses Sociais e Organizacionais</div>
+                    <h1>Módulo 4: Dinâmica de Grupo</h1>
+                    <div class="subtitle">Falso consenso, Fadiga de Decisão e Segurança Psicológica no Trabalho</div>
                     <div class="time-badge">⏱️ 35–40 minutos</div>
                     <div class="hook">"Sua equipe não é a soma dos seus indivíduos. É um sistema — e sistemas têm vieses próprios."</div>
                 </div>
@@ -850,7 +852,7 @@
                             </div>
                             <div style="margin-top: 10px;">
                                 <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 6px;">Antídoto:</div>
-                                <div class="pair-card-antidote">💊 Seja o primeiro a agir com abertura. Culturas tóxicas se autoperpetram — culturas saudáveis também.</div>
+                                <div class="pair-card-antidote">💊 Seja o primeiro a agir com abertura. Culturas tóxicas se autoperpetuam — culturas saudáveis também.</div>
                             </div>
                         </div>
                     </div>
@@ -1080,6 +1082,7 @@
                     <p>A Auditoria de Normas Organizacionais na Seção 4B do seu diário contém 15 indicadores de cultura que reforça vieses. Avalie sua equipe honestamente — não como ela deveria ser, mas como ela é.</p>
                     <div class="diary-note">Esta atividade se conecta à Simulação do Ponto de Pressão que você acabou de completar.</div>
                     <a href="assets/diario-de-aprendizagem.pdf" target="_blank" class="diary-cta">📥 Acesse o Diário de Aprendizagem para completar esta atividade</a>
+                    <a href="assets/diario-de-aprendizagem.docx" download class="diary-cta" style="background: #002610; color: #4DF600; border: 1.5px solid #4DF600; margin-top: 6px;">📄 Baixar como Word</a>
                 </div>
             </div>
 
@@ -1090,6 +1093,7 @@
                     <h3>Avalie a Segurança Psicológica da Sua Equipe</h3>
                     <p>Use a avaliação de 10 itens na Seção 4C do seu diário para avaliar as condições atuais de segurança da sua equipe. Use-a honestamente, não como aspiração.</p>
                     <a href="assets/diario-de-aprendizagem.pdf" target="_blank" class="diary-cta">📥 Acesse o Diário de Aprendizagem para completar esta atividade</a>
+                    <a href="assets/diario-de-aprendizagem.docx" download class="diary-cta" style="background: #002610; color: #4DF600; border: 1.5px solid #4DF600; margin-top: 6px;">📄 Baixar como Word</a>
                 </div>
             </div>
 
@@ -1333,7 +1337,8 @@
             backBtn.style.display = currentScreen > 0 ? 'block' : 'none';
 
             const nextBtn = document.getElementById('next-btn');
-            nextBtn.textContent = currentScreen === totalScreens - 1 ? 'Finalizar ✓' : 'Próximo →';
+            nextBtn.style.display = currentScreen === 0 ? 'none' : 'block';
+            nextBtn.textContent = currentScreen === totalScreens - 1 ? 'Concluir Módulo ✓' : 'Próximo →';
         }
 
         function updateNextButton() {
@@ -1615,6 +1620,20 @@
     
         function toggleFullscreen() {
             var btn = document.querySelector('.fullscreen-btn');
+            var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isIOS) {
+                var container = document.querySelector('.app-container');
+                if (container.classList.contains('ios-fs')) {
+                    container.classList.remove('ios-fs');
+                    btn.textContent = '⛶';
+                    btn.title = 'Tela cheia';
+                } else {
+                    container.classList.add('ios-fs');
+                    btn.textContent = '✕';
+                    btn.title = 'Sair da tela cheia';
+                }
+                return;
+            }
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(function(){});
                 btn.textContent = '✕';
