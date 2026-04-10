@@ -2055,12 +2055,22 @@
         transition: max-height 0.3s ease, padding 0.3s ease;
     }
     
-        /* ── Mobile open-in-browser + compact header ──────── */
-        .mobile-open-btn { display: none; background: none; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 6px; color: white; cursor: pointer; padding: 5px 10px; font-size: 15px; font-weight: 700; line-height: 1; transition: background 0.2s; flex-shrink: 0; }
+        /* ── Mobile: open-in-browser btn + compact layout ─── */
+        .mobile-open-btn { display: none; background: none; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 6px; color: white; padding: 5px 10px; font-size: 15px; font-weight: 700; line-height: 1; transition: background 0.2s; flex-shrink: 0; text-decoration: none; }
         .mobile-open-btn:hover { background: rgba(255,255,255,0.15); }
         @media (max-width: 768px) {
             .brand-name { display: none !important; }
             .mobile-open-btn { display: block !important; }
+            /* Compact top bar */
+            #top-bar { padding: 6px 10px !important; }
+            .top-bar-left { gap: 6px !important; }
+            .top-bar-left svg { height: 22px !important; }
+            .top-bar-center { font-size: 11px !important; }
+            .top-bar-right { font-size: 11px !important; gap: 6px !important; }
+            /* Compact bottom bar */
+            #bottom-nav { padding: 8px 12px !important; padding-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
+            .bottom-nav { padding: 8px 12px !important; padding-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
+            #bottom-nav .btn, .bottom-nav .btn { padding: 8px 14px !important; font-size: 13px !important; }
         }
     </style>
 </head>
@@ -2102,7 +2112,7 @@
             </div>
             <div class="top-bar-right">
                 <span id="moduleName">Módulo 1: O Filtro Invisível</span>
-                <button class="mobile-open-btn" onclick="window.open(window.location.href,'_blank')" title="Abrir em tela cheia">&#x2197;</button>
+                <a class="mobile-open-btn" href="" target="_blank" title="Abrir em tela cheia">&#x2197;</a>
                 <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Tela cheia">⛶</button>
             </div>
         </div>
@@ -3669,6 +3679,11 @@
                 btn.title = 'Tela cheia';
             }
         });
+        // Set mobile open-in-browser button URL
+        (function() {
+            var mBtn = document.querySelector('a.mobile-open-btn');
+            if (mBtn) mBtn.href = window.location.href;
+        })();
 
         function goToNextModule() {
             // Hotmart version: no navigation between modules
