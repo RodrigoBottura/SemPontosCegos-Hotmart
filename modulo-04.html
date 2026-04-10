@@ -700,6 +700,14 @@
             .recommendation-buttons { flex-direction: column; }
             .recommendation-btn { width: 100%; }
         }
+    
+        /* ── Mobile open-in-browser + compact header ──────── */
+        .mobile-open-btn { display: none; background: none; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 6px; color: white; cursor: pointer; padding: 5px 10px; font-size: 15px; font-weight: 700; line-height: 1; transition: background 0.2s; flex-shrink: 0; }
+        .mobile-open-btn:hover { background: rgba(255,255,255,0.15); }
+        @media (max-width: 768px) {
+            .brand-name { display: none !important; }
+            .mobile-open-btn { display: block !important; }
+        }
     </style>
 </head>
 <body>
@@ -722,6 +730,7 @@
             </div>
             <div class="top-bar-right">
                 <div>Módulo 4: Pensamento de Grupo</div>
+                <button class="mobile-open-btn" onclick="window.open(window.location.href,'_blank')" title="Abrir em tela cheia">&#x2197;</button>
                 <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Tela cheia">&#x26F6;</button>
             </div>
         </div>
@@ -1081,8 +1090,8 @@
                     <h3>Avalie Sua Equipe</h3>
                     <p>A Auditoria de Normas Organizacionais na Seção 4B do seu diário contém 15 indicadores de cultura que reforça vieses. Avalie sua equipe honestamente — não como ela deveria ser, mas como ela é.</p>
                     <div class="diary-note">Esta atividade se conecta à Simulação do Ponto de Pressão que você acabou de completar.</div>
-                    <a href="assets/diario-de-aprendizagem.pdf" target="_blank" class="diary-cta">📥 Acesse o Diário de Aprendizagem para completar esta atividade</a>
-                    <a href="assets/diario-de-aprendizagem.docx" download class="diary-cta" style="background: #002610; color: #4DF600; border: 1.5px solid #4DF600; margin-top: 6px;">📄 Baixar como Word</a>
+                    <a href="assets/diario-de-aprendizagem.docx" download class="diary-cta">📥 Baixar Diário de Aprendizagem (.docx)</a>
+                    <a href="assets/diario-de-aprendizagem.pdf" target="_blank" class="diary-cta" style="background: #002610; color: #4DF600; border: 1.5px solid #4DF600; margin-top: 6px;">📄 Ver PDF</a>
                 </div>
             </div>
 
@@ -1092,8 +1101,8 @@
                 <div class="diary-card">
                     <h3>Avalie a Segurança Psicológica da Sua Equipe</h3>
                     <p>Use a avaliação de 10 itens na Seção 4C do seu diário para avaliar as condições atuais de segurança da sua equipe. Use-a honestamente, não como aspiração.</p>
-                    <a href="assets/diario-de-aprendizagem.pdf" target="_blank" class="diary-cta">📥 Acesse o Diário de Aprendizagem para completar esta atividade</a>
-                    <a href="assets/diario-de-aprendizagem.docx" download class="diary-cta" style="background: #002610; color: #4DF600; border: 1.5px solid #4DF600; margin-top: 6px;">📄 Baixar como Word</a>
+                    <a href="assets/diario-de-aprendizagem.docx" download class="diary-cta">📥 Baixar Diário de Aprendizagem (.docx)</a>
+                    <a href="assets/diario-de-aprendizagem.pdf" target="_blank" class="diary-cta" style="background: #002610; color: #4DF600; border: 1.5px solid #4DF600; margin-top: 6px;">📄 Ver PDF</a>
                 </div>
             </div>
 
@@ -1181,7 +1190,7 @@
                 </div>
                 <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 16px;">
                     <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">&#x2705; Módulo concluído!</p>
-                    <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
+                    <p style="color: #555; font-size: 14px; margin: 0;">Marque esta aula como concluída no menu lateral do Hotmart para registrar seu progresso.</p>
                 </div>
             </div>
         </div>
@@ -1349,6 +1358,15 @@
         function goNext() {
             if (currentScreen < totalScreens - 1) {
                 showScreen(currentScreen + 1);
+            } else {
+                // Last screen — exit fullscreen
+                if (document.fullscreenElement) document.exitFullscreen().catch(function(){});
+                var container = document.querySelector('.app-container');
+                if (container && container.classList.contains('ios-fs')) {
+                    container.classList.remove('ios-fs');
+                    var fsBtn = document.querySelector('.fullscreen-btn');
+                    if (fsBtn) { fsBtn.textContent = '⛶'; fsBtn.title = 'Tela cheia'; }
+                }
             }
         }
 

@@ -2054,6 +2054,14 @@
     .accordion-content {
         transition: max-height 0.3s ease, padding 0.3s ease;
     }
+    
+        /* ── Mobile open-in-browser + compact header ──────── */
+        .mobile-open-btn { display: none; background: none; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 6px; color: white; cursor: pointer; padding: 5px 10px; font-size: 15px; font-weight: 700; line-height: 1; transition: background 0.2s; flex-shrink: 0; }
+        .mobile-open-btn:hover { background: rgba(255,255,255,0.15); }
+        @media (max-width: 768px) {
+            .brand-name { display: none !important; }
+            .mobile-open-btn { display: block !important; }
+        }
     </style>
 </head>
 <body>
@@ -2094,6 +2102,7 @@
             </div>
             <div class="top-bar-right">
                 <span id="moduleName">Módulo 1: O Filtro Invisível</span>
+                <button class="mobile-open-btn" onclick="window.open(window.location.href,'_blank')" title="Abrir em tela cheia">&#x2197;</button>
                 <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Tela cheia">⛶</button>
             </div>
         </div>
@@ -3522,8 +3531,8 @@
         // Download Workbook (M1-12)
         function downloadWorkbook() {
             const a = document.createElement('a');
-            a.href = 'assets/diario-de-aprendizagem.pdf';
-            a.download = 'Diario-de-Aprendizagem-Sem-Pontos-Cegos.pdf';
+            a.href = 'assets/diario-de-aprendizagem.docx';
+            a.download = 'Diario-de-Aprendizagem-Sem-Pontos-Cegos.docx';
             a.target = '_blank';
             document.body.appendChild(a);
             a.click();
