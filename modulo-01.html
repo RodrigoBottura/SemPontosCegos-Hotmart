@@ -2764,9 +2764,9 @@
                     <h3>O que vem a seguir:</h3>
                     <p><strong>Módulo 2:</strong> Armadilhas de Decisão — Vieses que Distorcem o Julgamento</p>
                 </div>
-                <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 16px;">
+                <div id="m1-complete-msg" style="display:none; text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 16px;">
                     <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">✅ Módulo concluído!</p>
-                    <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
+                    <p style="color: #555; font-size: 14px; margin: 0;">Marque esta aula como concluída no menu lateral do Hotmart para registrar seu progresso.</p>
                 </div>
             </div>
         </div>
@@ -2920,8 +2920,8 @@
             }
 
             if (currentScreen === totalScreens - 1) {
-                nextBtn.textContent = 'Módulo Completo ✓';
-                nextBtn.disabled = true;
+                nextBtn.textContent = 'Módulo Concluído ✓';
+                nextBtn.disabled = false;
             } else {
                 nextBtn.textContent = 'Próximo →';
             }
@@ -2937,7 +2937,28 @@
                 currentScreen++;
                 showScreen(currentScreen);
                 document.querySelector('.content-wrapper').scrollTop = 0;
+            } else if (currentScreen === totalScreens - 1) {
+                completeModule();
             }
+        }
+
+        function completeModule() {
+            if (document.fullscreenElement) { document.exitFullscreen().catch(function(){}); }
+            var container = document.querySelector('.app-container');
+            if (container && container.classList.contains('ios-fs')) {
+                container.classList.remove('ios-fs');
+                var fsBtn = document.querySelector('.fullscreen-btn');
+                if (fsBtn) { fsBtn.textContent = '⛶'; fsBtn.title = 'Tela cheia'; }
+            }
+            try {
+                var progress = JSON.parse(localStorage.getItem('spc_progress') || '{}');
+                progress.m1_complete = true;
+                localStorage.setItem('spc_progress', JSON.stringify(progress));
+            } catch(e) {}
+            var msg = document.getElementById('m1-complete-msg');
+            if (msg) msg.style.display = 'block';
+            var btn = document.getElementById('nextBtn');
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.55'; btn.style.cursor = 'default'; }
         }
 
         function previousScreen() {

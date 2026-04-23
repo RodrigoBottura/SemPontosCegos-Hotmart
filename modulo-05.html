@@ -778,12 +778,15 @@
 
         <!-- Screen 11: Action Plan Builder -->
         <div class="screen" id="screen-11">
-            <div class="section-header">📖 Construtor de Plano de Ação</div>
-            <div class="diary-card">
-                <h3>🎯 Construa Seu Plano de Ação para Liderança Consciente</h3>
-                <p style="font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 16px;">Use a <strong>Parte B do Módulo 5</strong> no seu diário. Complete o modelo de plano de ação para uma liderança consciente de três vieses.</p>
-                <p style="font-size: 14px; color: var(--accent); font-weight: 600; line-height: 1.6; margin-bottom: 8px;">"Este é o output mais importante do curso. Comprometa-se com três mudanças específicas — por escrito."</p>
-                <p style="font-size: 14px; color: #777; font-style: italic;">"Seu plano é seu. Ninguém mais o vê. Seja honesto."</p>
+            <!-- PDF-style section header -->
+            <div style="margin-bottom: 4px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase;">Seção 5 — Módulo 5</div>
+            <h2 style="font-size: 22px; font-weight: 700; color: var(--deep-green); margin-bottom: 4px; line-height: 1.3;">Plano de Ação para Liderança Consciente</h2>
+            <div style="font-size: 13px; color: #888; margin-bottom: 14px;">Complete após concluir o Módulo 5</div>
+            <div style="height: 3px; background: var(--neon-green); border-radius: 2px; margin-bottom: 22px;"></div>
+            <!-- Prompt de Reflexão -->
+            <div style="margin-bottom: 20px; padding: 16px 20px; background: white; border-radius: 8px; border-left: 4px solid var(--neon-green);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">Prompt de Reflexão</div>
+                <p style="font-size: 13px; color: var(--deep-green); font-style: italic; line-height: 1.7; margin: 0;">"Este é o output mais importante do curso. Comprometa-se com três mudanças específicas — por escrito. Seu plano é seu. Ninguém mais o vê. Seja honesto."</p>
             </div>
             <div class="action-plan-preview">
                 <strong>📋 Modelo do Plano de Ação (Parte B — Módulo 5)</strong><br><br>
@@ -804,7 +807,6 @@
             <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 16px;">
                 <button class="diary-dl-btn" onclick="downloadActionPlan()">⬇ Baixar Modelo do Plano de Ação</button>
                 <a href="assets/diario-de-aprendizagem.docx" download style="background: #006A36; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;">📓 Baixar Diário (.docx)</a>
-                <a href="assets/diario-de-aprendizagem.pdf" target="_blank" style="background: #002610; color: #4DF600; border: 1.5px solid #4DF600; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block; margin-left: 8px;">📄 Ver PDF</a>
             </div>
             <div class="diary-checkbox-row">
                 <input type="checkbox" id="plan-check" onchange="planChecked()">
@@ -885,6 +887,12 @@
                 <div class="score-label" id="kc-score-label">Verificação concluída</div>
                 <div id="kc-score-msg" style="margin-top: 12px; font-size: 14px; color: #555; line-height: 1.6;"></div>
             </div>
+
+            <!-- Completar depois option -->
+            <div id="skip-kc-wrap" style="margin-top: 24px; padding: 14px 16px; background: white; border-radius: 8px; border: 1px dashed #ccc; text-align: center;">
+                <p style="font-size: 13px; color: #888; margin: 0 0 10px; line-height: 1.5;">Você pode completar a verificação de conhecimento agora ou voltar depois. Seu progresso nas questões é salvo automaticamente.</p>
+                <button onclick="skipKnowledgeCheck()" style="background: transparent; border: 1.5px solid var(--accent); color: var(--accent); padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Completar depois →</button>
+            </div>
         </div>
 
         <!-- Screen 13: Module Summary + Course Review -->
@@ -901,35 +909,85 @@
                 </ul>
             </div>
 
-            <div class="journey-map" id="journey-map">
-                <div class="journey-node">
-                    <div class="journey-circle dim" id="jn-1">M1</div>
-                    <div class="journey-label">Como a mente funciona</div>
+            <!-- Module review card grid (2×3) -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0;">
+                <div class="mod-review-card" onclick="toggleModCard(this)" style="background: white; border-radius: 10px; padding: 18px; cursor: pointer; border: 2px solid #e8e8e8; transition: all 0.3s ease; position: relative;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--deep-green); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">🧠</div>
+                        <div>
+                            <div style="font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px;">Módulo 1</div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--deep-green); line-height: 1.3;">O Filtro Invisível</div>
+                        </div>
+                        <span style="position: absolute; top: 12px; right: 14px; font-size: 18px; color: var(--accent); opacity: 0.6; transition: transform 0.2s;" class="card-caret">+</span>
+                    </div>
+                    <div class="mod-summary" style="display: none; margin-top: 10px; padding: 10px; background: #f0faf4; border-radius: 6px; font-size: 13px; color: #444; line-height: 1.6; border-left: 3px solid var(--accent); animation: fadeIn 0.3s ease;">
+                        Como a mente usa atalhos cognitivos (Sistema 1 vs. Sistema 2) e como esses atalhos se tornam vieses que amplificam erros — especialmente em posições de liderança.
+                    </div>
                 </div>
-                <div class="journey-arrow">→</div>
-                <div class="journey-node">
-                    <div class="journey-circle dim" id="jn-2">M2</div>
-                    <div class="journey-label">Armadilhas de decisão</div>
+                <div class="mod-review-card" onclick="toggleModCard(this)" style="background: white; border-radius: 10px; padding: 18px; cursor: pointer; border: 2px solid #e8e8e8; transition: all 0.3s ease; position: relative;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--deep-green); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">⚠️</div>
+                        <div>
+                            <div style="font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px;">Módulo 2</div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--deep-green); line-height: 1.3;">Armadilhas de Decisão</div>
+                        </div>
+                        <span style="position: absolute; top: 12px; right: 14px; font-size: 18px; color: var(--accent); opacity: 0.6; transition: transform 0.2s;" class="card-caret">+</span>
+                    </div>
+                    <div class="mod-summary" style="display: none; margin-top: 10px; padding: 10px; background: #f0faf4; border-radius: 6px; font-size: 13px; color: #444; line-height: 1.6; border-left: 3px solid var(--accent); animation: fadeIn 0.3s ease;">
+                        Os 9 principais vieses que distorcem o julgamento: ancoragem, confirmação, custo irrecuperável, excesso de confiança, enquadramento e mais — em contextos reais de liderança.
+                    </div>
                 </div>
-                <div class="journey-arrow">→</div>
-                <div class="journey-node">
-                    <div class="journey-circle dim" id="jn-3">M3</div>
-                    <div class="journey-label">Pontos cegos</div>
+                <div class="mod-review-card" onclick="toggleModCard(this)" style="background: white; border-radius: 10px; padding: 18px; cursor: pointer; border: 2px solid #e8e8e8; transition: all 0.3s ease; position: relative;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--deep-green); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">🔍</div>
+                        <div>
+                            <div style="font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px;">Módulo 3</div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--deep-green); line-height: 1.3;">Pontos Cegos</div>
+                        </div>
+                        <span style="position: absolute; top: 12px; right: 14px; font-size: 18px; color: var(--accent); opacity: 0.6; transition: transform 0.2s;" class="card-caret">+</span>
+                    </div>
+                    <div class="mod-summary" style="display: none; margin-top: 10px; padding: 10px; background: #f0faf4; border-radius: 6px; font-size: 13px; color: #444; line-height: 1.6; border-left: 3px solid var(--accent); animation: fadeIn 0.3s ease;">
+                        Vieses sobre si mesmo e sobre os outros: Dunning-Kruger, efeito holofote, superioridade ilusória, viés de afinidade e endogrupo — e como eles afetam avaliações e promoções.
+                    </div>
                 </div>
-                <div class="journey-arrow">→</div>
-                <div class="journey-node">
-                    <div class="journey-circle dim" id="jn-4">M4</div>
-                    <div class="journey-label">Dinâmicas de grupo</div>
+                <div class="mod-review-card" onclick="toggleModCard(this)" style="background: white; border-radius: 10px; padding: 18px; cursor: pointer; border: 2px solid #e8e8e8; transition: all 0.3s ease; position: relative;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--deep-green); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">👥</div>
+                        <div>
+                            <div style="font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px;">Módulo 4</div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--deep-green); line-height: 1.3;">Pensamento de Grupo</div>
+                        </div>
+                        <span style="position: absolute; top: 12px; right: 14px; font-size: 18px; color: var(--accent); opacity: 0.6; transition: transform 0.2s;" class="card-caret">+</span>
+                    </div>
+                    <div class="mod-summary" style="display: none; margin-top: 10px; padding: 10px; background: #f0faf4; border-radius: 6px; font-size: 13px; color: #444; line-height: 1.6; border-left: 3px solid var(--accent); animation: fadeIn 0.3s ease;">
+                        Como dinâmicas sociais — conformismo, polarização, viés de autoridade e falso consenso — comprometem decisões coletivas, e os sinais de alerta para identificá-los.
+                    </div>
                 </div>
-                <div class="journey-arrow">→</div>
-                <div class="journey-node">
-                    <div class="journey-circle dim" id="jn-5">M5</div>
-                    <div class="journey-label">Mitigação</div>
+                <div class="mod-review-card" onclick="toggleModCard(this)" style="background: white; border-radius: 10px; padding: 18px; cursor: pointer; border: 2px solid #e8e8e8; transition: all 0.3s ease; position: relative;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--neon-green); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">🛡️</div>
+                        <div>
+                            <div style="font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px;">Módulo 5</div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--deep-green); line-height: 1.3;">Liderando com Clareza</div>
+                        </div>
+                        <span style="position: absolute; top: 12px; right: 14px; font-size: 18px; color: var(--accent); opacity: 0.6; transition: transform 0.2s;" class="card-caret">+</span>
+                    </div>
+                    <div class="mod-summary" style="display: none; margin-top: 10px; padding: 10px; background: #f0faf4; border-radius: 6px; font-size: 13px; color: #444; line-height: 1.6; border-left: 3px solid var(--accent); animation: fadeIn 0.3s ease;">
+                        15 estratégias em 3 níveis — Individual, Estrutural e Cultural — para mitigar vieses e construir sistemas de decisão robustos. Inclui Pré-Mortem, Advocatus Diaboli e seu plano de ação pessoal.
+                    </div>
                 </div>
-                <div class="journey-arrow">→</div>
-                <div class="journey-node">
-                    <div class="journey-circle dim" id="jn-fa">FA</div>
-                    <div class="journey-label">Avaliação Final</div>
+                <div class="mod-review-card" onclick="toggleModCard(this)" style="background: white; border-radius: 10px; padding: 18px; cursor: pointer; border: 2px solid #e8e8e8; transition: all 0.3s ease; position: relative;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--deep-green); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">🏆</div>
+                        <div>
+                            <div style="font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px;">Avaliação Final</div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--deep-green); line-height: 1.3;">Prova de Domínio</div>
+                        </div>
+                        <span style="position: absolute; top: 12px; right: 14px; font-size: 18px; color: var(--accent); opacity: 0.6; transition: transform 0.2s;" class="card-caret">+</span>
+                    </div>
+                    <div class="mod-summary" style="display: none; margin-top: 10px; padding: 10px; background: #f0faf4; border-radius: 6px; font-size: 13px; color: #444; line-height: 1.6; border-left: 3px solid var(--accent); animation: fadeIn 0.3s ease;">
+                        Aplique todo o conhecimento em 3 cenários reais de liderança com 15 questões. Nota de aprovação: 70% (11/15). A avaliação pode ser refeita quantas vezes precisar.
+                    </div>
                 </div>
             </div>
 
@@ -950,9 +1008,9 @@
                 <h3>Próximo passo: Avaliação Final</h3>
                 <p>Aplique tudo que aprendeu nos cinco módulos em três cenários reais de liderança. Nota de aprovação: 70% (11/15).</p>
             </div>
-                <div style="text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 16px;">
+                <div id="m5-complete-msg" style="display:none; text-align: center; padding: 16px 20px; background: #f0fff4; border-radius: 8px; border: 2px solid #4DF600; margin-top: 16px;">
                     <p style="color: #007A40; font-size: 15px; font-weight: 700; margin: 0 0 6px;">&#x2705; Módulo concluído!</p>
-                    <p style="color: #555; font-size: 14px; margin: 0;">Avance para a próxima aula no menu lateral.</p>
+                    <p style="color: #555; font-size: 14px; margin: 0;">Marque esta aula como concluída no menu lateral do Hotmart para registrar seu progresso.</p>
                 </div>
         </div>
 
@@ -1055,9 +1113,43 @@
             currentScreen++;
             showScreen(currentScreen);
         } else {
-            try { localStorage.setItem('spc_m5_complete', 'true'); } catch(e) {}
-            try { localStorage.setItem('spc_m5_complete', 'true'); } catch(e) {}
+            completeModule();
         }
+    }
+
+    function completeModule() {
+        if (document.fullscreenElement) { document.exitFullscreen().catch(function(){}); }
+        var container = document.querySelector('.app-container');
+        if (container && container.classList.contains('ios-fs')) {
+            container.classList.remove('ios-fs');
+            var fsBtn = document.querySelector('.fullscreen-btn');
+            if (fsBtn) { fsBtn.textContent = '⛶'; fsBtn.title = 'Tela cheia'; }
+        }
+        try { localStorage.setItem('spc_m5_complete', 'true'); } catch(e) {}
+        try {
+            var progress = JSON.parse(localStorage.getItem('spc_progress') || '{}');
+            progress.m5_complete = true;
+            localStorage.setItem('spc_progress', JSON.stringify(progress));
+        } catch(e) {}
+        var msg = document.getElementById('m5-complete-msg');
+        if (msg) msg.style.display = 'block';
+        var btn = document.getElementById('btn-next');
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.55'; btn.style.cursor = 'default'; }
+    }
+
+    function skipKnowledgeCheck() {
+        screenRequirements[12] = true;
+        document.getElementById('skip-kc-wrap').style.display = 'none';
+        updateNextButton();
+    }
+
+    function toggleModCard(card) {
+        var summary = card.querySelector('.mod-summary');
+        var caret = card.querySelector('.card-caret');
+        var isOpen = summary.style.display === 'block';
+        summary.style.display = isOpen ? 'none' : 'block';
+        card.style.borderColor = isOpen ? '#e8e8e8' : 'var(--accent)';
+        if (caret) { caret.textContent = isOpen ? '+' : '−'; caret.style.transform = isOpen ? '' : 'rotate(45deg)'; }
     }
 
     function prevScreen() {
@@ -1302,15 +1394,19 @@
         }
     }
 
-    // ── Journey Animation ─────────────────────────────────────────────────────
+    // ── Journey Animation (card grid version — animate border on load) ─────────
     function animateJourney() {
         journeyAnimated = true;
-        const nodes = ['jn-1','jn-2','jn-3','jn-4','jn-5','jn-fa'];
-        nodes.forEach((id, i) => {
+        const cards = document.querySelectorAll('.mod-review-card');
+        cards.forEach((card, i) => {
             setTimeout(() => {
-                const el = document.getElementById(id);
-                if (el) { el.classList.remove('dim'); el.classList.add('lit'); }
-            }, i * 400);
+                card.style.borderColor = 'var(--accent)';
+                card.style.boxShadow = '0 2px 8px rgba(0,122,64,0.15)';
+                setTimeout(() => {
+                    card.style.borderColor = '#e8e8e8';
+                    card.style.boxShadow = '';
+                }, 600);
+            }, i * 200);
         });
     }
 
