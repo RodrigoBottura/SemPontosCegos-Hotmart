@@ -1977,46 +1977,6 @@
         .amplifier-card {
             animation-delay: calc(0.1s * var(--index, 0));
         }
-    /* Password Gate */
-    #password-gate {
-        position: fixed; inset: 0; z-index: 99999;
-        background: #002610;
-        display: flex; align-items: center; justify-content: center;
-    }
-    .password-box {
-        background: #fff;
-        border-radius: 16px;
-        padding: 48px 40px;
-        width: 100%; max-width: 400px;
-        text-align: center;
-        box-shadow: 0 24px 64px rgba(0,0,0,0.4);
-    }
-    .password-box svg { margin-bottom: 20px; }
-    .password-box h2 { color: #002610; font-size: 22px; margin-bottom: 8px; font-family: 'Segoe UI', Arial, sans-serif; }
-    .password-box p  { color: #555; font-size: 14px; margin-bottom: 28px; font-family: 'Segoe UI', Arial, sans-serif; }
-    #gate-input {
-        width: 100%; box-sizing: border-box;
-        padding: 14px 16px; font-size: 16px;
-        border: 2px solid #ddd; border-radius: 8px;
-        margin-bottom: 12px; outline: none;
-        font-family: 'Segoe UI', Arial, sans-serif;
-        transition: border-color 0.2s;
-    }
-    #gate-input:focus { border-color: #4DF600; }
-    #gate-btn {
-        width: 100%; padding: 14px;
-        background: #4DF600; color: #002610;
-        border: none; border-radius: 8px;
-        font-size: 16px; font-weight: 700;
-        cursor: pointer; font-family: 'Segoe UI', Arial, sans-serif;
-        transition: background 0.2s;
-    }
-    #gate-btn:hover { background: #5dff1f; }
-    #gate-error {
-        color: #c0392b; font-size: 13px;
-        margin-top: 12px; display: none;
-        font-family: 'Segoe UI', Arial, sans-serif;
-    }
 
     /* Screen 5: Example reveal button */
     #s5-next-btn {
@@ -2076,21 +2036,6 @@
 </head>
 <body>
 
-    <!-- Password Gate -->
-    <div id="password-gate">
-        <div class="password-box">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.16 114.38" height="48">
-                <path fill="#4DF600" d="M80.95,49.16c13.59,12.49,27.32,24.83,41.01,37.21,1.71-2.52,3.25-5.17,4.59-7.93-13.23-12.52-26.84-24.66-40.54-36.67-11.31-9.92-21.92-9.62-33.1.41-13.3,11.93-26.23,24.3-39.81,35.89,1.34,2.82,2.89,5.52,4.62,8.09,13.73-12.39,27.46-24.78,41.13-37.24,7.59-6.92,14.41-6.83,22.12.25Z"/>
-                <path fill="#4DF600" d="M56.92,20.51c8.24-4.87,16.3-5.35,24.64-.48,12.87,7.52,25.76,15,38.67,22.46,4.05,2.34,8.15,4.59,12.57,7.06-.09-3.94-.55-7.79-1.33-11.52-.69-.56-31.47-18.24-45.95-26.61-9.9-5.72-20.15-6.3-30.13-.8-14.57,8.03-46.01,26.35-47,27.22-.8,3.73-1.27,7.59-1.37,11.53.28-.12.54-.24.79-.38,16.39-9.47,32.83-18.86,49.13-28.49Z"/>
-                <path fill="#4DF600" d="M81.84,70.14c-6.01-8.23-19.13-8.13-24.57.09-7.27,10.97-14.02,22.3-21.15,33.89,2.58,1.64,5.28,3.1,8.09,4.36,1.2-1.51,14.61-23.59,19.71-31.88,3.28-5.34,8.32-5.41,11.49-.17,5.3,8.75,18.72,30.78,19.74,32.23,2.83-1.24,5.55-2.69,8.15-4.32-1.85-3.03-3.69-6.06-5.56-9.05-5.24-8.42-10.06-17.16-15.89-25.15Z"/>
-            </svg>
-            <h2>Sem Pontos Cegos</h2>
-            <p>Digite a senha de acesso para continuar</p>
-            <input type="password" id="gate-input" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter') checkPassword()" />
-            <button id="gate-btn" onclick="checkPassword()">Entrar →</button>
-            <p id="gate-error">Senha incorreta. Tente novamente.</p>
-        </div>
-    </div>
 
     <div class="app-container">
         <!-- Top Bar -->
@@ -2786,27 +2731,6 @@
     </div>
 
     <script>
-        // ── Password Gate ────────────────────────────────────────────────────
-        const COURSE_PASSWORD = 'SPC2025'; // ← altere a senha aqui
-        (function() {
-            const stored = localStorage.getItem('spc_access');
-            if (stored === btoa(COURSE_PASSWORD)) {
-                document.getElementById('password-gate').style.display = 'none';
-            }
-        })();
-        function checkPassword() {
-            const input = document.getElementById('gate-input').value;
-            const error = document.getElementById('gate-error');
-            if (input === COURSE_PASSWORD) {
-                localStorage.setItem('spc_access', btoa(COURSE_PASSWORD));
-                document.getElementById('password-gate').style.display = 'none';
-            } else {
-                error.style.display = 'block';
-                document.getElementById('gate-input').value = '';
-                document.getElementById('gate-input').focus();
-            }
-        }
-        // ────────────────────────────────────────────────────────────────────
 
         // State Management
         let currentScreen = 0;
