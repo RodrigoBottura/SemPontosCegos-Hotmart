@@ -713,7 +713,10 @@
 
         <!-- Screen 9: Advocatus Diaboli -->
         <div class="screen" id="screen-9">
-            <div class="section-header">⚖️ Prática: Advocatus Diaboli</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+                <div class="section-header" style="margin-bottom:0;">⚖️ Prática: Advocatus Diaboli</div>
+                <button id="skip-ad-btn" onclick="skipActivity(9,'skip-ad-btn')" style="background:transparent; border:1.5px solid var(--accent); color:var(--accent); padding:7px 16px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0;">Completar depois →</button>
+            </div>
             <div class="ad-scenario">
                 <div class="scenario-label">Cenário</div>
                 <p style="font-size: 14px; color: #333; line-height: 1.7; margin-bottom: 8px;">A equipe de liderança de uma empresa de serviços financeiros convergiu fortemente para <strong>terceirizar sua função de TI interna</strong>. As evidências parecem apoiar a decisão: redução de custos de 22%, foco no core business, e o fornecedor escolhido tem reputação sólida.</p>
@@ -745,7 +748,10 @@
 
         <!-- Screen 10: Pre-Mortem Builder -->
         <div class="screen" id="screen-10">
-            <div class="section-header">💀 Construtor de Pré-Mortem</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+                <div class="section-header" style="margin-bottom:0;">💀 Ferramenta Pré-Mortem</div>
+                <button id="skip-pm-btn" onclick="skipActivity(10,'skip-pm-btn')" style="background:transparent; border:1.5px solid var(--accent); color:var(--accent); padding:7px 16px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0;">Completar depois →</button>
+            </div>
             <div style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
                 <p style="font-size: 14px; color: #333; line-height: 1.7;"><strong>Instruções:</strong> Escolha uma decisão real ou hipotética que você está enfrentando. Execute um pré-mortem respondendo as três perguntas abaixo.</p>
                 <p style="font-size: 13px; color: #777; margin-top: 8px; font-style: italic;">O objetivo não é prever o fracasso — é trazer à tona o que você não está se permitindo considerar.</p>
@@ -888,11 +894,6 @@
                 <div id="kc-score-msg" style="margin-top: 12px; font-size: 14px; color: #555; line-height: 1.6;"></div>
             </div>
 
-            <!-- Completar depois option -->
-            <div id="skip-kc-wrap" style="margin-top: 24px; padding: 14px 16px; background: white; border-radius: 8px; border: 1px dashed #ccc; text-align: center;">
-                <p style="font-size: 13px; color: #888; margin: 0 0 10px; line-height: 1.5;">Você pode completar a verificação de conhecimento agora ou voltar depois. Seu progresso nas questões é salvo automaticamente.</p>
-                <button onclick="skipKnowledgeCheck()" style="background: transparent; border: 1.5px solid var(--accent); color: var(--accent); padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Completar depois →</button>
-            </div>
         </div>
 
         <!-- Screen 13: Module Summary + Course Review -->
@@ -1137,9 +1138,10 @@
         if (btn) { btn.disabled = true; btn.style.opacity = '0.55'; btn.style.cursor = 'default'; }
     }
 
-    function skipKnowledgeCheck() {
-        screenRequirements[12] = true;
-        document.getElementById('skip-kc-wrap').style.display = 'none';
+    function skipActivity(screenIdx, btnId) {
+        screenRequirements[screenIdx] = true;
+        var btn = document.getElementById(btnId);
+        if (btn) { btn.textContent = '✓ Pode avançar'; btn.disabled = true; btn.style.opacity = '0.5'; btn.style.cursor = 'default'; }
         updateNextButton();
     }
 
